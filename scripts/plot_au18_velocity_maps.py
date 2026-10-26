@@ -24,13 +24,13 @@ CMAP_DIV = LinearSegmentedColormap.from_list(
 CMAP_DIV.set_bad("white")
 
 
-def binned_mean(x, y, w, q, edges):
+def binned_mean(x, y, w, q, edges, min_count=MIN_PART):
     W, _, _ = np.histogram2d(x, y, bins=[edges, edges], weights=w)
     Q, _, _ = np.histogram2d(x, y, bins=[edges, edges], weights=w * q)
     N, _, _ = np.histogram2d(x, y, bins=[edges, edges])
     with np.errstate(invalid="ignore", divide="ignore"):
         mean = Q / W
-    mean[N < MIN_PART] = np.nan
+    mean[N < min_count] = np.nan
     return mean.T, W.T
 
 

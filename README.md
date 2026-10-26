@@ -6,6 +6,9 @@ trial bar potential (built by rescaling the m != 0 part of the Portail+17 / Sorm
 AGAMA model in amplitude, length and pattern speed). Only in the correct potential is
 the sample stationary in the bar frame, so its kinematics stay unchanged.
 
+Progress, test results and links to the scripts and figures for each test are logged in
+[PROGRESS.md](PROGRESS.md).
+
 ## Layout
 
 - `scripts/` - analysis code (`common.py` holds paths, constants and plot style)
@@ -25,6 +28,8 @@ python scripts/prepare_au18_mwframe.py      # needs mock/halo_18/{snapdir,groups
 python scripts/plot_au18_density.py
 python scripts/plot_au18_velocity_maps.py
 python scripts/plot_au18_vR_distance_error.py
+python scripts/make_mock_perfect.py         # Test 1 mock: 50k stars, R < 8 kpc
+python scripts/plot_mock_overview.py mock/mock_perfect_R8_N50k.hdf5
 ```
 
 ## Mock galaxy
