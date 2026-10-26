@@ -17,6 +17,7 @@ MIRA_DR3_FILE = DATA_DIR / "gaia_dr3_lpv_mira.csv"
 # Sun at x = -R0, y towards l = 90 deg, z towards the NGP.
 R0_KPC = 8.122          # GRAVITY Collaboration 2018
 Z_SUN_KPC = 0.0208      # Bennett & Bovy 2019
+V_SUN_KMS = (12.9, 245.6, 7.78)   # Drimmel & Poggio 2018 (astropy default)
 
 # Bar geometry used only for annotation: angle between the bar major axis and the
 # Sun-GC line (near end at l > 0, i.e. y > 0), and long-bar half-length.
