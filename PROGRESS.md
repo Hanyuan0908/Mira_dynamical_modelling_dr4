@@ -23,6 +23,10 @@ figures, and the key numbers.
 | `mock/halo_18/{snapdir,groups}_127/` | Auriga public release (Globus) | Au18 `Original/4` z = 0 snapshot and Subfind catalogue |
 | `mock/au18_stars_mwframe.hdf5` | `scripts/prepare_au18_mwframe.py` | 2.05M Au18 star particles within r < 50 kpc in the MW-like frame; transformation stored in the attributes |
 | `mock/mock_perfect_R8_N50k.hdf5` | `scripts/make_mock_perfect.py` | Test 1 mock: 50k stars, R < 8 kpc, true 6D + error-free observables |
+| `mock/au18_potential/{dm,stars,gas,bh}.ini` | `scripts/build_au18_potential.py` | Au18 ground-truth potential (AGAMA coefficient files, MW-like frame) |
+
+Small numeric results (tracked): `results/au18_ground_truth.json` (pattern speed, resonances, bar),
+`results/au18_potential_checks.json` (potential benchmarks).
 
 ---
 
@@ -110,16 +114,83 @@ figures, and the key numbers.
 - Status: catalogue ready. **Next:** integrate in the true and trial potentials and define the
   stationarity statistic.
 
+## 2026-10-26 — Au18 ground-truth potential and pattern speed
+
+- Scripts: `scripts/build_au18_potential.py`, `scripts/measure_au18_pattern_speed.py`,
+  `scripts/check_au18_potential.py`
+- Figures:
+  [stellar density check](figures/au18_potential_density_check.png),
+  [rotation curve and asymmetric drift](figures/au18_rotation_curve_check.png),
+  [pattern speed and resonances](figures/au18_pattern_speed.png),
+  [AGAMA vs Arepo potential](figures/au18_potential_vs_arepo.png)
+- **Potential.** AGAMA, units Msun–kpc–km/s, built in the MW-like frame (bar at −27°).
+
+  | component | expansion | hyperparameters | where they come from |
+  |---|---|---|---|
+  | DM (7.19M particles, r < 500 kpc; no low-res particles inside) | Multipole, `symmetry='spherical'` | `gridSizeR=25, rmin=0.1, rmax=500` | AGAMA `py/example_gizmo_snapshot.py` (FIRE zoom: rmin 0.1, rmax 400–500, default gridSizeR) |
+  | stars (2.05M, wind excluded) | CylSpline, `symmetry='none'` | `mmax=8, gridSizeR=30, gridSizez=30, Rmin=0.15, Rmax=50, zmin=0.1, zmax=50` | your `Nexus/get_potential*.py` (30×25, Rmin 0.15, zmin 0.1, Rmax 50, zmax 20, mmax 8); zmax raised to Rmax (see below) |
+  | gas (309k cells inside the grid, 2.3×10¹⁰ M☉) | CylSpline, `symmetry='none'` | same as stars | same |
+  | central BH (1.38×10⁸ M☉, 41 pc off-centre) | Plummer | `scaleRadius=0.369` kpc (level-4 softening) | added for completeness; contributes 8.6 km/s to v_c at 8 kpc |
+
+  - CylSpline ignores mass outside its grid, and 2.9×10¹¹ M☉ of hot halo gas lies outside it.
+    With zmax = Rmax the grid contains the whole sphere r < 50 kpc, so the excluded gas is
+    roughly spherical. Its contribution to v_c² at 8 kpc is −1.3 (km/s)², which is negligible.
+  - At R = 8 kpc, v_c = 258.5 km/s: DM 181.5, stars 182.5, gas 21.7, BH 8.6 km/s.
+  - Bug fixed: AGAMA's `export()` does not store the parameters of analytic potentials.
+    `bh.ini` is now written by hand, and the build asserts that every reloaded file reproduces
+    its potential.
+- **Benchmarks** (`results/au18_potential_checks.json`):
+  1. Stellar density implied by the potential vs the particles:
+     - face-on median ratio 0.998;
+     - 68% of pixels within 0.03 dex (the scatter is Poisson noise);
+     - Σ(R) agrees within −3% / +5% over 0.5–15 kpc;
+     - ρ(z) at R = 2, 5 and 8 kpc agrees;
+     - bar A2 peak 0.355 vs 0.357, phase −26.8° in both.
+  2. Rotation curve: the stellar ⟨v_φ⟩ predicted by the Jeans equation from the potential's
+     v_c (using measured σ_R, σ_φ, ν and ∂⟨v_R v_z⟩/∂z, |z| < 0.5 kpc) matches the measured
+     ⟨v_φ⟩ with median offset −0.1% and rms 1.0% for R_bar < R < 15 kpc.
+     - It also holds down to R ≈ 3 kpc.
+     - Asymmetric drift at 8 kpc is 13.5 km/s.
+     - Gas rotates 1.6% below v_c, consistent with pressure support.
+  3. Extra check: the AGAMA potential at the star particles vs the potential Arepo stored for
+     them (up to a constant).
+     - At r ≲ 2 kpc AGAMA is deeper by up to 1.5×10⁴ (km/s)². This is Arepo's gravitational
+       softening (ε ≈ 0.37 kpc); the AGAMA potential is unsoftened.
+     - At 3–20 kpc the residual is within ±1000 (km/s)², against a potential range of 2×10⁵.
+     - The face-on residual shows an **m = 2 pattern aligned with the bar** (see caveat 1)
+       plus a uniform gradient (external tidal field).
+- **Pattern speed** (`results/au18_ground_truth.json`):
+  - Method: the Dehnen, Semczuk & Schönrich (2023) Fourier method from
+    `python_script/patternSpeed-main`, used as in `get_bar_property_ForSingleSnapshot.py`.
+    The disc is mirrored to rotate anticlockwise; input is kpc and km/s, output km/s/kpc.
+    NumPy 2 removed `np.asfarray`, so the wrapper adds a one-line shim instead of editing the
+    package.
+  - **Ω_p = 36.27 ± 0.36 km/s/kpc**, using the automatic bar region 0.45–3.70 kpc.
+    Fixed radial ranges give 36.13–36.26. In the MW-like frame the bar rotates clockwise:
+    φ_bar(t) = −27° − Ω_p t.
+  - Resonances: corotation at R_CR = 7.19 kpc, OLR at 11.67 kpc, ILRs at 0.80 and 2.15 kpc.
+    R_CR / R_bar = 1.25, a fast bar like the MW's.
+- **Caveats for the mock tests:**
+  1. *Spherical DM drops the halo's bar response.* A non-spherical DM Multipole (lmax = 8,
+     symmetry none) has an m = 2 potential aligned with the stellar bar, at 10–20% of the
+     stellar m = 2 amplitude for R = 1–6 kpc (27% at 8 kpc).
+     - The spherical-DM ground truth therefore underestimates the non-axisymmetric force the
+       stars actually feel.
+     - Option: use a non-spherical DM Multipole as the ground truth, or treat the DM's m = 2
+       as part of the "bar" when rescaling.
+  2. *Softening.* Inside r ≲ 2 kpc the unsoftened AGAMA potential is deeper than the softened
+     one the particles moved in. The innermost region may look non-stationary in the null test.
+  3. An older script, `get_bar_property_ForSingleSnapshot.py`, multiplies Ω by 0.98. That
+     factor is not applied here, because kpc and km/s inputs already give km/s/kpc.
+
 ---
 
 ## Next steps
 
-1. Measure Au18's bar pattern speed Ω_p, the "true" value the test must recover
-   (Tremaine–Weinberg or continuity equation on one snapshot, or adjacent snapshots).
-2. Build Au18's own potential: an AGAMA multipole/CylSpline expansion of the dark matter,
-   gas and stars, using the stored transformation.
-3. Test 1 itself: integrate the perfect mock in the true potential (the null test) and in
+1. ~~Pattern speed~~ and ~~ground-truth potential~~: done (2026-10-26). Still to decide:
+   spherical vs non-spherical DM (caveat 1 above).
+2. Test 1 itself: integrate the perfect mock in the true potential (the null test) and in
    trial potentials with m ≠ 0 rescaled in amplitude, length and Ω_p. Choose the
    discrepancy statistic and the integration time.
-4. Add realism step by step: distance errors (forward-modelled), RV jitter, selection
+3. Add realism step by step: distance errors (forward-modelled), RV jitter, selection
    function, period–age tracer weighting.

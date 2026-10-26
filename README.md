@@ -13,6 +13,7 @@ Progress, test results and links to the scripts and figures for each test are lo
 
 - `scripts/` - analysis code (`common.py` holds paths, constants and plot style)
 - `figures/` - saved plots
+- `results/` - small numeric results (JSON), e.g. the Au18 ground truth
 - `data/` - observational catalogues (not tracked), e.g. `gaia_dr3_lpv_mira.csv`
 - `mock/` - simulation snapshots and mock catalogues (not tracked), e.g. Auriga Au18
 
@@ -30,6 +31,9 @@ python scripts/plot_au18_velocity_maps.py
 python scripts/plot_au18_vR_distance_error.py
 python scripts/make_mock_perfect.py         # Test 1 mock: 50k stars, R < 8 kpc
 python scripts/plot_mock_overview.py mock/mock_perfect_R8_N50k.hdf5
+python scripts/build_au18_potential.py      # ground-truth potential -> mock/au18_potential/
+python scripts/measure_au18_pattern_speed.py
+python scripts/check_au18_potential.py
 ```
 
 ## Mock galaxy

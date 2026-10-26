@@ -1,0 +1,26 @@
+{
+  "face_on_model_over_particles_median": 0.9976235510931795,
+  "face_on_abs_log_ratio_68pct": 0.031709726656696545,
+  "SigR_ratio_range_0.5_15kpc": [
+    0.9730697153835735,
+    1.0462994877211704
+  ],
+  "A2_peak_particles_model": [
+    0.35707959069726236,
+    0.3554588969914045
+  ],
+  "bar_phase_1_4kpc_particles_model_deg": [
+    -26.81575782821657,
+    -26.76559303540527
+  ],
+  "vc_R8": 258.49466999641726,
+  "jeans_resid_outside_bar_median_rms": [
+    -0.00113438080058699,
+    0.009543236975563167
+  ],
+  "gas_resid_outside_bar_median": -0.01628310554778884,
+  "asym_drift_R8_kms": 13.475615253157173,
+  "phi_fit_slope": 1.028423255427328,
+  "phi_resid_rms_1_20kpc": 1846.754456626466,
+  "phi_range_1_20kpc": 201072.3829506154
+}
