@@ -33,6 +33,10 @@ BLUE_RAMP = ["#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "
 CMAP_SEQ = LinearSegmentedColormap.from_list("blue_seq", BLUE_RAMP)
 CMAP_SEQ.set_bad("white")
 CMAP_SEQ.set_under("white")
+# same hue starting from white, for continuous maps (e.g. simulation surface densities)
+CMAP_SEQ_W = LinearSegmentedColormap.from_list("blue_seq_w", ["#ffffff"] + BLUE_RAMP)
+CMAP_SEQ_W.set_bad("white")
+CMAP_SEQ_W.set_under("white")
 
 MIRA_COLUMNS = ["source_id", "l", "b", "period", "age_both", "luminosity_distance",
                 "luminosity_distance_err", "x", "y", "z"]

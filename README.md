@@ -21,4 +21,15 @@ Use the `astro312` conda environment, e.g.
 conda activate astro312
 python scripts/plot_dr3_mira_period_vs_R.py
 python scripts/plot_dr3_mira_spatial_period_bins.py
+python scripts/prepare_au18_mwframe.py      # needs mock/halo_18/{snapdir,groups}_127
+python scripts/plot_au18_density.py
 ```
+
+## Mock galaxy
+
+Auriga Au18 (`Original/4`, MHD, level 4, z = 0 snapshot 127) from the Auriga public
+release (Grand et al. 2024), downloaded via Globus into `mock/halo_18/`.
+`prepare_au18_mwframe.py` centres it and spins the disc to the MW sense (L_z < 0 in the
+astropy Galactocentric frame). It then rotates the bar (m=2 phase) to 27 deg from the
+Sun-GC line and writes `mock/au18_stars_mwframe.hdf5`. The transformation is stored in
+the file attributes so it can be applied to the dark matter and gas.
