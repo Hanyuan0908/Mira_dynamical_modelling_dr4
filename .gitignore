@@ -1,0 +1,9 @@
+# large data products: keep out of git
+data/
+mock/
+*.hdf5
+*.fits
+
+.DS_Store
+__pycache__/
+*.ipynb_checkpoints
