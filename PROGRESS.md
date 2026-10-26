@@ -24,6 +24,7 @@ figures, and the key numbers.
 | `mock/au18_stars_mwframe.hdf5` | `scripts/prepare_au18_mwframe.py` | 2.05M Au18 star particles within r < 50 kpc in the MW-like frame; transformation stored in the attributes |
 | `mock/mock_perfect_R8_N50k.hdf5` | `scripts/make_mock_perfect.py` | Test 1 mock: 50k stars, R < 8 kpc, true 6D + error-free observables |
 | `mock/au18_potential/{dm,stars,gas,bh}.ini` | `scripts/build_au18_potential.py` | Au18 ground-truth potential (AGAMA coefficient files, MW-like frame) |
+| `mock/au18_potential/Au18_{full,axi,baryon_full,baryon_axi}.ini` | `scripts/potential_family.py` | ground truth, axisymmetric part, full and axisymmetrised baryons, for the trial-potential family |
 
 Small numeric results (tracked): `results/au18_ground_truth.json` (pattern speed, resonances, bar),
 `results/au18_potential_checks.json` (potential benchmarks).
@@ -183,12 +184,52 @@ Small numeric results (tracked): `results/au18_ground_truth.json` (pattern speed
   3. An older script, `get_bar_property_ForSingleSnapshot.py`, multiplies Ω by 0.98. That
      factor is not applied here, because kpc and km/s inputs already give km/s/kpc.
 
+## 2026-10-26 — Trial-potential family (bar strength, length, pattern speed)
+
+- Scripts: `scripts/potential_family.py` (`make_potential`, `to_bar_frame`; run it to build the
+  .ini files), `scripts/test_potential_family.py`
+- Figure: [potential family checks](figures/potential_family_check.png);
+  numbers in `results/potential_family_checks.json`
+- Construction: follows `make_potential()` in `python_script/oCen_bar`.
+  - The axisymmetrised baryonic potential is rebuilt as a CylSpline from stars + gas with
+    `symmetry='axisymmetric'` on the same grid.
+  - It is subtracted through a copy with `scale=[-1, 1]`; AGAMA has no `-` operator for
+    potentials.
+
+  ```python
+  pot = agama.Potential(pot_axi,                                            # DM + BH + axisym. baryons
+          agama.Potential(file=Au18_baryon_full.ini, scale=[A, S], rotation=[[0, phi0], [1, phi0 + Omega_b]]),
+          agama.Potential(file=Au18_baryon_axi.ini,  scale=[-A, S]))       # A = bar_frac * S
+  ```
+
+  - `scale` gives Φ → (A/S) Φ(x/S). With A = bar_frac·S (as in oCen_bar), bar_frac sets the bar
+    amplitude and S its length.
+  - `rotation` turns the bar by ψ = φ0 + Ω_b t, anticlockwise for Ω_b > 0.
+  - Truth: bar_frac = 1, S = 1, Ω_b = −36.27 km/s/kpc (clockwise in the MW-like frame).
+  - Time unit: kpc/(km/s) = 0.978 Gyr.
+  - Time-dependent tables (bartime, phi_b, bar_frac(t), S(t)) are supported as in oCen_bar.
+  - DM stays spherical for now, so the m ≠ 0 part comes only from stars and gas.
+- Checks (all pass):
+  - bar_frac = S = 1 reproduces `Au18_full.ini` to 4×10⁻¹⁶ at t = 0, and the rotated truth at
+    t > 0.
+  - v_c changes by ≤ 3×10⁻⁴ for bar_frac ∈ {0, 0.5, 2} and S ∈ {0.8, 1.25}.
+  - bar_frac = 0 is axisymmetric to 6×10⁻¹¹ (km/s)².
+  - The non-axisymmetric part equals bar_frac·Φ_nonaxi(x/S) to 2×10⁻¹⁴.
+  - The m = 2 phase follows −27° + Ω_b t to 10⁻¹³ deg.
+  - Orbits integrated in `make_potential` (inertial frame) and mapped with `to_bar_frame` match
+    `agama.orbit(static, Omega=Omega_b)` to 3×10⁻⁵ kpc and 0.008 km/s after 0.49 Gyr.
+- Conventions confirmed for later steps:
+  - `agama.orbit(..., Omega=...)` takes and returns *inertial* velocities expressed along the
+    rotating axes, not velocities relative to the rotating frame.
+  - `export()` of a composite loses the parameters of analytic components (the Plummer BH).
+    The `Au18_*.ini` files are therefore written by concatenating the component files.
+
 ---
 
 ## Next steps
 
-1. ~~Pattern speed~~ and ~~ground-truth potential~~: done (2026-10-26). Still to decide:
-   spherical vs non-spherical DM (caveat 1 above).
+1. ~~Pattern speed~~, ~~ground-truth potential~~ and ~~trial-potential family~~: done
+   (2026-10-26). Still to decide: spherical vs non-spherical DM (caveat 1 above).
 2. Test 1 itself: integrate the perfect mock in the true potential (the null test) and in
    trial potentials with m ≠ 0 rescaled in amplitude, length and Ω_p. Choose the
    discrepancy statistic and the integration time.

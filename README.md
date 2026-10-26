@@ -34,6 +34,8 @@ python scripts/plot_mock_overview.py mock/mock_perfect_R8_N50k.hdf5
 python scripts/build_au18_potential.py      # ground-truth potential -> mock/au18_potential/
 python scripts/measure_au18_pattern_speed.py
 python scripts/check_au18_potential.py
+python scripts/potential_family.py          # Au18_{full,axi,baryon_full,baryon_axi}.ini
+python scripts/test_potential_family.py
 ```
 
 ## Mock galaxy
