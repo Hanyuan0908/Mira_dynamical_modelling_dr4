@@ -23,6 +23,7 @@ python scripts/plot_dr3_mira_period_vs_R.py
 python scripts/plot_dr3_mira_spatial_period_bins.py
 python scripts/prepare_au18_mwframe.py      # needs mock/halo_18/{snapdir,groups}_127
 python scripts/plot_au18_density.py
+python scripts/plot_au18_velocity_maps.py
 ```
 
 ## Mock galaxy
