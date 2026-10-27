@@ -1069,6 +1069,18 @@ Tempered ΔlogL of the S/f models:
     N-body entry). This creates forbidden-term power in the data, which the forward model has to reproduce.
 - Figure index: add `test1_nbody_emulator_corner_logLs_fourier_symm_vR_sin24_vphi_sigR_sigphi_cos024.png`
   (posterior, symmetric terms only).
+- **Check: where do the patterns point when φ_b is wrong?** (`scripts/check_m2_orientation_vs_trial_angle.py`)
+  m = 2 orientation relative to the true angle, R 1.5–5 kpc, |z| < 1, in degrees (data / library):
+
+  | trial φ_b | ⟨v_R⟩ | ⟨v_φ⟩ | σ_R | σ_φ |
+  |---|---|---|---|---|
+  | 17° | −6.9 / +0.4 | −12.6 / +0.6 | −11.1 / +0.5 | −15.7 / +1.2 |
+  | 37° | +11.9 / +0.1 | +7.9 / +0.5 | +8.8 / −0.2 | +7.1 / −1.4 |
+
+  - The library patterns always stay on the potential's bar axis (x), within ±1.4°.
+  - The data patterns sit where the true bar is in the trial frame (expected −10° / +10°).
+  - The phase terms measure exactly this data–model misalignment, which is why they carry the bar-angle
+    information; the cos terms change only as cos 2δ.
 
 ## Figure index (Test 1b, N-body, perfect mock)
 
