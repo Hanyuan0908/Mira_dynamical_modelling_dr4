@@ -1,0 +1,17 @@
+{
+  "truth_t0_max_rel_dphi": 4.440892098500626e-16,
+  "truth_t0_max_rel_dforce": 1.7626426468286778e-16,
+  "truth_t0.05_max_rel_dphi": 7.771561172376096e-16,
+  "vc_max_rel_change": {
+    "bar_frac=0.0,S=1.0": 0.00010232788016995009,
+    "bar_frac=0.5,S=1.0": 5.116524889237084e-05,
+    "bar_frac=2.0,S=1.0": 0.00010233835223694143,
+    "bar_frac=1.0,S=0.8": 0.00012555633420308077,
+    "bar_frac=1.0,S=1.25": 0.00011823378020148212
+  },
+  "bar_frac0_max_phi_variation": 5.820766091346741e-11,
+  "scaling_max_rel_err": 2.3736260317390334e-14,
+  "rotation_max_phase_err_deg": 3.694822225952521e-13,
+  "orbit_frames_max_dpos_kpc": 8.979542270992624e-05,
+  "orbit_frames_max_dvel_kms": 0.029519695563600123
+}

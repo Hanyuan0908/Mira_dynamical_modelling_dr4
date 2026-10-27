@@ -455,6 +455,59 @@ Small numeric results (tracked): `results/au18_ground_truth.json` (pattern speed
   - The v_R quadrupole is 16.9 ± 1.5 km/s with its zero line at −26.1 ± 3.1°.
   - The weaker bar signal means larger mocks (100–200k) may be needed for the likelihood tests.
 
+## 2026-10-27 — Test 1 on the N-body galaxy: pilot, likelihood choice and global search
+
+- Trial potentials (`scripts/potential_family.py --galaxy nbody`, checks in
+  `results/nbody_potential_family_checks.json` and [figure](figures/nbody_potential_family_check.png)):
+  - The spherical DM halo is fixed. The bulge and disc are each axisymmetrised with their own
+    expansion (Multipole for the bulge, CylSpline for the disc), and their non-axisymmetric parts
+    are rescaled together with bar_frac and S and rotated as before.
+  - The same six checks as Au18 pass: truth reproduced to 4×10⁻¹⁶, v_c changes ≤ 1.3×10⁻⁴,
+    exact scaling and rotation, inertial and rotating-frame orbits agree.
+- Speed:
+  - The exact N-body potential costs 7.2 min per evaluation of 50k × 1 Gyr. The cuspy bulge needs
+    many small steps; orbits inside 2 kpc take 80% of the time.
+  - Merging the static barred bulge and disc into one CylSpline with a finer inner grid
+    (`NBODY_GRID`: 36×36, Rmin 0.03, zmin 0.02) gives a bar-force error of 0.2% rms and runs
+    1.6× faster.
+  - With integrator accuracy 10⁻⁵, an evaluation takes about 3.5 min.
+- `scripts/steady_state_likelihood.py` now also computes, from the same 1000 neighbours per star:
+  - a per-star local Gaussian N(v_i | μ_i, C_i);
+  - the moment χ² in polar cells;
+  - and saves μ_i, C_i, τ and 0.5 kpc box sums (count, mass, Σv, Σvv for v_R, v_φ, v_z).
+- **Pilot** (`scripts/test1_nbody_pilot.py`, `scripts/analyse_test1_nbody_pilot.py`;
+  [figure](figures/test1_nbody_pilot.png), `results/test1_nbody/pilot_summary.json`).
+  ΔlogL = offset − truth; a negative value means the truth is preferred.
+
+  | offset | KDE | **local Gaussian** | Student-t ν=5 | Gaussian + 2% outliers | moments: means | moments: means+disp (R≥1) |
+  |---|---|---|---|---|---|---|
+  | noise (accuracy 10⁻⁵ vs 3×10⁻⁶) | +26.5 | −5.7 | +1.2 | −4.9 | +0.7 | −3.0 |
+  | Ω_b = 20 | −3394 | −1813 | −1032 | −1865 | −907 | −2931 |
+  | Ω_b = 32 | −350 | −596 | −1189 | −602 | −378 | −509 |
+  | φ_b = 17° | −375 | −265 | −277 | −271 | −110 | −238 |
+  | φ_b = 37° | −448 | −281 | −303 | −277 | −94 | −203 |
+  | bar_frac = 0.7 | **+200** | −68 | −227 | −69 | −39 | −50 |
+  | bar_frac = 1.4 | −468 | −100 | **+137** | −102 | −41 | −159 |
+  | S = 0.8 | **+4** | −68 | −164 | −75 | −51 | −80 |
+  | S = 1.25 | −481 | −163 | **+6** | −164 | −86 | −205 |
+
+  - The local Gaussian, the outlier mixture and all moment versions prefer the truth on every
+    axis, by ≥ 12× the noise.
+  - The local-Gaussian penalties come mostly from the bar region (R = 2–6 kpc).
+  - The KDE again prefers a weaker bar, gaining at every radius, and has 5× the noise. The
+    Student-t prefers a stronger and longer bar.
+  - With the N-body potential the moment dispersions behave, which confirms that the Au18
+    failures came from its potential mismatch.
+- **Decision:** the per-star local-Gaussian p(v|x) is the primary likelihood. It is a p(v|x) form,
+  suitable for selection functions and per-star error convolution later.
+- **Global search** (`scripts/test1_nbody_qmc.py`):
+  - Points: the truth plus 64 Sobol points over |Ω_b| 18–38 km/s/kpc, φ_b 14–44°,
+    S 0.75–1.45 and bar_frac 0.55–1.6 (both log-uniform).
+  - Launched 2026-10-27 14:06, expected to finish around 18:00.
+  - Saved per point: totals in `results/test1_nbody/qmc_evals.csv`; per-star log p, μ, C, τ,
+    polar cell moments and box sums in `~/mira_dr4_runs/test1_nbody/NNN.npz`; full trajectories
+    in `traj_NNN.npy` (bar frame, float32), all outside Dropbox.
+
 ---
 
 ## Next steps
