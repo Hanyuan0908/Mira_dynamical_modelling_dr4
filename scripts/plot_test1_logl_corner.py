@@ -4,7 +4,8 @@ Upper triangle: the evaluated Sobol points, coloured by logL - max. Lower triang
 profile log-likelihood of the GP emulator (test1_gp_emulator.Emulator, fitted to the Sobol points only),
 i.e. the maximum over the parameters not shown, found on a grid. Truth, best evaluated point and
 emulator maximum are marked.
-Usage: python plot_test1_logl_corner.py [--rmin R] [--rmax R]   (radial cuts need per-star files)
+Usage: python plot_test1_logl_corner.py [--run au18|nbody] [--column logL|logL_gauss|chi2_...]
+       [--rmin R] [--rmax R]   (radial cuts need per-star files)
 """
 import argparse
 
@@ -17,8 +18,8 @@ from matplotlib.ticker import FixedLocator, NullFormatter, FormatStrFormatter
 from scipy.optimize import minimize
 
 from common import set_style, savefig, INK, INK_2, ACCENT, BLUE_RAMP
-from test1_qmc import OUT_CSV, LOGP_DIR, MOCK, TRUTH
-from test1_gp_emulator import Emulator, to_unit, from_unit, LO, HI, KEYS
+import test1_gp_emulator as ge
+from test1_gp_emulator import Emulator, to_unit, from_unit, KEYS
 
 LABELS = [r"$|\Omega_b|$", r"$\phi_b$ [deg]", r"$S$", r"bar_frac"]
 LEVELS = [-5000, -2000, -1000, -500, -200, -100, -50, -20, 0.1]
@@ -34,7 +35,7 @@ N2, NOTHER, N1 = 25, 12, 60
 
 def phys(j, u):
     """Unit-cube coordinate -> physical value of parameter j."""
-    v = LO[j] + np.asarray(u) * (HI[j] - LO[j])
+    v = ge.LO[j] + np.asarray(u) * (ge.HI[j] - ge.LO[j])
     return np.exp(v) if j >= 2 else v
 
 
@@ -53,20 +54,15 @@ def profile(emu, dims):
 
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("--run", default="au18", choices=list(ge.RUNS))
+    ap.add_argument("--column", default="logL")
     ap.add_argument("--rmin", type=float, default=None)
     ap.add_argument("--rmax", type=float, default=None)
     args = ap.parse_args()
     set_style()
-    df = pd.read_csv(OUT_CSV).sort_values("idx")
-    tag = ""
-    if args.rmin is not None or args.rmax is not None:
-        with h5py.File(MOCK, "r") as f:
-            R = np.hypot(f["x"][:], f["y"][:])
-        sel = (R >= (args.rmin or 0)) & (R < (args.rmax or np.inf))
-        have = [i for i in df["idx"] if (LOGP_DIR / f"{i:03d}.npy").exists()]
-        df = df[df["idx"].isin(have)].copy()
-        df["logL"] = [float(np.sum(np.load(LOGP_DIR / f"{i:03d}.npy")[sel])) for i in df["idx"]]
-        tag = f"_R{args.rmin or 0:g}-{args.rmax or 8:g}"
+    run = ge.use_run(args.run)
+    TRUTH = run["truth"]
+    df, tag = ge.load_table(args.column, args.rmin, args.rmax)
     tr = df[df.kind == "qmc"]
     u, y = to_unit(tr), tr["logL"].values
     emu = Emulator(u, y)
@@ -141,10 +137,10 @@ def main():
     cb.set_label(r"$\log L - \max$")
     handles = [plt.Line2D([], [], marker=mk, color=c, ls="", ms=ms * 0.8, label=lab) for _, c, mk, ms, lab in marks]
     fig.legend(handles=handles, loc="upper right", bbox_to_anchor=(0.86, 0.9), fontsize=9)
-    fig.suptitle(f"Test 1 log-likelihood (per-star KDE{', ' + tag[1:] + ' kpc' if tag else ''}): "
+    fig.suptitle(f"{run['prefix']} log-likelihood ({args.column}{', ' + tag[1:] if tag else ''}): "
                  f"upper = {len(tr)} Sobol evaluations, lower/diagonal = GP profile (max over hidden parameters); "
                  "contours at −20, −50", y=0.92, fontsize=10.5)
-    savefig(fig, "test1_logl_corner" + tag)
+    savefig(fig, f"{run['prefix']}_logl_corner" + tag)
 
 
 if __name__ == "__main__":

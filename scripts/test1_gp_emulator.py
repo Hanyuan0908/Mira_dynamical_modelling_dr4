@@ -6,6 +6,9 @@ to validate the emulator. Inputs are mapped to the unit cube of test1_qmc.BOX
 with a Matern-5/2 kernel (one length scale per parameter) and a white-noise term.
 The posterior is sampled with emcee on the emulator mean, with flat priors in the box and logL
 taken at face value (formal likelihood).
+Usage: python test1_gp_emulator.py [--run au18|nbody] [--column logL|logL_gauss|chi2_means|...]
+       [--rmin R] [--rmax R]   (chi2 columns are converted to log L = -chi2/2; radial cuts use the
+       saved per-star log p of the KDE (logL) or local-Gaussian (logL_gauss) likelihood)
 """
 import argparse
 import json
@@ -22,11 +25,47 @@ from sklearn.gaussian_process.kernels import ConstantKernel, Matern, WhiteKernel
 
 from common import set_style, savefig, INK, INK_2, INK_MUTED, ACCENT, BLUE_RAMP
 from test1_qmc import OUT_CSV, OUT_DIR, LOGP_DIR, MOCK, BOX, TRUTH
+import test1_nbody_qmc as _nq
 
 NAMES = [r"$|\Omega_b|$ [km s$^{-1}$ kpc$^{-1}$]", r"$\phi_b$ [deg]", r"$S$", r"bar_frac"]
 KEYS = ["Omega_abs", "phi_b_deg", "S", "bar_frac"]
+RUNS = {
+    "au18": dict(csv=OUT_CSV, box=BOX, truth=TRUTH, out=OUT_DIR, mock=MOCK, prefix="test1",
+                 perstar=lambda i, col: np.load(LOGP_DIR / f"{i:03d}.npy")),
+    "nbody": dict(csv=_nq.OUT_CSV, box=_nq.BOX, truth=_nq.TRUTH, out=_nq.OUT_CSV.parent, mock=_nq.MOCK,
+                  prefix="test1_nbody",
+                  perstar=lambda i, col: np.load(_nq.ARR_DIR / f"{i:03d}.npz")[
+                      "logp_gauss" if col == "logL_gauss" else "logp_kde"]),
+}
+RUN = RUNS["au18"]
 LO = np.array([v[0] for v in BOX.values()])
 HI = np.array([v[1] for v in BOX.values()])
+
+
+def use_run(name):
+    """Select the run whose design box, truth and files the module functions use."""
+    global RUN, LO, HI
+    RUN = RUNS[name]
+    LO = np.array([v[0] for v in RUN["box"].values()])
+    HI = np.array([v[1] for v in RUN["box"].values()])
+    return RUN
+
+
+def load_table(column="logL", rmin=None, rmax=None):
+    """Design table with the chosen likelihood in column 'logL', and a tag for output names."""
+    df = pd.read_csv(RUN["csv"]).sort_values("idx").reset_index(drop=True)
+    tag = "" if column == "logL" else f"_{column}"
+    if rmin is not None or rmax is not None:
+        with h5py.File(RUN["mock"], "r") as f:
+            R = np.hypot(f["x"][:], f["y"][:])
+        sel = (R >= (rmin or 0)) & (R < (rmax or np.inf))
+        df["logL"] = [float(np.sum(RUN["perstar"](i, column)[sel])) for i in df["idx"]]
+        tag += f"_R{rmin or 0:g}-{rmax or 8:g}"
+    elif column.startswith("chi2"):
+        df["logL"] = -0.5 * df[column]
+    else:
+        df["logL"] = df[column]
+    return df, tag
 
 
 def to_unit(df):
@@ -67,24 +106,21 @@ class Emulator:
 
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("--run", default="au18", choices=list(RUNS))
+    ap.add_argument("--column", default="logL")
     ap.add_argument("--rmin", type=float, default=None, help="use only stars with R >= rmin [kpc]")
     ap.add_argument("--rmax", type=float, default=None, help="use only stars with R < rmax [kpc]")
     args = ap.parse_args()
     set_style()
-    df = pd.read_csv(OUT_CSV).sort_values("idx")
-    tag = ""
-    if args.rmin is not None or args.rmax is not None:
-        with h5py.File(MOCK, "r") as f:
-            R = np.hypot(f["x"][:], f["y"][:])
-        sel = (R >= (args.rmin or 0)) & (R < (args.rmax or np.inf))
-        df["logL"] = [float(np.sum(np.load(LOGP_DIR / f"{i:03d}.npy")[sel])) for i in df["idx"]]
-        tag = f"_R{args.rmin or 0:g}-{args.rmax or 8:g}"
-        print(f"using {sel.sum()} stars with {args.rmin or 0} <= R < {args.rmax or 'inf'} kpc")
+    run = use_run(args.run)
+    TRUTH, OUT_DIR, pre = run["truth"], run["out"], run["prefix"]
+    df, tag = load_table(args.column, args.rmin, args.rmax)
     tr = df[df.kind == "qmc"]
     truth_row = df[df.kind == "truth"]
     u, y = to_unit(tr), tr["logL"].values
     emu = Emulator(u, y)
-    res = dict(n_train=len(tr), kernel=str(emu.gp.kernel_), radial_cut=[args.rmin, args.rmax])
+    res = dict(run=args.run, column=args.column, n_train=len(tr), kernel=str(emu.gp.kernel_),
+               radial_cut=[args.rmin, args.rmax])
 
     # leave-one-out accuracy
     loo = np.array([Emulator(np.delete(u, i, 0), np.delete(y, i)).predict(u[i:i + 1])[0] for i in range(len(u))])
@@ -147,14 +183,14 @@ def main():
                 ax.set_ylabel(r"$\log L - \max_{\rm design}$" + f"\n({lab})")
     fig.suptitle("Test 1 GP emulator: orange dashed = truth, black dotted = emulator maximum; band = ±2σ",
                  y=0.98, fontsize=11)
-    savefig(fig, f"test1_emulator_slices{tag}")
+    savefig(fig, f"{pre}_emulator_slices{tag}")
 
     # figure 2: posterior corner plot
     fig = corner.corner(post, labels=NAMES, truths=tv, truth_color=ACCENT, color=BLUE_RAMP[5],
                         quantiles=[0.16, 0.5, 0.84], show_titles=True, title_fmt=".3f",
                         title_kwargs=dict(fontsize=9), label_kwargs=dict(fontsize=10))
     fig.suptitle("Test 1 posterior from the GP emulator (formal likelihood); orange = truth", y=1.02)
-    savefig(fig, f"test1_emulator_corner{tag}")
+    savefig(fig, f"{pre}_emulator_corner{tag}")
 
     # figure 3: leave-one-out
     fig, ax = plt.subplots(figsize=(4.6, 4.4))
@@ -165,7 +201,7 @@ def main():
     ax.set_ylabel(r"leave-one-out emulator $\log L$ − max")
     ax.set_title(f"LOO rms {res['loo_rms']:.0f} (within 2000 of max: {res['loo_rms_within_2000_of_max']:.0f})",
                  color=INK_2, fontsize=9.5)
-    savefig(fig, f"test1_emulator_loo{tag}")
+    savefig(fig, f"{pre}_emulator_loo{tag}")
 
 
 if __name__ == "__main__":
