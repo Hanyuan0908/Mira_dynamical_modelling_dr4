@@ -95,10 +95,12 @@ def fourier_projection(lab, modes):
     return np.array(rows)
 
 
-def stats_from_sums(N, S1, S2):
+def stats_from_sums(N, S1, S2, unbiased=False):
+    """unbiased=True for star counts (data): variance times N / (N - 1). Library box sums keep 1/W (their
+    effective number of orbits per cell is ~10^3, so the bias is < 10^-3 relative)."""
     with np.errstate(invalid="ignore", divide="ignore"):
         m = S1 / N[:, None]
-        s = np.sqrt(np.maximum(S2 / N[:, None] - m**2, 0))
+        s = np.sqrt(np.maximum((S2 / N[:, None] - m**2) * ((N / (N - 1))[:, None] if unbiased else 1), 0))
     return np.column_stack([m, s, N])
 
 
@@ -150,8 +152,8 @@ class Binning:
 
     def observed(self, box, v, boot_w):
         sl = np.where(box >= 0, self.lab[np.maximum(box, 0)], -1)
-        main = stats_from_sums(*data_sums(sl, v, self.nb, np.ones(len(v))))
-        boots = np.array([self.project(stats_from_sums(*data_sums(sl, v, self.nb, w))) for w in boot_w])
+        main = stats_from_sums(*data_sums(sl, v, self.nb, np.ones(len(v))), unbiased=True)
+        boots = np.array([self.project(stats_from_sums(*data_sums(sl, v, self.nb, w), unbiased=True)) for w in boot_w])
         N = main[:, 6]
         rowN = np.array([N[r != 0].min() for r in self.P])          # fewest stars among the bins a row uses
         return dict(d=self.project(main), err=np.nanstd(boots, 0), rowN=rowN, binN=N, Ntot=N[N >= N_MIN].sum())

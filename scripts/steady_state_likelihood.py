@@ -72,7 +72,8 @@ def bar_aligned_potential(bar_frac, S, galaxy="au18"):
 
 def cell_moments(w, weight=None):
     """Weighted N, means and dispersions of (v_R, v_phi, v_z sign z) in folded bar-frame cells
-    (R, phi mod pi, |z|); arrays of shape (n_cells,) and (n_cells, 3)."""
+    (R, phi mod pi, |z|); arrays of shape (n_cells,) and (n_cells, 3). Dispersions use the unbiased
+    (reliability-weights) variance, W^2 / (W^2 - sum w^2) times the 1/W one, i.e. N / (N - 1) for unit weights."""
     weight = np.ones(len(w)) if weight is None else weight
     R = np.hypot(w[:, 0], w[:, 1])
     phi = np.mod(np.arctan2(w[:, 1], w[:, 0]), np.pi)
@@ -84,11 +85,13 @@ def cell_moments(w, weight=None):
     flat = np.ravel_multi_index((i[ok], j[ok], k[ok]), shape)
     n = int(np.prod(shape))
     W = np.bincount(flat, weights=weight[ok], minlength=n)
+    W2 = np.bincount(flat, weights=weight[ok]**2, minlength=n)
     N = np.bincount(flat, minlength=n)
     with np.errstate(invalid="ignore", divide="ignore"):
         m1 = np.column_stack([np.bincount(flat, weights=weight[ok] * v[ok, a], minlength=n) for a in range(3)]) / W[:, None]
         m2 = np.column_stack([np.bincount(flat, weights=weight[ok] * v[ok, a]**2, minlength=n) for a in range(3)]) / W[:, None]
-    return N, m1, np.sqrt(np.maximum(m2 - m1**2, 0))
+        unbiased = W**2 / (W**2 - W2)
+    return N, m1, np.sqrt(np.maximum((m2 - m1**2) * unbiased[:, None], 0))
 
 
 def box_sums(w, weight=None):

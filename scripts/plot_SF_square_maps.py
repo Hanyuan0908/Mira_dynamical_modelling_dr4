@@ -61,7 +61,7 @@ def data_maps(stars):
         with np.errstate(invalid="ignore", divide="ignore"):
             m = s1 / N
             out[("mean", a)] = m.T
-            out[("disp", a)] = np.sqrt(np.maximum(s2 / N - m**2, 0)).T
+            out[("disp", a)] = np.sqrt(np.maximum((s2 / N - m**2) * N / (N - 1), 0)).T   # unbiased variance
     return out
 
 

@@ -40,7 +40,7 @@ def cell_moments(w, weight=None):
     N = np.bincount(flat, minlength=n)
     m1 = np.column_stack([np.bincount(flat, weights=weight[ok] * v[ok, a], minlength=n) for a in range(3)]) / W[:, None]
     m2 = np.column_stack([np.bincount(flat, weights=weight[ok] * v[ok, a]**2, minlength=n) for a in range(3)]) / W[:, None]
-    return N, m1, np.sqrt(np.maximum(m2 - m1**2, 0)), shape
+    return N, m1, np.sqrt(np.maximum((m2 - m1**2) * N[:, None] / (N[:, None] - 1), 0)), shape   # unbiased variance
 
 
 def chi2(obs, lib, use_disp, rmin=0.0):

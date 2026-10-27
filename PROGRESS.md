@@ -912,6 +912,65 @@ Figures: `figures/test1_nbody_emulator_corner_logLs_{F4_meansdisp,F2to4_meansdis
 - **No variant breaks the S–bar_frac ridge.** Widths change by ≤ 25%, and in the hybrid the ridge
   still reaches (S 0.75–0.85, f 1.4–1.6).
 
+## 2026-10-27 — 1/N dispersion bug fixed; per-field Fourier schemes
+
+**Bug fix.**
+- `ssl.cell_moments` now uses the unbiased (reliability-weights) variance: W²/(W² − Σw²) × the 1/W one,
+  i.e. N/(N−1) for unit weights. The same fix was made in the data paths of
+  `plot_SF_square_maps.py`, `test1_binning_study.py` and `diagnose_moment_likelihood.py`.
+- The library does not need recomputing. Its effective number of independent orbits per cell has a
+  median of 1145 (minimum 128), so its relative bias is 4×10⁻⁴, against 9×10⁻³ for the data (median N 57).
+- Rerun: `test1_nbody_moments.py` (all `chi2b_*`/`logLs_*` columns), `test1_fourier_compression.py`
+  and the emulators below.
+- Earlier entries (binning study, square maps, S/f diagnostics) still use 1/N.
+- Effect at the truth:
+  - means + dispersions χ²/N_data goes 1.29 → 1.24;
+  - ring-average χ²/N goes 3.98 → 3.20 (σ_R), 4.26 → 3.05 (σ_φ), 3.41 → 2.66 (σ_z);
+  - the truth is still the best of the 65 points, with the second best at −0.92 (was −0.83).
+
+**Per field** (m_max = 4; Δχ² vs the truth for S 1.25 / S 0.8 / f 1.4 / f 0.7 / ridge 0.82,1.50 /
+ridge 1.25,0.70; "m0" = ring average, "m2–4" = modes 2 and 4 with the ring average projected out):
+
+| field | truth χ²/N m0 | truth χ²/N m2–4 | Δχ² m0 | Δχ² m2–4 |
+|---|---|---|---|---|
+| ⟨v_R⟩ | 1.35 | 1.03 | −3 / −1 / +3 / −3 / +2 / 0 | +36 / +53 / +12 / +24 / +12 / +19 |
+| ⟨v_φ⟩ | 1.48 | 1.13 | +64 / −1 / +22 / +11 / −9 / +25 | +71 / +48 / +37 / +38 / +35 / +43 |
+| ⟨v_z⟩ | 1.03 | 1.25 | 0 / +3 / +3 / +2 / +4 / +5 | −8 / +9 / −4 / +6 / +11 / −6 |
+| σ_R | 3.20 | 1.35 | +47 / −4 / +58 / +1 / −5 / +17 | +42 / +27 / +31 / +27 / −5 / +21 |
+| σ_φ | 3.05 | 1.49 | +93 / −13 / +111 / −34 / +41 / +27 | +28 / +69 / +21 / +68 / +4 / +50 |
+| σ_z | 2.66 | 1.39 | +33 / −11 / +34 / −21 / +7 / −5 | +5 / +34 / +19 / +33 / +24 / +11 |
+
+- The ring average of ⟨v_R⟩ carries no S/bar_frac information.
+- ⟨v_z⟩ carries almost none.
+- The σ_φ and σ_z ring averages are what favour the weaker or shorter bars.
+
+**Schemes** (both cos and sin of every m kept):
+- `F4_inplane` (proposed): ⟨v_R⟩ m = 2, 4; ⟨v_φ⟩, σ_R, σ_φ m = 0, 2, 4. N_data 908.
+- `F4_inplane_nos0`: the same, but σ_R, σ_φ m = 2, 4 only. N_data 812.
+
+Tempered ΔlogL of the S/f models:
+
+| likelihood | S 1.25 | S 0.8 | f 1.4 | f 0.7 | ridge 0.82,1.50 | ridge 1.25,0.70 |
+|---|---|---|---|---|---|---|
+| sectors (current, fixed) | −2.77 | −1.22 | −2.20 | −0.98 | −0.72 | −1.25 |
+| F4_inplane | −4.46 | −2.11 | −3.42 | −1.59 | −0.87 | −2.35 |
+| F4_inplane_nos0 | −2.97 | −2.44 | −1.53 | −2.09 | −0.46 | −1.94 |
+
+**Posteriors** (after the fix):
+
+| likelihood | Ω_b | φ_b [°] | S | bar_frac | LOO |
+|---|---|---|---|---|---|
+| sectors (current) | 26.23 +1.36/−1.18 | 27.9 ± 4.2 | 0.966 +0.246/−0.161 | 0.930 +0.395/−0.244 | 6.1 |
+| means m ≤ 4 + disp m 2–4 (all 3 components) | 25.81 +1.35/−1.19 | 26.9 ± 3.7 | 0.971 +0.210/−0.128 | 0.985 +0.398/−0.279 | 3.7 |
+| F4_inplane | 26.26 +1.12/−0.98 | 27.6 ± 3.3 | 0.938 +0.309/−0.159 | 1.043 +0.417/−0.340 | **10.8** |
+| F4_inplane_nos0 | 25.69 +1.21/−1.10 | 27.3 ± 3.4 | 0.956 +0.180/−0.132 | 0.975 +0.442/−0.277 | 4.0 |
+
+- **F4_inplane:** the corner is bimodal along the ridge (bar_frac near 0.7 and 1.5, S piled at 0.75).
+  The emulator LOO of 10.8 is ≫ the ΔlogL ≈ 1 scale, so that corner is not reliable.
+  - Its maximum (S 0.75, f 1.6, −14.92) is an extrapolation above the evaluated truth (−15.57).
+  - Of the evaluated points, the truth is the best; the runner-up is −0.72.
+- All truth values lie within 0.3σ.
+
 ## Next steps
 
 Agreed approach (2026-10-27): start from the simplest data and add realism one step at a time.

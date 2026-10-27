@@ -32,6 +32,10 @@ NR, NP, NZ = len(ssl.CELL_R) - 1, len(ssl.CELL_PHI) - 1, len(ssl.CELL_Z) - 1
 PHI_C = 0.5 * (ssl.CELL_PHI[1:] + ssl.CELL_PHI[:-1])
 M_LIST = (0, 2, 4, 6, 8, 10, 12)
 SETS = {"means": [0, 1, 2], "meansdisp": [0, 1, 2, 3, 4, 5], "Rphi_meansdisp": [0, 1, 3, 4]}
+FIELDS = ["<v_R>", "<v_phi>", "<v_z>", "sigma_R", "sigma_phi", "sigma_z"]
+# per-field mode schemes at m_max = 4: {field: keep the ring average (m = 0)?}; m = 2, 4 always kept (cos and sin)
+SCHEMES = {"F4_inplane": {0: False, 1: True, 3: True, 4: True},          # <v_R> m 2,4; <v_phi>, sigma_R, sigma_phi m 0,2,4
+           "F4_inplane_nos0": {0: False, 1: True, 3: False, 4: False}}   # same, dispersions without their ring average
 MODELS = [("S 1.25", "pilot_09.npz"), ("S 0.8", "pilot_08.npz"), ("f 1.4", "pilot_07.npz"), ("f 0.7", "pilot_06.npz"),
           ("ridge S 0.82, f 1.50", "diag_SF_S0.82_f1.5.npz"), ("ridge S 1.25, f 0.70", "diag_SF_S1.25_f0.7.npz"),
           ("truth, accuracy 3e-6 (integrator noise only)", "pilot_01.npz")]
@@ -70,6 +74,11 @@ def chi2_fourier(obs, lib_m1, lib_s, m_max, fields):
     return chi, nd
 
 
+def scheme_chi2(per_field, scheme):
+    """chi^2 (or N_data) of a scheme from per-field values {(field, m_max): x} at m_max = 0 and 4."""
+    return sum(per_field[(f, 4)] - (0 if keep0 else per_field[(f, 0)]) for f, keep0 in scheme.items())
+
+
 def lib(fn):
     a = np.load((OUT_CSV.parent if fn.startswith(("pilot", "diag")) else ARR_DIR) / fn)
     return a["lib_m1"], a["lib_s"]
@@ -98,9 +107,25 @@ def main():
                 d = out["models"].setdefault(lab, {}).setdefault(sname, {})
                 d[m] = dict(delta_chi2=c - c_t, dlogL=-(c - c_t) / (2 * np.sqrt(2 * nd)), noise_free=c0)
 
+    # ---- per field, m_max = 0 and 4: N_data at the truth, and Delta chi^2 of the models per field ----
+    nd_pf = {(f, m): chi2_fourier(obs_t, *truth, m, [f])[1] for f in range(6) for m in (0, 4)}
+    ct_pf = {(f, m): chi2_fourier(obs_t, *truth, m, [f])[0] for f in range(6) for m in (0, 4)}
+    out["per_field"] = {"N_data": {f"{FIELDS[f]} m<={m}": nd_pf[(f, m)] for f in range(6) for m in (0, 4)},
+                        "truth_chi2": {f"{FIELDS[f]} m<={m}": ct_pf[(f, m)] for f in range(6) for m in (0, 4)},
+                        "models": {}}
+    for lab, fn in MODELS[:6]:
+        L = lib(fn)
+        c_pf = {(f, m): chi2_fourier(obs_t, *L, m, [f])[0] for f in range(6) for m in (0, 4)}
+        out["per_field"]["models"][lab] = {f"{FIELDS[f]} m<={m}": c_pf[(f, m)] - ct_pf[(f, m)]
+                                           for f in range(6) for m in (0, 4)}
+        for sc, spec in SCHEMES.items():
+            nd, dchi = scheme_chi2(nd_pf, spec), scheme_chi2(c_pf, spec) - scheme_chi2(ct_pf, spec)
+            out["models"][lab].setdefault(sc, {})[4] = dict(delta_chi2=dchi, dlogL=-dchi / (2 * np.sqrt(2 * nd)))
+
     # ---- global search: all 65 points, every m_max; same bootstrap errors per phi as test1_nbody_moments ----
     cache = {}
     cols = {f"chi2F{m}_{s}": [] for m in M_LIST for s in ("means", "meansdisp")}
+    pf = {(f, m): [] for f in range(6) for m in (0, 4)}
     for _, row in df.iterrows():
         phi = round(float(row.phi_b_deg), 6)
         if phi not in cache:
@@ -109,6 +134,8 @@ def main():
         for m in M_LIST:
             for s in ("means", "meansdisp"):
                 cols[f"chi2F{m}_{s}"].append(chi2_fourier(cache[phi], *L, m, SETS[s])[0])
+        for (f, m) in pf:
+            pf[(f, m)].append(chi2_fourier(cache[phi], *L, m, [f])[0])
     for k, v in cols.items():
         df[k] = v
     t = df.kind == "truth"
@@ -134,6 +161,13 @@ def main():
     dl = (df["logLs_F4m_F2to4d"] - df.loc[t, "logLs_F4m_F2to4d"].iloc[0])[~t]
     out["qmc"]["hybrid_F4m_F2to4d"] = dict(N_data=nd, best=float(dl.max()), best_idx=int(df.idx[dl.idxmax()]),
                                            n_gt_m2=int((dl > -2).sum()), n_gt_m4p5=int((dl > -4.5).sum()))
+    for sc, spec in SCHEMES.items():
+        nd = scheme_chi2(nd_pf, spec)
+        df[f"chi2_{sc}"] = scheme_chi2({k: np.array(v) for k, v in pf.items()}, spec)
+        df[f"logLs_{sc}"] = -0.5 * df[f"chi2_{sc}"] / np.sqrt(2 * nd)
+        dl = (df[f"logLs_{sc}"] - df.loc[t, f"logLs_{sc}"].iloc[0])[~t]
+        out["qmc"][sc] = dict(N_data=nd, best=float(dl.max()), best_idx=int(df.idx[dl.idxmax()]),
+                              n_gt_m2=int((dl > -2).sum()), n_gt_m4p5=int((dl > -4.5).sum()))
     df.to_csv(OUT_CSV, index=False)
     with open(OUT_CSV.parent / "fourier_compression.json", "w") as fh:
         json.dump(out, fh, indent=1)
@@ -155,6 +189,18 @@ def main():
             f"{lab.split(' (')[0]} {out['models'][lab][sname][4]['delta_chi2'] - out['models'][lab][sname][0]['delta_chi2']:+.0f}"
             f" ({-(out['models'][lab][sname][4]['delta_chi2'] - out['models'][lab][sname][0]['delta_chi2']) / (2 * np.sqrt(2 * nd24)):+.2f})"
             for lab, _ in MODELS[:6]))
+    print("\nper field: truth chi2/N_data at m = 0 and in m = 2..4; Delta chi2 of each model at m = 0 / in m = 2..4")
+    P = out["per_field"]
+    for f in range(6):
+        n0, n4 = P["N_data"][f"{FIELDS[f]} m<=0"], P["N_data"][f"{FIELDS[f]} m<=4"]
+        c0, c4 = P["truth_chi2"][f"{FIELDS[f]} m<=0"], P["truth_chi2"][f"{FIELDS[f]} m<=4"]
+        print(f"  {FIELDS[f]:10s} truth m0 {c0 / n0:.2f} (N {n0})  m2-4 {(c4 - c0) / (n4 - n0):.2f} (N {n4 - n0}) | " + "  ".join(
+            f"{lab.split(' (')[0]} {d[f'{FIELDS[f]} m<=0']:+5.0f}/{d[f'{FIELDS[f]} m<=4'] - d[f'{FIELDS[f]} m<=0']:+5.0f}"
+            for lab, d in P["models"].items()))
+    for sc in SCHEMES:
+        print(f"scheme {sc} (N_data {scheme_chi2(nd_pf, SCHEMES[sc])}): " + "  ".join(
+            f"{lab} {out['models'][lab][sc][4]['delta_chi2']:+.0f} ({out['models'][lab][sc][4]['dlogL']:+.2f})"
+            for lab, _ in MODELS[:6]) + f"  | global search: {out['qmc'][sc]}")
     for s in ("means", "meansdisp"):
         print(f"\nglobal search, {s}: " + "  ".join(
             f"\n   F{m}: best {q['best']:+.2f} (#{q['best_idx']}), n>-2 {q['n_gt_m2']}, n>-4.5 {q['n_gt_m4p5']}, rank {q['truth_rank']}"
