@@ -314,7 +314,25 @@ Small numeric results (tracked): `results/au18_ground_truth.json` (pattern speed
   χ²/dof at the truth: means 1.24, dispersions about 3.6. The dispersion value is inflated
   because σ/√(2N) underestimates the error for non-Gaussian distributions; bootstrap errors
   are needed.
-- **Decision:** the primary likelihood becomes a moment-based χ² on cell means (dispersions only
+- **KDE log-likelihood surface from the 55 finished Sobol points**
+  ([corner plot](figures/test1_logl_corner.png), `scripts/plot_test1_logl_corner.py`;
+  [emulator 1D slices](figures/test1_emulator_slices.png)):
+  - φ_b is well recovered: the profile peaks at 26–27° (truth 27°).
+  - Ω_b is broadly 33–44 km/s/kpc, with bumps at about 37 and 41.
+  - S ≥ 1 is preferred, and bar_frac covers 0.6–1.1 with a second mode near 0.65.
+  - Two *evaluated* points beat the truth by much more than the ±12 noise:
+
+    | Ω_b | φ_b | S | bar_frac | logL − truth |
+    |---|---|---|---|---|
+    | 36.9 | 27.7° | 1.33 | 0.81 | +158 |
+    | 43.1 | 29.9° | 1.17 | 1.04 | +123 |
+
+    So this likelihood's maximum is not at the truth: it prefers a longer bar, which is
+    weaker or faster. That fits the missing DM bar response, which grows outward.
+  - The GP with 55 points is too coarse for detail: leave-one-out rms 330 near the maximum and a
+    fitted noise term of about 185. The double peak in Ω and the emulator maximum
+    (Ω = 41, +373 above the truth) cannot be trusted.
+- **Decision (provisional, superseded by the follow-up below):** the primary likelihood becomes a moment-based χ² on cell means (dispersions only
   with bootstrap errors, and R ≥ 1.5 kpc while the centre is unsoftened). The per-star KDE is kept
   only for comparison. The KDE emulator run was stopped at 56/65 points; its totals are in
   `results/test1_qmc/evals.csv`.
