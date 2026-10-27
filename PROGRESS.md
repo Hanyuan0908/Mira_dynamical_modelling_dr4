@@ -1032,6 +1032,44 @@ Tempered ΔlogL of the S/f models:
 - Fourier columns and corners: `logLs_F4_inplane` → `logLs_fourier_vR_m24_vphi_sigR_sigphi_m024`, etc.
   The links above were updated.
 
+## 2026-10-27 — Do we need both cos and sin terms? (symmetry-allowed terms only)
+
+- Script: `scripts/test1_fourier_symmetry_terms.py`; numbers in `results/test1_nbody/fourier_symmetry_terms.json`.
+- Corner: `figures/test1_nbody_emulator_corner_logLs_fourier_symm_vR_sin24_vphi_sigR_sigphi_cos024.png`.
+- **Symmetry argument.** In the bar frame, a steady bar response symmetric under (y → −y, t → −t) has ⟨v_R⟩ odd
+  about the bar axis (sin mφ only) and ⟨v_φ⟩, σ_R, σ_φ even (cos mφ only).
+  - "Symmetric" scheme: ⟨v_R⟩ sin 2φ, sin 4φ (ring average projected out); ⟨v_φ⟩, σ_R, σ_φ 1, cos 2φ, cos 4φ.
+    N_data 528.
+  - "Both": cos and sin of every m, as used so far. N_data 908.
+  - "Forbidden": the rest. N_data 380.
+- **The symmetry holds in the truth library.** The forbidden term carries 0.8% (⟨v_R⟩), 0.4% (⟨v_φ⟩), 0.3% (σ_R)
+  and 0.8% (σ_φ) of the m = 2 power (|z| < 1).
+- Δχ² vs the truth (tempered ΔlogL in brackets; other parameters at the truth):
+
+  | offset | both | symmetric only | forbidden only |
+  |---|---|---|---|
+  | S 1.25 | +380 (−4.46) | +352 (−5.41) | +28 (−0.51) |
+  | S 0.8 | +180 (−2.11) | +177 (−2.73) | +2 (−0.04) |
+  | f 1.4 | +292 (−3.42) | +275 (−4.23) | +17 (−0.31) |
+  | f 0.7 | +135 (−1.59) | +113 (−1.74) | +23 (−0.41) |
+  | φ_b 17° | +530 (−6.22) | +30 (−0.46) | +500 (−9.07) |
+  | φ_b 37° | +394 (−4.62) | +49 (−0.75) | +345 (−6.25) |
+  | Ω_b 20 | +5893 (−69.2) | +5874 (−90.4) | +19 (−0.35) |
+  | Ω_b 32 | +1168 (−13.7) | +1190 (−18.3) | −23 (+0.41) |
+
+  - S, bar_frac and Ω_b are measured by the symmetric (amplitude) terms.
+  - **The bar angle is measured almost only by the forbidden (phase) terms**, which carry 88–94% of its Δχ².
+- Posteriors:
+  - Symmetric only: Ω_b 25.99 +0.88/−0.70, **φ_b 25.4 +11.7/−7.9°**, S 1.050 +0.241/−0.268,
+    bar_frac 0.856 +0.481/−0.179. Emulator LOO 16.1, so the emulator is unreliable here.
+  - Both: φ_b 27.6 +3.4/−3.5°.
+- **Conclusion.** The forbidden terms are needed whenever φ_b is fitted. They could be dropped only with φ_b fixed
+  externally.
+  - Also: distance errors rotate the observed ⟨v_R⟩ quadrupole (−25.5° → −6.2° for σ_d/d = 0.2, see the
+    N-body entry). This creates forbidden-term power in the data, which the forward model has to reproduce.
+- Figure index: add `test1_nbody_emulator_corner_logLs_fourier_symm_vR_sin24_vphi_sigR_sigphi_cos024.png`
+  (posterior, symmetric terms only).
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 All in `figures/`.
@@ -1050,6 +1088,7 @@ All in `figures/`.
 | `test1_nbody_emulator_corner_logLs_fourier_vR_sigR_sigphi_m24_vphi_m024.png` | posterior: proposed scheme with the σ ring averages dropped |
 | `test1_nbody_emulator_corner_logLs_fourier_means_m024_sigmas_m24.png` | posterior: means m ≤ 4 + all σ m = 2–4 (incl. v_z) |
 | `test1_nbody_emulator_corner_logLs_fourier_{mmax4,m2to4}_meansdisp.png` | posterior: all six moments, m ≤ 4 or m = 2–4 |
+| `test1_nbody_emulator_corner_logLs_fourier_symm_vR_sin24_vphi_sigR_sigphi_cos024.png` | posterior: proposed scheme with symmetry-allowed terms only (no sin for ⟨v_φ⟩/σ, no cos for ⟨v_R⟩) |
 | `test1_nbody_logl_corner_logLs_*.png` | log L of the 65 evaluated points (no emulator) |
 | `test1_nbody_density_stationarity.png` | density change of the libraries; counts statistic retracted (needs the selection function) |
 
