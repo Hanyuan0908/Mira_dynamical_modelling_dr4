@@ -263,6 +263,62 @@ Small numeric results (tracked): `results/au18_ground_truth.json` (pattern speed
     MCMC needs reductions elsewhere: fewer stars, a shorter integration, an emulator
     (see the chat discussion).
 
+## 2026-10-27 — Test 1: steady-state likelihood, first design and diagnosis
+
+- Scripts:
+  - `scripts/steady_state_likelihood.py` (per-star KDE likelihood);
+  - `scripts/test1_qmc.py` (truth plus 64 Sobol points in |Ω_b|, φ_b, ln S, ln bar_frac);
+  - `scripts/test1_gp_emulator.py`;
+  - diagnostics: `scripts/diagnose_pattern_speed_maps.py`, `scripts/diagnose_velocity_distributions.py`,
+    `scripts/diagnose_moment_likelihood.py`.
+- Figures: [⟨v_R⟩/⟨v_φ⟩ maps, observed vs library](figures/test1_omega_maps.png);
+  velocity distributions [along the bar axis](figures/test1_vdist_major_axis.png) and
+  [at 45°](figures/test1_vdist_45deg.png).
+- Likelihood v1 (per-star KDE):
+  - Stars are rotated by the trial bar angle so that the assumed bar lies along x; the
+    potential's bar is fixed along x.
+  - Orbits run for 1 Gyr in the bar frame; snapshots from 0.25 to 1 Gyr, 4-fold folded, give
+    124 samples per orbit (6.2M library points), weighted by 1/τ for the R < 8 kpc cut.
+  - log p(v_i|x_i) uses the 1000 nearest library points in position (adaptive), leaving out
+    star i's own orbit.
+  - Cost: about 1 minute per evaluation (50 s integration, 8 s likelihood).
+- Pilot (other parameters at the truth): the integrator-noise floor of logL is about ±12.
+
+  | trial | ΔlogL vs truth |
+  |---|---|
+  | Ω_b = 45 | −30 |
+  | Ω_b = 30 | −1094 |
+  | φ_b = 40° | −840 |
+  | bar_frac = 1.5 | −1085 |
+  | S = 1.3 | **+62** |
+
+- Why the KDE likelihood fails:
+  - The maps show Ω_b = 45 clearly weakens the v_R quadrupole (24 vs observed 34 km/s) and
+    speeds up v_φ; Ω_b = 30 slows v_φ by 10–20 km/s.
+  - The per-star KDE nevertheless barely penalises Ω_b = 45, because regional mismatches
+    cancel: 0–2 kpc +355, 2–5 kpc −440, 5–6 kpc +223.
+  - In the inner kpc every library is 5–8% hotter than the data in all three components,
+    because the unsoftened AGAMA centre is deeper than Arepo's. That dispersion mismatch is worth
+    about as much as a 10 km/s error in the mean.
+  - Per-star Δlog p has an rms of 1.2, and the 1% most extreme (tail) stars swing the total by
+    hundreds.
+- Moment χ² on the same libraries (bar-frame cells in R, φ mod π and |z|, data folded like the
+  library, errors σ/√N, N ≥ 20): ΔlogL vs truth.
+
+  | likelihood | Ω_b = 45 | Ω_b = 30 |
+  |---|---|---|
+  | means only | **−195** | **−257** |
+  | means + dispersions, all R | −45 | −801 |
+  | means + dispersions, R ≥ 1.5 kpc | −138 | −494 |
+
+  χ²/dof at the truth: means 1.24, dispersions about 3.6. The dispersion value is inflated
+  because σ/√(2N) underestimates the error for non-Gaussian distributions; bootstrap errors
+  are needed.
+- **Decision:** the primary likelihood becomes a moment-based χ² on cell means (dispersions only
+  with bootstrap errors, and R ≥ 1.5 kpc while the centre is unsoftened). The per-star KDE is kept
+  only for comparison. The KDE emulator run was stopped at 56/65 points; its totals are in
+  `results/test1_qmc/evals.csv`.
+
 ---
 
 ## Next steps
