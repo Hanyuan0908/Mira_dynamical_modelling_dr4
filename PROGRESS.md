@@ -510,6 +510,34 @@ Small numeric results (tracked): `results/au18_ground_truth.json` (pattern speed
 
 ---
 
+## 2026-10-27 — Test 1b: global search results (N-body, perfect mock)
+
+- The global search finished in 1 h 57 min (109 s per point). Totals and bootstrap moment columns
+  are in `results/test1_nbody/qmc_evals.csv`; arrays and trajectories in `~/mira_dr4_runs/test1_nbody/`.
+- Moment-map likelihood (`scripts/test1_nbody_moments.py`):
+  - Folded 3D bar-frame cells (R 0.5 kpc × φ 15° × |z| 0/0.5/1/2/∞), N_obs ≥ 20, data errors from
+    200 bootstrap resamplings.
+  - χ²/dof at the truth: 1.11 for means (all R) and 1.29 for means + dispersions (R ≥ 1 kpc).
+- **Raw evaluations:** the truth is the **best of all 65 points** for the local Gaussian and for
+  every moment-map variant. The best other point is 7 lower (Gaussian), 37 lower (means) and
+  64 lower (means + dispersions). For the KDE the truth ranks 2nd, behind a point +2 better
+  (noise about 26).
+- **Corner plots** ([means + dispersions, R ≥ 1](figures/test1_nbody_logl_corner_chi2b_meansdisp_R1.png);
+  also `_chi2b_means`, `_logL_gauss`, and `test1_nbody_logl_corner.png` for the KDE):
+  - The Ω_b profile peaks at the truth (26), and φ_b at 27–30°.
+  - **S and bar_frac are anti-correlated along a ridge:** a shorter, stronger bar resembles a longer,
+    weaker one. The ridge runs from (S 0.75, f 1.55) through the truth to (S 1.3, f 0.65). The best
+    non-truth evaluations lie on it, e.g. S 0.82, f 1.50.
+- **The 64-point emulator is not adequate:**
+  - With about 2.8 points per dimension, it cannot resolve a peak 1–2 km/s/kpc wide in Ω.
+  - Its leave-one-out error near the maximum is 85–240 in logL, against noise of 1–6.
+  - It under-predicts the truth by 44–108 and places its maximum at the box corner along the ridge
+    (S = 0.75, f ≈ 1.56), where the evaluated points are actually 64 below the truth.
+  - The emulator "posteriors" (`results/test1_nbody/emulator_results*.json`) are therefore
+    artefacts. They must not be read as parameter recovery.
+- **Next:** a second, focused design (narrow Ω_b and φ_b, keep the full S–bar_frac ridge, or
+  reparametrise along and across the ridge), and fit the GP only to points near the maximum.
+
 ## Next steps
 
 Agreed approach (2026-10-27): start from the simplest data and add realism one step at a time.
