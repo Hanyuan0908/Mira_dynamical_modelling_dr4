@@ -409,6 +409,28 @@ Small numeric results (tracked): `results/au18_ground_truth.json` (pattern speed
     - the AGAMA-on-simulation slope of 0.959 is regression dilution from N-body force noise
       (4% of the variance), not a real deficit;
     - torque shares: disc 78.5%, bulge 14%, DM 3%. Multipole `smoothing` (1 → 0) changes nothing.
+- **How non-spherical is the N-body DM halo?** (ad hoc analysis; `dm_axisymmetric.ini` added as
+  an alternative component)
+  - Non-axisymmetry (the halo's bar response):
+    - the DM m = 2 potential is 3–5% of the stellar m = 2 for R = 0.5–6 kpc, roughly aligned with
+      the bar but twisted by up to about 26°;
+    - it carries 3% of the bar torque;
+    - beyond 8 kpc its amplitude is only about 50 (km/s)² with an unrelated phase, i.e. noise;
+    - the DM particle density A2 is 0.02 inside 4 kpc (Poisson level about 0.01).
+  - Shape: b/a = 0.98–1.00. Slightly oblate: c/a = 0.94 within 5 kpc, 0.96 within 10 kpc,
+    0.99 within 100 kpc.
+  - Against the simulation's forces:
+
+    | DM symmetry | F_z error, R 2–4 kpc | F_z error, R 6–10 kpc (\|z\| 0.5–1.5) | F_z error, R 6–10 kpc (\|z\| 1.5–3) | bar torque k (sim = k × AGAMA) |
+    |---|---|---|---|---|
+    | spherical | −0.9% | **−2.5%** | **−2.5%** | 1.029 |
+    | axisymmetric | +0.6% | 0.0% | +0.5% | 1.029 |
+    | none (current) | +0.8% | 0.0% | +0.5% | 0.9995 |
+
+    DM supplies 17–28% of F_z in the outer disc.
+  - Conclusion: a spherical halo underestimates the vertical force in the disc by 2.5%, enough to
+    put stars slightly out of vertical equilibrium. An axisymmetric halo is accurate vertically
+    but drops the 3% DM share of the bar torque.
 - Pattern speed (Dehnen et al. 2023 method, `results/nbody_ground_truth.json`,
   [figure](figures/nbody_pattern_speed.png)):
   - **Ω_p = 26.02 ± 0.19 km/s/kpc**, using the automatic bar region 0.57–6.28 kpc. Fixed ranges

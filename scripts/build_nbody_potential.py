@@ -1,7 +1,8 @@
 """Ground-truth potential of the isolated N-body galaxy in the MW-like frame (AGAMA; Msun, kpc, km/s).
 
 Components (split as in AGAMA's py/example_actions_nbody.py: spheroids as Multipole, disc as CylSpline):
-  dm     Multipole, no symmetry, lmax 8  (keeps the halo's response to the bar; dm_spherical.ini has lmax 0)
+  dm     Multipole, no symmetry, lmax 8  (keeps the halo's response to the bar); alternatives:
+         dm_axisymmetric.ini (flattening kept, m != 0 dropped) and dm_spherical.ini (lmax 0)
   bulge  Multipole, no symmetry, lmax 8
   disc   CylSpline, no symmetry, mmax 8, with the grids used for Au18 (python_script/Nexus/get_potential*.py),
          zmax = Rmax so that the grid encloses the sphere r < Rmax
@@ -24,11 +25,13 @@ POT_DIR = G["pot_dir"]
 PARAMS = {
     "dm": dict(type="Multipole", symmetry="none", lmax=8, gridSizeR=30, rmin=0.5, rmax=600.0),
     "dm_spherical": dict(type="Multipole", symmetry="spherical", gridSizeR=30, rmin=0.5, rmax=600.0),
+    "dm_axisymmetric": dict(type="Multipole", symmetry="axisymmetric", lmax=8, gridSizeR=30, rmin=0.5, rmax=600.0),
     "bulge": dict(type="Multipole", symmetry="none", lmax=8, gridSizeR=30, rmin=0.03, rmax=20.0),
     "disc": dict(type="CylSpline", symmetry="none", mmax=8, gridSizeR=30, gridSizez=30,
                  Rmin=0.1, Rmax=50.0, zmin=0.05, zmax=50.0),
 }
-SOURCE = {"dm": ("dm", 2), "dm_spherical": ("dm", 2), "bulge": ("stars", 1), "disc": ("stars", 0)}
+SOURCE = {"dm": ("dm", 2), "dm_spherical": ("dm", 2), "dm_axisymmetric": ("dm", 2), "bulge": ("stars", 1),
+          "disc": ("stars", 0)}
 
 
 def main():
