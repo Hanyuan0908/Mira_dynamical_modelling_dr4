@@ -1081,6 +1081,14 @@ Tempered ΔlogL of the S/f models:
   - The data patterns sit where the true bar is in the trial frame (expected −10° / +10°).
   - The phase terms measure exactly this data–model misalignment, which is why they carry the bar-angle
     information; the cos terms change only as cos 2δ.
+- **Square maps for a wrong angle**: `figures/test1_nbody_square_maps_wrong_bar_angle_20deg_vs_27deg.png`
+  (`scripts/plot_wrong_bar_angle_square_maps.py`). Stars rotated by 20° instead of 27° are integrated in the true
+  potential (bar on x); the library is cached in `~/mira_dr4_runs/test1_nbody/maps_phi20.npz`.
+  - The library's patterns stay on x: library 20° − library 27° has rms 2.0–3.0 km/s, at the library-noise level.
+  - The data's patterns rotate (m = 2 orientation, data / library): ⟨v_R⟩ −4.8° / +0.9°, ⟨v_φ⟩ −6.9° / +0.3°,
+    σ_R −6.6° / −0.1°, σ_φ −8.5° / +0.9° (expected data −7°).
+  - Data − library rms at the wrong angle vs the true angle: 11.0 vs 11.0 (⟨v_R⟩), 10.4 vs 9.1 (⟨v_φ⟩),
+    6.9 vs 6.5 (σ_R), 7.1 vs 6.8 (σ_φ) km/s. A coherent quadrupole residual is visible in ⟨v_φ⟩ at |y| ≈ 2–3 kpc.
 
 ## Figure index (Test 1b, N-body, perfect mock)
 
@@ -1092,6 +1100,7 @@ All in `figures/`.
 | `test1_nbody_square_maps_bar_strength_vs_data.png` | the same for bar_frac 1.4 and 0.7 |
 | `test1_nbody_bar_length_strength_radial_profiles.png` | m = 2 amplitudes and azimuthal means vs R for the S/f models (before the 1/N fix) |
 | `test1_nbody_bar_length_strength_polar_maps_*.png`, `..._polar_pull_maps.png`, `..._m2_profiles.png` | polar-cell maps and m = 2 profiles of the S/f models |
+| `test1_nbody_square_maps_wrong_bar_angle_20deg_vs_27deg.png` | square maps: data and library for trial bar angles 20° (wrong) and 27° (true), and their residuals |
 | `test1_nbody_ring_avg_dispersion_residuals_vs_R.png` | ring-averaged σ_R, σ_φ, σ_z: models − data vs R, with the data error band (the "hot library") |
 | `test1_nbody_fourier_compression_vs_mmax.png` | Δχ² and tempered ΔlogL of the S/f models vs the highest Fourier mode kept |
 | `test1_nbody_emulator_corner_logLs_meansdisp.png` | posterior: current sector likelihood, means + dispersions (tempered) |
