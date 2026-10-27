@@ -431,6 +431,17 @@ Small numeric results (tracked): `results/au18_ground_truth.json` (pattern speed
   - Conclusion: a spherical halo underestimates the vertical force in the disc by 2.5%, enough to
     put stars slightly out of vertical equilibrium. An axisymmetric halo is accurate vertically
     but drops the 3% DM share of the bar torque.
+- **Decision (2026-10-27, user):** the N-body ground truth uses the **spherical DM halo**
+  (`dm_spherical.ini`), because the MW set-up will use a spherical halo. The registry was updated
+  (`components = dm_spherical, bulge, disc`) and the checks and resonances rerun.
+  - v_c(8 kpc) = 221.6 km/s; the Jeans check and density checks are unchanged.
+  - Potential residual vs the simulation: 504 (km/s)² rms.
+  - Bar torque: simulation = 1.029 × AGAMA.
+  - R_CR = 8.61 kpc.
+  - Known, deliberate mismatches with what the stars feel: the vertical force in the outer disc
+    is 2.5% low, and the halo's 3% share of the bar torque is missing. Expect bar_frac to come
+    out about 3% above 1 and possibly small vertical non-stationarity, a realistic level of
+    model mismatch for the MW.
 - Pattern speed (Dehnen et al. 2023 method, `results/nbody_ground_truth.json`,
   [figure](figures/nbody_pattern_speed.png)):
   - **Ω_p = 26.02 ± 0.19 km/s/kpc**, using the automatic bar region 0.57–6.28 kpc. Fixed ranges

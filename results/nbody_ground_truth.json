@@ -9,14 +9,14 @@
   ],
   "bar_Rm_kpc": 2.767549048309548,
   "bar_half_length_A2_kpc": 5.0,
-  "R_CR_kpc": 8.628929793299644,
+  "R_CR_kpc": 8.614794278000964,
   "R_OLR_kpc": [
-    14.781356913771484
+    14.746755350371464
   ],
   "R_ILR_kpc": [
-    3.4125251090616984
+    3.4140772267681956
   ],
-  "R_CR_over_Rbar_A2": 1.725785958659929,
+  "R_CR_over_Rbar_A2": 1.722958855600193,
   "cross_checks": {
     "0.1-5": {
       "Om": 25.526442330245786,
@@ -27,6 +27,6 @@
       "Om_e": 0.5673562968964152
     }
   },
-  "potential": "mock/nbody_potential/{dm,bulge,disc}.ini",
+  "potential": "mock/nbody_potential/{dm_spherical,bulge,disc}.ini",
   "method": "Dehnen, Semczuk & Schoenrich (2023) Fourier method, patternSpeed.py v0.6.3"
 }

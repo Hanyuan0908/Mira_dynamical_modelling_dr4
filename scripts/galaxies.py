@@ -16,7 +16,8 @@ GALAXIES = {
                  checks=ROOT / "results" / "au18_potential_checks.json"),
     "nbody": dict(label="N-body (t = 7)", prefix="nbody",
                   stars=MOCK_DIR / "nbody_stars_mwframe.hdf5", dm=MOCK_DIR / "nbody_dm_mwframe.hdf5",
-                  pot_dir=MOCK_DIR / "nbody_potential", components=("dm", "bulge", "disc"),
+                  # spherical DM halo, as in the intended MW set-up (dm.ini / dm_axisymmetric.ini are alternatives)
+                  pot_dir=MOCK_DIR / "nbody_potential", components=("dm_spherical", "bulge", "disc"),
                   truth=ROOT / "results" / "nbody_ground_truth.json",
                   checks=ROOT / "results" / "nbody_potential_checks.json"),
 }

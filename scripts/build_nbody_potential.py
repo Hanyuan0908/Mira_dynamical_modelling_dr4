@@ -1,8 +1,8 @@
 """Ground-truth potential of the isolated N-body galaxy in the MW-like frame (AGAMA; Msun, kpc, km/s).
 
 Components (split as in AGAMA's py/example_actions_nbody.py: spheroids as Multipole, disc as CylSpline):
-  dm     Multipole, no symmetry, lmax 8  (keeps the halo's response to the bar); alternatives:
-         dm_axisymmetric.ini (flattening kept, m != 0 dropped) and dm_spherical.ini (lmax 0)
+  dm_spherical  Multipole, spherical: the ground-truth halo (the intended MW set-up has a spherical halo)
+  alternatives: dm.ini (no symmetry, lmax 8, keeps the halo's bar response) and dm_axisymmetric.ini
   bulge  Multipole, no symmetry, lmax 8
   disc   CylSpline, no symmetry, mmax 8, with the grids used for Au18 (python_script/Nexus/get_potential*.py),
          zmax = Rmax so that the grid encloses the sphere r < Rmax
