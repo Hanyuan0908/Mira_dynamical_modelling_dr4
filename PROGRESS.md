@@ -1090,6 +1090,48 @@ Tempered ΔlogL of the S/f models:
   - Data − library rms at the wrong angle vs the true angle: 11.0 vs 11.0 (⟨v_R⟩), 10.4 vs 9.1 (⟨v_φ⟩),
     6.9 vs 6.5 (σ_R), 7.1 vs 6.8 (σ_φ) km/s. A coherent quadrupole residual is visible in ⟨v_φ⟩ at |y| ≈ 2–3 kpc.
 
+## 2026-10-27 (overnight) — Focused global search with the Fourier R–|z| grid (running)
+
+**Integrations.**
+- Script: `scripts/test1_nbody_qmc_focused_run.py`; log in `~/mira_dr4_runs/test1_nbody_qmc_focused/run.log`.
+- Design (`results/test1_nbody_qmc_focused/design.csv`):
+  - the truth and the 64 old Sobol points, reprocessed from their saved trajectories (no re-integration);
+  - 192 new scrambled Sobol points (seed 2028) in a box focused on the posterior in Ω_b and φ_b and wider in S and
+    bar_frac: |Ω_b| 20–32 km/s/kpc, φ_b 15–39°, S 0.6–1.65, bar_frac 0.45–2.0 (log-uniform). The old box was 18–38,
+    14–44°, 0.75–1.45 and 0.55–1.6; the S–bar_frac ridge ran into its corner.
+  - Integration as before: accuracy 10⁻⁵, about 90 s per point, so about 5.5 h; started 23:29.
+- Saved per point (`~/mira_dr4_runs/test1_nbody_qmc_focused/lib_NNN.npz`): library sums on a fine folded grid
+  (R 0.1 kpc to 8 × φ mod π 7.5° × |z| 0.25 kpc to 4 + one overflow bin) — N, W, Σw², Σw v, Σw v_a v_b. Any coarser
+  (R, |z|, φ) grid with edges on these is an exact sum.
+  - Check: these reproduce the saved polar moments of the truth to 3×10⁻¹² km/s.
+  - Also saved: τ, the polar cell moments of the current likelihood, and the trajectories of the new points.
+
+**Fourier grid** (`scripts/test1_nbody_qmc_focused_fourier.py`; per point
+`~/mira_dr4_runs/test1_nbody_qmc_focused/fourier_NNN.npz`).
+- Rings: R 0–6 kpc in 20 rings of 0.3 kpc (requested), extended by 4 rings of 0.5 kpc to 8 kpc.
+- Layers: |z| 0–1, 1–2, 2–3 kpc (folded).
+- Per block, a GLS fit of the sector values (data bootstrap errors, ≥ 20 stars per sector) on
+  1, cos 2φ, sin 2φ, cos 4φ, sin 4φ for all six fields. Saved: data and library coefficients plus the 5×5 data
+  covariance, so any subset of fields or terms can be scored exactly later.
+- Star counts per ring-layer: |z| 0–1: 674–5538; |z| 1–2: 85–513; |z| 2–3: 7–60.
+  - The |z| 2–3 layer (820 stars, 1.6%) is too sparse for 0.3 kpc rings and drops out.
+  - Sectors are chosen once from the data at the true angle: 15° if ≥ 6 usable, else 30°, else 45° (45°: m = 0, 2 only).
+  - |z| 0–1 uses 15° everywhere. |z| 1–2 uses 15° at R 0.6–3.0, 45° at 3.0–5.7, and 30° or 15° beyond.
+- Columns in `results/test1_nbody_qmc_focused/evals.csv` (tempered `logLs_*`, N_data at the truth):
+  - `fourier_R0to6_vR_m24_vphi_sigR_sigphi_m024` (proposed, N_data 669);
+  - `fourier_R0to6_vR_sigR_sigphi_m24_vphi_m024` (no σ ring averages, 591);
+  - `fourier_R0to6_all6_m024` (1062);
+  - `fourier_R0to8_vR_m24_vphi_sigR_sigphi_m024` (821);
+  - `sectors_means`, `sectors_meansdisp` (current likelihood).
+- Truth χ²/N_data on the proposed scheme: 973/669 = 1.45.
+
+**Post-processing.**
+- Runs automatically when the integrations finish: `scripts/run_test1_nbody_qmc_focused_postprocess.sh`.
+- Emulator corners use leave-one-out on the 32 best points; there are also log L corners. Emulator registered as run
+  `nbody_qmc_focused`.
+- Figures: `figures/test1_nbody_qmc_focused_emulator_corner_<column>.png` and
+  `figures/test1_nbody_qmc_focused_logl_corner_<column>.png`.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 All in `figures/`.

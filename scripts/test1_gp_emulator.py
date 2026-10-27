@@ -26,6 +26,7 @@ from sklearn.gaussian_process.kernels import ConstantKernel, Matern, WhiteKernel
 from common import set_style, savefig, INK, INK_2, INK_MUTED, ACCENT, BLUE_RAMP
 from test1_qmc import OUT_CSV, OUT_DIR, LOGP_DIR, MOCK, BOX, TRUTH
 import test1_nbody_qmc as _nq
+import test1_nbody_qmc_focused_run as _nf
 
 NAMES = [r"$|\Omega_b|$ [km s$^{-1}$ kpc$^{-1}$]", r"$\phi_b$ [deg]", r"$S$", r"bar_frac"]
 KEYS = ["Omega_abs", "phi_b_deg", "S", "bar_frac"]
@@ -36,6 +37,8 @@ RUNS = {
                   prefix="test1_nbody",
                   perstar=lambda i, col: np.load(_nq.ARR_DIR / f"{i:03d}.npz")[
                       "logp_gauss" if col == "logL_gauss" else "logp_kde"]),
+    "nbody_qmc_focused": dict(csv=_nf.DESIGN_CSV.parent / "evals.csv", box=_nf.BOX, truth=_nf.TRUTH,
+                              out=_nf.DESIGN_CSV.parent, mock=_nq.MOCK, prefix="test1_nbody_qmc_focused", perstar=None),
 }
 RUN = RUNS["au18"]
 LO = np.array([v[0] for v in BOX.values()])
@@ -110,6 +113,8 @@ def main():
     ap.add_argument("--column", default="logL")
     ap.add_argument("--rmin", type=float, default=None, help="use only stars with R >= rmin [kpc]")
     ap.add_argument("--rmax", type=float, default=None, help="use only stars with R < rmax [kpc]")
+    ap.add_argument("--loo-top", type=int, default=0,
+                    help="leave-one-out only for the N highest-logL training points (0 = all)")
     args = ap.parse_args()
     set_style()
     run = use_run(args.run)
@@ -123,9 +128,12 @@ def main():
                radial_cut=[args.rmin, args.rmax])
 
     # leave-one-out accuracy
-    loo = np.array([Emulator(np.delete(u, i, 0), np.delete(y, i)).predict(u[i:i + 1])[0] for i in range(len(u))])
-    res["loo_rms"] = float(np.sqrt(np.mean((loo - y)**2)))
-    near = y > y.max() - 2000
+    sel = np.argsort(-y)[:args.loo_top] if args.loo_top else np.arange(len(u))
+    loo = np.full(len(u), np.nan)
+    loo[sel] = [Emulator(np.delete(u, i, 0), np.delete(y, i)).predict(u[i:i + 1])[0] for i in sel]
+    res["loo_rms"] = float(np.sqrt(np.nanmean((loo - y)**2)))
+    res["loo_points"] = "all" if not args.loo_top else f"top {args.loo_top}"
+    near = (y > y.max() - 2000) & np.isfinite(loo)
     res["loo_rms_within_2000_of_max"] = float(np.sqrt(np.mean((loo[near] - y[near])**2)))
     u_truth = to_unit(pd.DataFrame([TRUTH]))
     pt, st = emu.predict(u_truth, return_std=True)
@@ -198,7 +206,7 @@ def main():
     # figure 3: leave-one-out
     fig, ax = plt.subplots(figsize=(4.6, 4.4))
     ax.plot(y - y.max(), loo - y.max(), "o", color=BLUE_RAMP[4], ms=4)
-    lim = [min(y.min(), loo.min()) - y.max(), 200]
+    lim = [min(y.min(), np.nanmin(loo)) - y.max(), 200]
     ax.plot(lim, lim, color=INK_MUTED, lw=0.8)
     ax.set_xlabel(r"evaluated $\log L$ − max")
     ax.set_ylabel(r"leave-one-out emulator $\log L$ − max")
