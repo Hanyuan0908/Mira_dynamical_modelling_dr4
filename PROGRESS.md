@@ -1147,8 +1147,25 @@ Tempered ΔlogL of the S/f models:
   `R0to6_vR_m24_vphi_sigR_sigphi_m024` (855), `R0to6_vR_sigR_sigphi_m24_vphi_m024` (765), `R0to6_all6_m024` (1350),
   `R0to8_vR_m24_vphi_sigR_sigphi_m024` (1007).
 
+- **Why not divide the plain sum by Σ cos mφ_i.** For n = n₀(1 + A₂ cos 2φ) and ⟨v⟩ = v₀ + a₂ cos 2φ,
+  Σ v cos 2φ / Σ cos 2φ ≈ v₀ + a₂/A₂: it mixes in the ring mean and diverges as A₂ → 0.
+  - Measured for ⟨v_φ⟩ (|z| < 1): +40 to +285 km/s, against least-squares a₂ = −43 to +1 km/s.
+  - The correct normalisation is the 5×5 matrix of the density's Fourier moments; least squares is exactly
+    a = (Σ f fᵀ)⁻¹ Σ v f.
+- **Means and dispersions are correlated** (bootstrap, R 3.0–3.3, |z| < 1):
+  - ⟨v_φ⟩ vs ⟨v_φ²⟩ terms: +0.93 (m0), +0.96 (cos 2φ);
+  - ⟨v_φ⟩ vs residual σ_φ²: −0.42 / −0.50, from the skewed v_φ distribution.
+  - So the χ² now uses the **joint** bootstrap covariance of all kept terms of a block (300 bootstraps, Hartlap
+    factor). The block-diagonal version is kept as `chi2_<scheme>_blockdiag`.
+  - Truth χ²/N_data (proposed scheme): joint 1.50, block-diagonal 1.31. Ridge #15 Δχ²: +66 joint, +53 block-diagonal.
+  - With the joint covariance, fitting ⟨v²⟩ or residual σ² carries the same information.
+- **Slow run.** The new integrations take ~300 s each instead of ~90 s, because an unrelated process
+  (`validate_kernel.py`, started from another session) uses ~4.7 cores.
+  - The post-processing therefore runs on the points finished by 05:00 (`postprocess_partial.log`) and again when
+    all points are done (`postprocess_final.log`).
+
 **Post-processing.**
-- Runs automatically when the integrations finish: `scripts/run_test1_nbody_qmc_focused_postprocess.sh`.
+- Runs automatically (see above): `scripts/run_test1_nbody_qmc_focused_postprocess.sh`.
   It runs the sector version too, for comparison.
 - Emulator corners use leave-one-out on the 32 best points; there are also log L corners. Emulator registered as run
   `nbody_qmc_focused`.

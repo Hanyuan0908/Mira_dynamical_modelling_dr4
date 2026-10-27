@@ -13,6 +13,10 @@ The normal equations are sums over stars (weights: 1 for the data, bootstrap cou
 samples). Library: all samples with t >= 0.25 Gyr from the saved trajectories (no leverage correction needed: ~10^3
 effective orbits per block). Data errors: full 5x5 covariance of each block's coefficients from N_BOOT bootstrap
 resamplings of the stars. A block needs >= N_MIN_BLOCK data stars.
+chi2 uses the joint bootstrap covariance of all kept (field, term) coefficients of a block (means and variances are
+correlated: e.g. <v_phi> and sigma_phi^2 terms at -0.4 to -0.5, from the skewed v_phi distribution), with the Hartlap
+factor (N_BOOT - p - 2) / (N_BOOT - 1) on the inverse; the block-diagonal version (fields independent) is kept as
+chi2_<scheme>_blockdiag for comparison.
 Fields (index): 0 <v_R>, 1 <v_phi>, 2 <v_z>, 3 sigma_R^2, 4 sigma_phi^2, 5 sigma_z^2.
 Saved per point: ~/mira_dr4_runs/test1_nbody_qmc_focused/fourier_stars_NNN.npz (coef_data, coef_lib, cov_data, valid,
 n_stars). Columns chi2_/ndata_/logLs_fourier_stars_<scheme> are merged into results/test1_nbody_qmc_focused/evals.csv;
@@ -39,7 +43,7 @@ FIELD_NAMES = ["<v_R>", "<v_phi>", "<v_z>", "sigma_R^2", "sigma_phi^2", "sigma_z
 NK = len(TERMS)
 PAIRS = [(k, l) for k in range(NK) for l in range(k, NK)]
 N_MIN_BLOCK = 50
-N_BOOT = 200
+N_BOOT = 300
 SEED = 0
 ALL, NO_M0 = [0, 1, 2, 3, 4], [1, 2, 3, 4]
 SCHEMES = {   # name: (rings used, {field: kept terms})
@@ -95,9 +99,9 @@ def data_fit(stars_mw, phi_deg, boot_w):
     n = np.bincount(b, minlength=NB)
     ok = n >= N_MIN_BLOCK
     c = fit(b, X, v, np.ones(len(b)), ok)
-    boots = np.array([fit(b, X, v, bw[m], ok) for bw in boot_w])
+    boots = np.array([fit(b, X, v, bw[m], ok) for bw in boot_w]).reshape(len(boot_w), NB, 6 * NK)
     dev = boots - boots.mean(0)
-    cov = np.einsum("sbfk,sbfl->bfkl", dev, dev) / (len(boot_w) - 1)
+    cov = np.einsum("sbi,sbj->bij", dev, dev) / (len(boot_w) - 1)    # joint (NB, 30, 30), index = field * 5 + term
     return c, cov, n, ok
 
 
@@ -111,18 +115,22 @@ def library_fit(traj, times, ok):
     return fit(b, X, v, wt[m], ok, leverage=False)
 
 
-def scheme_chi2(cd, cl, cov, valid, scheme):
+def scheme_chi2(cd, cl, cov, valid, scheme, joint=True):
+    """chi^2 and N_data of a scheme; joint=True uses the full covariance of the block's kept coefficients."""
     n_ring, spec = scheme
     chi, nd = 0.0, 0
+    idx_all = [f * NK + k for f, terms in spec.items() for k in terms]
     for r in range(n_ring):
         for z in range(NL):
             i = r * NL + z
             if not valid[i]:
                 continue
-            for f, terms in spec.items():
-                d = (cd[i, f] - cl[i, f])[terms]
-                chi += float(d @ np.linalg.solve(cov[i, f][np.ix_(terms, terms)], d))
-                nd += len(terms)
+            d = (cd[i] - cl[i]).reshape(-1)
+            groups = [idx_all] if joint else [[f * NK + k for k in terms] for f, terms in spec.items()]
+            for idx in groups:
+                hartlap = (N_BOOT - len(idx) - 2) / (N_BOOT - 1)
+                chi += hartlap * float(d[idx] @ np.linalg.solve(cov[i][np.ix_(idx, idx)], d[idx]))
+                nd += len(idx)
     return chi, nd
 
 
@@ -144,12 +152,15 @@ def main():
         valid = ok & np.all(np.isfinite(cd), axis=(1, 2)) & np.all(np.isfinite(cl), axis=(1, 2))
         np.savez(OUT_DIR / f"fourier_stars_{i:03d}.npz", ring_edges=RING_EDGES, layer_edges=LAYER_EDGES,
                  terms=TERMS, fields=FIELD_NAMES, coef_data=cd.reshape(NR, NL, 6, NK), coef_lib=cl.reshape(NR, NL, 6, NK),
-                 cov_data=cov.reshape(NR, NL, 6, NK, NK), valid=valid.reshape(NR, NL), n_stars=n.reshape(NR, NL))
+                 cov_data_joint=cov.reshape(NR, NL, 6 * NK, 6 * NK), valid=valid.reshape(NR, NL),
+                 n_stars=n.reshape(NR, NL), n_boot=N_BOOT)
         row = dict(idx=i)
         for name, sc in SCHEMES.items():
             row[f"chi2_{name}"], row[f"ndata_{name}"] = scheme_chi2(cd, cl, cov, valid, sc)
+            row[f"chi2_{name}_blockdiag"], row[f"ndata_{name}_blockdiag"] = scheme_chi2(cd, cl, cov, valid, sc, joint=False)
         rows.append(row)
-        print(f"{i:3d} {p.batch} {p.kind:5s} " + "  ".join(f"{k[19:]} {v:.0f}" for k, v in row.items() if k.startswith("chi2_")),
+        print(f"{i:3d} {p.batch} {p.kind:5s} " + "  ".join(f"{k[19:]} {v:.0f}" for k, v in row.items()
+                                                          if k.startswith("chi2_") and not k.endswith("blockdiag")),
               flush=True)
     new = pd.DataFrame(rows)
     out_csv = DESIGN_CSV.parent / "evals.csv"
@@ -157,7 +168,7 @@ def main():
     base = base.drop(columns=[c for c in base.columns if "fourier_stars_" in c]).merge(new, on="idx")
     t = base.kind == "truth"
     summary = {}
-    for name in SCHEMES:
+    for name in list(SCHEMES) + [f"{k}_blockdiag" for k in SCHEMES]:
         nd = int(base.loc[t, f"ndata_{name}"].iloc[0])
         base[f"logLs_{name}"] = -0.5 * base[f"chi2_{name}"] / np.sqrt(2 * nd)
         dl = (base[f"logLs_{name}"] - base.loc[t, f"logLs_{name}"].iloc[0])[~t]
