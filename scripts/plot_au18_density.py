@@ -1,5 +1,7 @@
 """Face-on (x-y) and edge-on (x-z) stellar surface density of Au18 in the MW-like frame,
 wide view (same extent and stretch as the DR3 Mira maps) and a zoom on the bar."""
+import argparse
+
 import numpy as np
 import h5py
 import matplotlib.pyplot as plt
@@ -8,7 +10,7 @@ from scipy.ndimage import gaussian_filter
 
 from common import (set_style, savefig, CMAP_SEQ_W, INK_2, ACCENT, R0_KPC, Z_SUN_KPC,
                     BAR_ANGLE_DEG)
-from prepare_au18_mwframe import OUT_FILE
+from galaxies import galaxy, add_argument as add_galaxy_argument
 from plot_dr3_mira_spatial_period_bins import mark_sun
 
 VIEWS = {  # name: (x half-width, z half-width, pixel [kpc], z stretch)
@@ -44,8 +46,11 @@ def draw_bar(ax, half_length, edge_on):
 
 
 def main():
+    ap = argparse.ArgumentParser(description=__doc__)
+    add_galaxy_argument(ap)
+    g = galaxy(ap.parse_args().galaxy)
     set_style()
-    with h5py.File(OUT_FILE, "r") as f:
+    with h5py.File(g["stars"], "r") as f:
         x, y, z, m = (f[k][:] for k in ("x", "y", "z", "mass"))
         R_bar = float(f.attrs["bar_half_length_kpc"])
 
@@ -89,11 +94,11 @@ def main():
         cb.set_label(r"$\Sigma_\star$ [M$_\odot$ kpc$^{-2}$]", fontsize=9)
         cb.outline.set_linewidth(0.5)
 
-    fig.suptitle(f"Auriga Au18 (level 4, z = 0) stars in a MW-like frame\n"
+    fig.suptitle(f"{g['label']} stars in a MW-like frame\n"
                  f"bar at {BAR_ANGLE_DEG:.0f}° to the Sun–GC line, half-length {R_bar:.2f} kpc "
                  rf"(dashed); Sun at $x=-{R0_KPC}$ kpc; contours every {CONTOUR_STEP_DEX} dex",
                  y=1.02, fontsize=10.5)
-    savefig(fig, "au18_stellar_density_mwframe")
+    savefig(fig, f"{g['prefix']}_stellar_density_mwframe")
 
 
 if __name__ == "__main__":

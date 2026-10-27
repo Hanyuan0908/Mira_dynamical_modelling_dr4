@@ -48,7 +48,7 @@ def measure_bar(x, y, z, m):
                 R_peak=0.5 * (R_edges[i_peak] + R_edges[i_peak + 1]), R_bar=R_bar, phase_bar=ph[0])
 
 
-def plot_bar_diagnostic(bar_before, bar_after):
+def plot_bar_diagnostic(bar_before, bar_after, name="au18_bar_fourier", label="Au18"):
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(5.2, 5.0), sharex=True,
                                    gridspec_kw=dict(hspace=0.08))
     Rm = 0.5 * (bar_after["R_edges"][1:] + bar_after["R_edges"][:-1])
@@ -69,9 +69,9 @@ def plot_bar_diagnostic(bar_before, bar_after):
         a.axvline(bar_after["R_bar"], color=INK_MUTED, lw=0.8, ls="-.")
     ax1.text(bar_after["R_bar"] + 0.15, 0.95 * bar_after["A2_max"],
              rf"$R_{{\rm bar}}$ = {bar_after['R_bar']:.2f} kpc", color=INK_2, fontsize=8, va="top")
-    ax1.set_title("Au18 bar: $m=2$ Fourier profile of the stellar mass")
+    ax1.set_title(f"{label} bar: $m=2$ Fourier profile of the stellar mass")
     ax1.set_xlim(0, R_PROFILE)
-    savefig(fig, "au18_bar_fourier")
+    savefig(fig, name)
 
 
 def main():

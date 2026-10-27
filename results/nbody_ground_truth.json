@@ -1,0 +1,32 @@
+{
+  "Omega_p_kms_kpc": 26.016836188550748,
+  "Omega_p_err": 0.1926096889400205,
+  "sense": "clockwise in the MW-like frame: bar angle decreases with time, phi_bar(t) = -27 deg - Omega_p t",
+  "bar_angle_deg_at_t0": -27.0,
+  "bar_region_dehnen_kpc": [
+    0.5674097739535294,
+    6.2842655264189275
+  ],
+  "bar_Rm_kpc": 2.767549048309548,
+  "bar_half_length_A2_kpc": 5.0,
+  "R_CR_kpc": 8.628929793299644,
+  "R_OLR_kpc": [
+    14.781356913771484
+  ],
+  "R_ILR_kpc": [
+    3.4125251090616984
+  ],
+  "R_CR_over_Rbar_A2": 1.725785958659929,
+  "cross_checks": {
+    "0.1-5": {
+      "Om": 25.526442330245786,
+      "Om_e": 0.5219094896373269
+    },
+    "0.5-4": {
+      "Om": 25.396172972203573,
+      "Om_e": 0.5673562968964152
+    }
+  },
+  "potential": "mock/nbody_potential/{dm,bulge,disc}.ini",
+  "method": "Dehnen, Semczuk & Schoenrich (2023) Fourier method, patternSpeed.py v0.6.3"
+}

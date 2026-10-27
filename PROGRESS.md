@@ -24,6 +24,10 @@ figures, and the key numbers.
 | `mock/au18_stars_mwframe.hdf5` | `scripts/prepare_au18_mwframe.py` | 2.05M Au18 star particles within r < 50 kpc in the MW-like frame; transformation stored in the attributes |
 | `mock/mock_perfect_R8_N50k.hdf5` | `scripts/make_mock_perfect.py` | Test 1 mock: 50k stars, R < 8 kpc, true 6D + error-free observables |
 | `mock/au18_potential/{dm,stars,gas,bh}.ini` | `scripts/build_au18_potential.py` | Au18 ground-truth potential (AGAMA coefficient files, MW-like frame) |
+| `mock/Nbody/t_t0_7` | provided by you (NEMO format) | isolated barred N-body galaxy, t = 7 (6.84 Gyr): disc, bulge, DM; includes the simulation's potential and accelerations |
+| `mock/nbody_{stars,dm}_mwframe.hdf5` | `scripts/prepare_nbody_mwframe.py` | N-body particles in the MW-like frame (comp 0 disc, 1 bulge, 2 DM), with pot_sim and acc_sim |
+| `mock/nbody_potential/{dm,dm_spherical,bulge,disc}.ini` | `scripts/build_nbody_potential.py` | N-body ground-truth potential |
+| `mock/nbody_mock_perfect_R8_N50k.hdf5` | `scripts/make_mock_perfect.py --galaxy nbody` | N-body Test 1 mock: 50k stars (40,023 disc, 9,977 bulge), R < 8 kpc |
 | `mock/au18_potential/Au18_{full,axi,baryon_full,baryon_axi}.ini` | `scripts/potential_family.py` | ground truth, axisymmetric part, full and axisymmetrised baryons, for the trial-potential family |
 
 Small numeric results (tracked): `results/au18_ground_truth.json` (pattern speed, resonances, bar),
@@ -336,6 +340,87 @@ Small numeric results (tracked): `results/au18_ground_truth.json` (pattern speed
   with bootstrap errors, and R ≥ 1.5 kpc while the centre is unsoftened). The per-star KDE is kept
   only for comparison. The KDE emulator run was stopped at 56/65 points; its totals are in
   `results/test1_qmc/evals.csv`.
+
+## 2026-10-27 — Switch to an isolated N-body galaxy for first-principle tests
+
+- Why: Au18's ground-truth potential is not the one its stars are in equilibrium with. The
+  problems are softening of 0.37 kpc (the inner ~2 kpc is wrong) and missing non-axisymmetric
+  DM. Every likelihood is biased by this, which is a generic limitation of hydro simulations.
+  The N-body model has better inner resolution and no gas.
+  Auriga is kept for later tests of age-dependent selection (hotter vs colder populations).
+- Code: `scripts/galaxies.py` is a registry, and the analysis scripts take `--galaxy au18|nbody`:
+  `plot_au18_density.py`, `plot_au18_velocity_maps.py`, `plot_au18_vR_distance_error.py`,
+  `measure_au18_pattern_speed.py`, `check_au18_potential.py`, `make_mock_perfect.py`.
+  "au18" in those file names is historical. New: `scripts/nbody.py` (NEMO reader and units),
+  `scripts/prepare_nbody_mwframe.py`, `scripts/build_nbody_potential.py`.
+- Snapshot: `mock/Nbody/t_t0_7`.
+  - Units are kpc, km/s and G = 1, so the mass unit is 232,508 M☉ and t = 7.0 is 6.84 Gyr.
+    The units were checked with the enclosed-mass v_c (218–230 km/s) and the stored
+    accelerations.
+  - Components are identified by particle mass:
+
+    | component | particles | mass |
+    |---|---|---|
+    | disc | 1.7M | 5.11×10¹⁰ M☉ |
+    | bulge | 0.3M | 1.30×10¹⁰ M☉ |
+    | DM | 1.0M | 8.72×10¹¹ M☉ |
+
+  - The file stores the simulation's own Potential and Acceleration per particle (float32).
+- MW-like frame (same recipe as Au18):
+  - The stellar centre is 1.4 kpc from the mean particle position.
+  - The disc spins anticlockwise in the file and was flipped to the MW sense.
+  - Bar: A2_max = 0.40 at R = 3.4 kpc; R_bar = 5.00 kpc (A2 half max); phase rotated from 41.6°
+    to −27.0°.
+  - v_φ = 212 km/s at R = 8 kpc.
+  - Figures: [density](figures/nbody_stellar_density_mwframe.png),
+    [m = 2 profile](figures/nbody_bar_fourier.png),
+    [face-on kinematics](figures/nbody_velocity_maps_faceon.png).
+  - The v_R quadrupole is about ±25 km/s in the map and 15.8 km/s in the m = 2 fit, weaker than
+    Au18's 34.9 km/s. The outer disc is smooth, with almost no spiral or lopsided pattern.
+- Distance-error test ([figure](figures/nbody_vR_distance_error.png)): σ_d/d = 0.2 rotates the
+  v_R quadrupole from −25.5° to −6.2° and raises its amplitude from 15.8 to 21.1 km/s, the same
+  behaviour as in Au18.
+- Potential (`scripts/build_nbody_potential.py`; spheroids as Multipole and the disc as
+  CylSpline, as in AGAMA's `py/example_actions_nbody.py`):
+
+  | component | expansion | parameters |
+  |---|---|---|
+  | DM | Multipole, no symmetry | lmax 8, gridSizeR 30, rmin 0.5, rmax 600 (`dm_spherical.ini`: lmax 0) |
+  | bulge | Multipole, no symmetry | lmax 8, gridSizeR 30, rmin 0.03, rmax 20 |
+  | disc | CylSpline, no symmetry | mmax 8, gridSizeR 30, gridSizez 30, Rmin 0.1, Rmax 50, zmin 0.05, zmax 50 |
+
+  - rmin ≈ the 0.1% radius and rmax just beyond the outermost particle.
+  - lmax 8 is where the AGAMA reference documentation says N-body noise saturates.
+  - The disc grid is the Au18/Nexus grid.
+  - v_c(8 kpc) = 222 km/s.
+- Benchmarks (`scripts/check_au18_potential.py --galaxy nbody`, `results/nbody_potential_checks.json`):
+  - Stellar density ([figure](figures/nbody_potential_density_check.png)): face-on median ratio
+    1.001 with 0.03 dex Poisson scatter; Σ(R) within −3/+5%; A2 0.402 vs 0.406, phase identical.
+  - Rotation curve ([figure](figures/nbody_rotation_curve_check.png)): the Jeans-predicted
+    stellar ⟨v_φ⟩ matches the measured one at −0.8% median and 0.9% rms for R > R_bar.
+    Asymmetric drift is 10 km/s at 8 kpc.
+  - Potential vs the simulation's ([figure](figures/nbody_potential_vs_sim.png)): 400 (km/s)² rms
+    over 1–20 kpc, 0.25% of the potential range (Au18: 1700 (km/s)², plus offsets of up to
+    1.5×10⁴ in the centre).
+  - Forces vs the simulation's accelerations ([figure](figures/nbody_force_check.png)):
+    - median error 2% at r = 1–20 kpc and 3% at 0.5–1 kpc; it rises sharply inside 0.5 kpc,
+      where the simulation is softened (estimated 0.05–0.1 kpc);
+    - bar torque F_φ: simulation = 0.9995 × AGAMA, with binned means equal to ±1%;
+    - the AGAMA-on-simulation slope of 0.959 is regression dilution from N-body force noise
+      (4% of the variance), not a real deficit;
+    - torque shares: disc 78.5%, bulge 14%, DM 3%. Multipole `smoothing` (1 → 0) changes nothing.
+- Pattern speed (Dehnen et al. 2023 method, `results/nbody_ground_truth.json`,
+  [figure](figures/nbody_pattern_speed.png)):
+  - **Ω_p = 26.02 ± 0.19 km/s/kpc**, using the automatic bar region 0.57–6.28 kpc. Fixed ranges
+    give 25.4–25.5.
+  - R_CR = 8.63 kpc and OLR = 14.8 kpc. R_CR / R_bar = 1.73 using the A2 half-maximum length, or
+    1.37 using the method's bar region: a fairly slow bar.
+  - A second snapshot (t_t1) would allow a finite-difference cross-check.
+- Basic mock ([overview](figures/nbody_mock_perfect_R8_N50k_overview.png)):
+  - 50k random star particles with R < 8 kpc (40,023 disc and 9,977 bulge); no errors and no
+    selection; 15.5% have |z| > 1 kpc.
+  - The v_R quadrupole is 16.9 ± 1.5 km/s with its zero line at −26.1 ± 3.1°.
+  - The weaker bar signal means larger mocks (100–200k) may be needed for the likelihood tests.
 
 ---
 

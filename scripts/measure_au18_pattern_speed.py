@@ -7,6 +7,7 @@ in kpc and km/s, so Omega comes out in km/s/kpc. The automatic bar finder
 (FourierMethod.patternSpeed) is the fiducial result, and measureOmega on fixed radial ranges is
 the cross-check. No extra unit factor is applied.
 """
+import argparse
 import json
 import sys
 
@@ -15,11 +16,10 @@ import h5py
 import matplotlib.pyplot as plt
 
 from common import ROOT, set_style, savefig, INK, INK_2, INK_MUTED, ACCENT, BLUE_RAMP
-from prepare_au18_mwframe import OUT_FILE
-from build_au18_potential import load_potential, vcirc
+from build_au18_potential import vcirc
+from galaxies import galaxy, add_argument as add_galaxy_argument, load_potential
 
 PATTERN_SPEED_DIR = "/Users/hanyuan/Library/CloudStorage/Dropbox/python_script/patternSpeed-main"
-RESULTS_FILE = ROOT / "results" / "au18_ground_truth.json"
 
 if not hasattr(np, "asfarray"):   # removed in NumPy 2.0; patternSpeed.py still calls it
     np.asfarray = lambda a: np.asarray(a, dtype=np.float64)
@@ -40,8 +40,13 @@ def resonances(pot, Omega_p, R=np.linspace(0.2, 20, 2000)):
 
 
 def main():
+    ap = argparse.ArgumentParser(description=__doc__)
+    add_galaxy_argument(ap)
+    name = ap.parse_args().galaxy
+    g = galaxy(name)
+    RESULTS_FILE = g["truth"]
     set_style()
-    with h5py.File(OUT_FILE, "r") as f:
+    with h5py.File(g["stars"], "r") as f:
         x, y, vx, vy, m = (f[k][:].astype(np.float64) for k in ("x", "y", "vx", "vy", "mass"))
         R_bar_A2 = float(f.attrs["bar_half_length_kpc"])
 
@@ -57,7 +62,7 @@ def main():
     for k, v in checks.items():
         print(f"  measureOmega R = {k} kpc: {v['Om']:.2f} +/- {v['Om_e']:.2f}")
 
-    comps, total = load_potential()
+    comps, total = load_potential(name)
     R, Om, kappa, res = resonances(total, Om_p)
     R_CR = res["CR"][0]
     print(f"corotation R_CR = {R_CR:.2f} kpc; OLR = {res['OLR']}; ILR = {res['ILR']}")
@@ -73,7 +78,7 @@ def main():
         R_CR_kpc=R_CR, R_OLR_kpc=res["OLR"], R_ILR_kpc=res["ILR"],
         R_CR_over_Rbar_A2=R_CR / R_bar_A2, cross_checks={k: {"Om": v["Om"], "Om_e": v["Om_e"]}
                                                        for k, v in checks.items()},
-        potential="mock/au18_potential/{dm,stars,gas,bh}.ini (scripts/build_au18_potential.py)",
+        potential=f"{g['pot_dir'].relative_to(ROOT)}/{{{','.join(g['components'])}}}.ini",
         method="Dehnen, Semczuk & Schoenrich (2023) Fourier method, patternSpeed.py v" +
                patternSpeed.version)
     RESULTS_FILE.parent.mkdir(exist_ok=True)
@@ -87,8 +92,8 @@ def main():
     a1.plot(Rd, disc["A2"], color=BLUE_RAMP[4], lw=2, label=r"$A_2 = \Sigma_2/\Sigma_0$")
     a1.axvspan(pat["R0"], pat["R1"], color=BLUE_RAMP[0], alpha=0.6, lw=0, label="bar region (method)")
     a1.axvline(R_bar_A2, color=INK_MUTED, ls="-.", lw=0.8)
-    a1.text(R_bar_A2 * 1.05, 0.45, r"$R_{\rm bar}$ ($A_2$ half max)", color=INK_2, fontsize=8, rotation=90,
-            va="bottom")
+    a1.text(R_bar_A2 * 1.05, 0.55, r"$R_{\rm bar}$ ($A_2$ half max)", color=INK_2, fontsize=8, rotation=90,
+            va="bottom", transform=a1.get_xaxis_transform())
     a1.set_xscale("log")
     a1.set_xlim(0.1, 20)
     a1.set_ylim(0, None)
@@ -119,7 +124,7 @@ def main():
     a3.set_ylabel(r"frequency [km s$^{-1}$ kpc$^{-1}$]")
     a3.legend(loc="upper right", fontsize=8)
     a3.set_title(rf"Resonances: $R_{{\rm CR}}/R_{{\rm bar}}$ = {R_CR / R_bar_A2:.2f}", color=INK_2)
-    savefig(fig, "au18_pattern_speed")
+    savefig(fig, f"{g['prefix']}_pattern_speed")
 
 
 if __name__ == "__main__":

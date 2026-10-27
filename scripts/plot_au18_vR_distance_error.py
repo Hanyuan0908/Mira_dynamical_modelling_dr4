@@ -3,6 +3,7 @@
 Stars are observed from the Sun (l, b, d, pm_l*, pm_b, v_los), the distance is scattered with
 a Gaussian fractional error while the angles, proper motions and v_los are kept, and the stars
 are converted back to Galactocentric coordinates. Maps use the |z| slab in each frame."""
+import argparse
 import resource
 
 import numpy as np
@@ -10,7 +11,7 @@ import h5py
 import matplotlib.pyplot as plt
 
 from common import set_style, savefig, INK_2, INK_MUTED, R0_KPC
-from prepare_au18_mwframe import OUT_FILE
+from galaxies import galaxy, add_argument as add_galaxy_argument
 from plot_au18_density import draw_bar
 from plot_au18_velocity_maps import binned_mean, CMAP_DIV, XY_LIM, PIX, Z_SLAB, MIN_PART
 from plot_dr3_mira_spatial_period_bins import mark_sun
@@ -48,8 +49,11 @@ def draw_los(ax):
 
 
 def main():
+    ap = argparse.ArgumentParser(description=__doc__)
+    add_galaxy_argument(ap)
+    g = galaxy(ap.parse_args().galaxy)
     set_style()
-    with h5py.File(OUT_FILE, "r") as f:
+    with h5py.File(g["stars"], "r") as f:
         x, y, z, vx, vy, vz, m = (f[k][:].astype(np.float64) for k in ("x", "y", "z", "vx", "vy", "vz", "mass"))
         R_bar = float(f.attrs["bar_half_length_kpc"])
 
@@ -104,11 +108,11 @@ def main():
         cb.set_label(label, fontsize=9)
         cb.outline.set_linewidth(0.5)
     axes[0].set_ylabel(r"$y$ [kpc]")
-    fig.suptitle(f"Au18, |z| < {Z_SLAB:.0f} kpc, {PIX * 1e3:.0f} pc pixels (N ≥ {MIN_PART}): Gaussian "
+    fig.suptitle(f"{g['label']}, |z| < {Z_SLAB:.0f} kpc, {PIX * 1e3:.0f} pc pixels (N ≥ {MIN_PART}): Gaussian "
                  f"heliocentric distance errors, $\\sigma_d/d$ = {FRAC_DIST_ERR}, with $l, b, \\mu_{{l*}}, "
                  f"\\mu_b, v_{{\\rm los}}$ kept; dotted lines of sight at $l$ = "
                  f"{', '.join(str(l) for l in LOS_LONGITUDES)}°", y=1.0, fontsize=10)
-    savefig(fig, "au18_vR_distance_error")
+    savefig(fig, f"{g['prefix']}_vR_distance_error")
     print(f"peak RSS {resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e9:.2f} GB")
 
 

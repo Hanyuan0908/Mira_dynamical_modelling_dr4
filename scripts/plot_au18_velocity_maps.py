@@ -1,5 +1,7 @@
 """Face-on maps of the mean Galactocentric radial and azimuthal velocity of Au18 stars in
 the MW-like frame (bar at the MW angle). v_phi is defined positive in the sense of rotation."""
+import argparse
+
 import numpy as np
 import h5py
 import matplotlib.pyplot as plt
@@ -7,7 +9,7 @@ from matplotlib.colors import LinearSegmentedColormap
 from scipy.ndimage import gaussian_filter
 
 from common import set_style, savefig, CMAP_SEQ_W, INK_2, R0_KPC, BAR_ANGLE_DEG
-from prepare_au18_mwframe import OUT_FILE
+from galaxies import galaxy, add_argument as add_galaxy_argument
 from plot_au18_density import draw_bar
 from plot_dr3_mira_spatial_period_bins import mark_sun
 
@@ -35,8 +37,11 @@ def binned_mean(x, y, w, q, edges, min_count=MIN_PART):
 
 
 def main():
+    ap = argparse.ArgumentParser(description=__doc__)
+    add_galaxy_argument(ap)
+    g = galaxy(ap.parse_args().galaxy)
     set_style()
-    with h5py.File(OUT_FILE, "r") as f:
+    with h5py.File(g["stars"], "r") as f:
         x, y, z, vx, vy, m = (f[k][:].astype(np.float64) for k in ("x", "y", "z", "vx", "vy", "mass"))
         R_bar = float(f.attrs["bar_half_length_kpc"])
 
@@ -95,11 +100,11 @@ def main():
         cb.outline.set_linewidth(0.5)
     axes[0].set_ylabel(r"$y$ [kpc]")
 
-    fig.suptitle(f"Au18 face-on stellar kinematics, |z| < {Z_SLAB:.0f} kpc, mass-weighted, "
+    fig.suptitle(f"{g['label']} face-on stellar kinematics, |z| < {Z_SLAB:.0f} kpc, mass-weighted, "
                  f"{PIX * 1e3:.0f} pc pixels (N ≥ {MIN_PART}); bar at {BAR_ANGLE_DEG:.0f}° (dashed), "
                  r"disc rotates clockwise; $v_\phi > 0$ along rotation",
                  y=1.0, fontsize=10.5)
-    savefig(fig, "au18_velocity_maps_faceon")
+    savefig(fig, f"{g['prefix']}_velocity_maps_faceon")
 
 
 if __name__ == "__main__":

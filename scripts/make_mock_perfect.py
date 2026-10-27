@@ -9,7 +9,7 @@ import numpy as np
 import h5py
 
 from common import MOCK_DIR, R0_KPC, Z_SUN_KPC, V_SUN_KMS, BAR_ANGLE_DEG
-from prepare_au18_mwframe import OUT_FILE as AU18_FILE
+from galaxies import galaxy, add_argument as add_galaxy_argument
 import observe
 
 N_STARS = 50_000
@@ -22,15 +22,20 @@ def main():
     p.add_argument("--n", type=int, default=N_STARS)
     p.add_argument("--rmax", type=float, default=R_MAX)
     p.add_argument("--seed", type=int, default=SEED)
+    add_galaxy_argument(p)
     args = p.parse_args()
-    out = MOCK_DIR / f"mock_perfect_R{args.rmax:g}_N{args.n // 1000}k.hdf5"
+    g = galaxy(args.galaxy)
+    tag = "" if args.galaxy == "au18" else f"{g['prefix']}_"
+    out = MOCK_DIR / f"{tag}mock_perfect_R{args.rmax:g}_N{args.n // 1000}k.hdf5"
 
-    with h5py.File(AU18_FILE, "r") as f:
+    with h5py.File(g["stars"], "r") as f:
         R = np.hypot(f["x"][:], f["y"][:])
         pool = np.flatnonzero(R < args.rmax)
         rng = np.random.default_rng(args.seed)
         idx = np.sort(rng.choice(pool, size=args.n, replace=False))
-        cols = {k: f[k][:][idx] for k in ("x", "y", "z", "vx", "vy", "vz", "mass", "age", "Z", "ParticleIDs")}
+        cols = {k: f[k][:][idx] for k in ("x", "y", "z", "vx", "vy", "vz", "mass", "age", "Z", "ParticleIDs", "comp")
+                if k in f}
+        cols["star_index"] = idx
         bar_half_length = f.attrs["bar_half_length_kpc"]
 
     obs = observe.to_galactic(*(cols[k] for k in ("x", "y", "z", "vx", "vy", "vz")))
@@ -38,10 +43,10 @@ def main():
         for k, v in {**cols, **obs}.items():
             f[k] = v
         f.attrs.update(dict(
-            description="Perfect mock: random Au18 star particles, no errors, no selection. "
+            description=f"Perfect mock: random {g['label']} star particles, no errors, no selection. "
                         "Galactocentric x..vz [kpc, km/s]; l, b [deg]; d [kpc]; pml, pmb [mas/yr]; "
                         "vlos [km/s]; mass [Msun]; age [Gyr].",
-            source=AU18_FILE.name, n=args.n, R_max=args.rmax, seed=args.seed, pool_size=len(pool),
+            source=g["stars"].name, galaxy=args.galaxy, n=args.n, R_max=args.rmax, seed=args.seed, pool_size=len(pool),
             R0=R0_KPC, z_sun=Z_SUN_KPC, v_sun=V_SUN_KMS, bar_angle_deg=BAR_ANGLE_DEG,
             bar_half_length_kpc=bar_half_length))
     z = np.abs(cols["z"])

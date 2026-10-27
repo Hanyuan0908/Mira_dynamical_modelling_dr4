@@ -40,7 +40,21 @@ python scripts/time_orbit_integration.py --methods inertial   # 50k orbits x 1 G
 python scripts/benchmark_fast_potential.py --n 5000           # speed vs accuracy, ~4 min
 ```
 
-## Mock galaxy
+## Mock galaxies
+
+Analysis scripts take `--galaxy au18|nbody` (registry in `scripts/galaxies.py`); "au18" in
+older script names is historical. The isolated N-body galaxy is the primary test case:
+
+```
+python scripts/prepare_nbody_mwframe.py          # mock/Nbody/t_t0_7 -> MW-like frame
+python scripts/build_nbody_potential.py          # -> mock/nbody_potential/
+python scripts/check_au18_potential.py --galaxy nbody
+python scripts/measure_au18_pattern_speed.py --galaxy nbody
+python scripts/make_mock_perfect.py --galaxy nbody
+python scripts/plot_mock_overview.py mock/nbody_mock_perfect_R8_N50k.hdf5
+```
+
+### Auriga Au18
 
 Auriga Au18 (`Original/4`, MHD, level 4, z = 0 snapshot 127) from the Auriga public
 release (Grand et al. 2024), downloaded via Globus into `mock/halo_18/`.
