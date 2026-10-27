@@ -538,6 +538,54 @@ Small numeric results (tracked): `results/au18_ground_truth.json` (pattern speed
 - **Next:** a second, focused design (narrow Ω_b and φ_b, keep the full S–bar_frac ridge, or
   reparametrise along and across the ridge), and fit the GP only to points near the maximum.
 
+## 2026-10-27 — Test 1b: tempered χ² and what bar length and strength change
+
+- **Tempered χ²** (Schwarzschild-style):
+  - log L = −χ²_meansdisp,R≥1 / (2 √(2 N_data)), with N_data = 6 moments × 451 cells, so
+    √(2 N_data) = 73.6. Column `logLs_meansdisp_R1` in `results/test1_nbody/qmc_evals.csv`.
+  - [Corner plot](figures/test1_nbody_logl_corner_logLs_meansdisp_R1.png); emulator posterior in
+    `results/test1_nbody/emulator_results_logLs_meansdisp_R1.json`.
+  - The emulator is now adequate: leave-one-out error 6.7 in tempered units.
+
+  | parameter | posterior | truth | offset |
+  |---|---|---|---|
+  | Ω_b | 26.19 +1.33/−1.13 km/s/kpc | 26.02 | −0.14σ |
+  | φ_b | 27.7 ± 4.5° | 27 | −0.16σ |
+  | S | 0.96 +0.22/−0.16 | 1 | +0.21σ |
+  | bar_frac | 0.92 +0.40/−0.23 | 1 | +0.25σ |
+
+  - The S–bar_frac anti-correlation ridge is clearly visible.
+  - Caveats:
+    - √(2N) tempering is a conservative convention, widening errors by 8.6× over the formal
+      ones. Rescaling by χ²_min/dof (1.2–1.3) would widen them by only 1.1×.
+    - The right tempering should be calibrated from the scatter of best fits over independent
+      mock realisations.
+    - The emulator still puts its maximum at the box corner (S 0.75, f 1.57, +1.4 tempered
+      units above the emulated truth). This is within its error; the evaluated ridge point
+      (S 0.82, f 1.50) is −0.7 below the truth.
+- **What S and bar_frac change** (`scripts/diagnose_bar_length_strength.py`; Ω_b and φ_b at the
+  truth; [maps](figures/test1_nbody_SF_maps.png), [radial profiles](figures/test1_nbody_SF_profiles.png),
+  `results/test1_nbody/diag_SF_chi2.json`). Untempered ΔlogL vs the truth:
+
+  | model | total | ⟨v_R⟩ | ⟨v_φ⟩ | ⟨v_z⟩ | σ_R | σ_φ | σ_z |
+  |---|---|---|---|---|---|---|---|
+  | ridge S 0.82, f 1.50 | −52 | −13 | −5 | −3 | −9 | −9 | −13 |
+  | ridge S 1.25, f 0.70 | −95 | −7 | −37 | 0 | −13 | −35 | −3 |
+  | f 0.7 | −61 | −10 | −23 | 0 | −10 | −5 | −12 |
+  | f 1.4 | −192 | −8 | −31 | −4 | −59 | −64 | −26 |
+  | S 0.8 | −94 | −22 | −25 | −5 | −16 | −14 | −11 |
+  | S 1.25 | −236 | −14 | −70 | +1 | −55 | −70 | −28 |
+
+  - The truth is best. The two ridge points cost much less than single offsets of similar size,
+    which is the degeneracy.
+  - The axisymmetric moments (mean v_φ, σ_R, σ_φ averaged over azimuth) are identical for all
+    models, because the family keeps the m = 0 part fixed. So S and bar_frac are constrained only
+    by the bar's non-axisymmetric signatures: the v_R and v_φ m = 2 streaming, and bar-induced
+    heating (a stronger or longer bar inflates σ_R and σ_φ near the bar ends).
+  - Along the ridge, stretching and weakening the bar keeps the m = 2 amplitude at 2–4 kpc similar.
+    S 0.82/f 1.5 under-predicts the v_R quadrupole at 3–4 kpc (18 vs 23 km/s); S 1.25/f 0.70 fails
+    mainly at 7–8 kpc (ΔlogL ≈ −20 there).
+
 ## Next steps
 
 Agreed approach (2026-10-27): start from the simplest data and add realism one step at a time.

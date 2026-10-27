@@ -58,7 +58,13 @@ def main():
     ap.add_argument("--column", default="logL")
     ap.add_argument("--rmin", type=float, default=None)
     ap.add_argument("--rmax", type=float, default=None)
+    ap.add_argument("--levels", default=None, help="comma-separated filled-contour levels of logL - max")
+    ap.add_argument("--lines", default="-50,-20", help="comma-separated contour lines of logL - max")
     args = ap.parse_args()
+    global LEVELS
+    if args.levels:
+        LEVELS = [float(v) for v in args.levels.split(",")] + [0.1 * abs(float(args.levels.split(",")[-1]))]
+    lines = [float(v) for v in args.lines.split(",")]
     set_style()
     run = ge.use_run(args.run)
     TRUTH = run["truth"]
@@ -95,7 +101,7 @@ def main():
             elif j < i:          # lower: emulator profile
                 g, P = profile(emu, (j, i))
                 ax.contourf(phys(j, g), phys(i, g), (P - ymax).T, levels=LEVELS, cmap=cmap, norm=norm, extend="min")
-                ax.contour(phys(j, g), phys(i, g), (P - ymax).T, levels=[-50, -20], colors=INK_2, linewidths=0.6)
+                ax.contour(phys(j, g), phys(i, g), (P - ymax).T, levels=lines, colors=INK_2, linewidths=0.6)
                 ax.plot(phys(j, u[:, j]), phys(i, u[:, i]), ".", color=INK_2, ms=2)
                 for um, c, mk, ms, _ in marks:
                     ax.plot(phys(j, um[j]), phys(i, um[i]), mk, color=c, ms=ms, mec="white", mew=0.6)
@@ -105,7 +111,7 @@ def main():
                 ax.plot(phys(i, u[:, i]), y - ymax, ".", color=INK_2, ms=4)
                 ax.axvline(phys(i, u_truth[i]), color=ACCENT, lw=1.2, ls="--")
                 ax.axvline(phys(i, best.x[i]), color="#1baf7a", lw=1.0, ls=":")
-                ax.set_ylim(-1500, 100)
+                ax.set_ylim(1.3 * LEVELS[2], 0.1 * abs(LEVELS[2]))
                 ax.yaxis.tick_right()
                 ax.tick_params(labelsize=7)
             if i == 3:
@@ -139,7 +145,7 @@ def main():
     fig.legend(handles=handles, loc="upper right", bbox_to_anchor=(0.86, 0.9), fontsize=9)
     fig.suptitle(f"{run['prefix']} log-likelihood ({args.column}{', ' + tag[1:] if tag else ''}): "
                  f"upper = {len(tr)} Sobol evaluations, lower/diagonal = GP profile (max over hidden parameters); "
-                 "contours at −20, −50", y=0.92, fontsize=10.5)
+                 f"contours at {', '.join(f'{v:g}' for v in lines)}", y=0.92, fontsize=10.5)
     savefig(fig, f"{run['prefix']}_logl_corner" + tag)
 
 

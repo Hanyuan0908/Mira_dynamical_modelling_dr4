@@ -7,7 +7,9 @@ bootstrap resamplings of the stars (they include non-Gaussian tails, unlike sigm
 library moments saved by test1_nbody_qmc.py are compared with
     chi2 = sum over cells with N_obs >= N_MIN of (m_obs - m_lib)^2 / err_boot^2.
 Columns added to results/test1_nbody/qmc_evals.csv: chi2b_means, chi2b_means_R1, chi2b_meansdisp,
-chi2b_meansdisp_R1 (log L = -chi2/2).
+chi2b_meansdisp_R1 (log L = -chi2/2), and the Schwarzschild-style tempered version
+logLs_meansdisp_R1 = -chi2b_meansdisp_R1 / (2 sqrt(2 N_data)), N_data = 6 n_cells (n_cells at the truth),
+which treats the sqrt(2 N_data) scatter of chi2 itself as the 1-sigma threshold.
 """
 import numpy as np
 import pandas as pd
@@ -61,6 +63,9 @@ def main():
         out["chi2b_ncells"].append(n)
     for k, v in out.items():
         df[k] = v
+    n_truth = int(df.loc[df.kind == "truth", "chi2b_ncells"].iloc[0])
+    df["logLs_meansdisp_R1"] = -0.5 * df["chi2b_meansdisp_R1"] / np.sqrt(2 * 6 * n_truth)
+    print(f"tempering: N_data = 6 x {n_truth} cells, sqrt(2 N_data) = {np.sqrt(2 * 6 * n_truth):.1f}")
     df.to_csv(OUT_CSV, index=False)
     t = df.kind == "truth"
     for k in ("chi2b_means", "chi2b_means_R1", "chi2b_meansdisp", "chi2b_meansdisp_R1"):
