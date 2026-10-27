@@ -7,3 +7,7 @@ mock/
 .DS_Store
 __pycache__/
 *.ipynb_checkpoints
+
+# bulky derived per-star outputs
+results/test1_qmc/logp/
+results/**/*.npz

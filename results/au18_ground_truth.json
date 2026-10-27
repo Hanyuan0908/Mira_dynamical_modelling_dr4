@@ -32,6 +32,6 @@
       "Om_e": 0.3161467743375685
     }
   },
-  "potential": "mock/au18_potential/{dm,stars,gas,bh}.ini (scripts/build_au18_potential.py)",
+  "potential": "mock/au18_potential/{dm,stars,gas,bh}.ini",
   "method": "Dehnen, Semczuk & Schoenrich (2023) Fourier method, patternSpeed.py v0.6.3"
 }
