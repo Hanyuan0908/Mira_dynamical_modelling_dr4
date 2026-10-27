@@ -752,6 +752,88 @@ Small numeric results (tracked): `results/au18_ground_truth.json` (pattern speed
   - Shorter or weaker bars are penalised about 2–3× less than longer or stronger ones.
   - The mean-velocity maps alone (⟨v_R⟩ + ⟨v_φ⟩) give f 0.7 only Δχ² = +46, i.e. ΔlogL −0.29.
 
+## 2026-10-27 — Does re-binning tighten the S / bar_frac constraints? (no new integrations)
+
+**Set-up.**
+- Script: `scripts/test1_binning_study.py`; numbers in `results/test1_nbody/binning_study.json`.
+- Every saved library (65 global-search points and the 4 S/f variants) and the data are binned into
+  unions of the saved 0.5 kpc boxes. Each box goes to a bin by its centre, with the same mapping for
+  data and library.
+- Folding: y ≥ 0, z ≥ 0. Boxes used: wholly inside R < 8 kpc, |z| < 4 kpc. Layers: |z| 0–0.5–1–2–4 kpc.
+- Errors from 100 bootstraps; N_MIN 20.
+- Statistics: the 6 velocity moments, plus **star counts** (library: 1/τ-weighted mass, normalised
+  to the data total).
+- Check: the box version of the current cells (polar15) gives χ²/N_data = 1.30 at the truth
+  (exact polar likelihood: 1.29).
+
+**Means + dispersions.** Untempered Δχ² vs the truth for S 1.25 / S 0.8 / f 1.4 / f 0.7, with the
+tempered ΔlogL in brackets:
+
+| binning | N_data | √(2N) | S 1.25 | S 0.8 | f 1.4 | f 0.7 |
+|---|---|---|---|---|---|---|
+| polar15 (≈ current) | 2526 | 71.1 | +407 (−2.86) | +138 (−0.97) | +339 (−2.38) | +95 (−0.67) |
+| polar30 | 1608 | 56.7 | +340 (−3.00) | +114 (−1.01) | +343 (−3.02) | +116 (−1.03) |
+| polar45 | 1152 | 48.0 | +323 (−3.37) | +136 (−1.41) | +320 (−3.33) | +124 (−1.29) |
+| R 1 kpc × 15° | 1668 | 57.8 | +354 (−3.06) | +133 (−1.15) | +309 (−2.67) | +109 (−0.94) |
+| 0.5 kpc squares | 2742 | 74.1 | +488 (−3.29) | +188 (−1.27) | +484 (−3.27) | +150 (−1.02) |
+| 1 kpc squares | 1710 | 58.5 | +380 (−3.25) | +160 (−1.37) | +373 (−3.19) | +128 (−1.09) |
+| adaptive (≥ 100 stars) | 1392 | 52.8 | +333 (−3.15) | +107 (−1.01) | +351 (−3.32) | +89 (−0.85) |
+| Fourier m = 0, 2, 4 | 954 | 43.7 | +186 (−2.13) | +125 (−1.44) | +146 (−1.68) | +85 (−0.98) |
+| Fourier m = 0, 2 | 762 | 39.0 | +166 (−2.13) | +93 (−1.19) | +131 (−1.68) | +56 (−0.72) |
+
+- **Noise.** Over 60 data resamplings the realised Δχ² scatters with std 38–47 (polar15),
+  30–34 (polar45) and 35–44 (1 kpc squares). In tempered units that is about ±0.3.
+- **Untempered Δχ² (information).** It is largest for the finest bins (0.5 kpc squares). Coarser bins
+  never raise it beyond the noise.
+  - Fourier compression to m ≤ 4 loses about half for S 1.25 and f 1.4 (407 → 186, 339 → 146). The S/f
+    signal has structure finer than m = 4, e.g. at the bar ends.
+  - Squares beat polar15 (488 vs 407), because 15° sectors are about 1 kpc wide at R = 4.
+- **Tempered ΔlogL.** Coarser bins gain ×1.2–1.9, mostly because the denominator shrinks.
+  - polar45 vs polar15: √(2526/1152) = 1.48 at fixed Δχ², times the Δχ² retained (0.79–1.31).
+  - The S 0.8 and f 0.7 gains are about 1–2× the noise.
+- **Ridge point (Sobol #15: Ω 26.77, φ 27.6°, S 0.82, f 1.50).**
+  - Means + dispersions Δχ² vs the truth is +3 (polar15), +59 (polar45), +209 (1 kpc squares).
+  - The individual statistics swing by ±50–100 between binnings; σ_R ranges from −75 to +14.
+  - So separating the ridge is noise-limited. Choosing a binning post hoc to break it would be tuning
+    to noise.
+
+**Star counts (density stationarity), a statistic we saved but never used.**
+- [Figure](figures/test1_nbody_density_stationarity.png) (`scripts/plot_density_stationarity.py`): the
+  time-averaged library density changes coherently in wrong potentials.
+  - S 1.25: up to +20% beyond the bar ends (|x| ≈ 6–7 kpc) and −20% on the minor axis at R 5–7.
+  - S 0.8: the opposite.
+  - f 1.4 and f 0.7: ±10% along the bar and the minor axis at R 3–5.
+  - rms change per 0.5 kpc pixel (R < 6, |z| < 1): 6.0–10.0%, vs 16% median Poisson error; the
+    patterns span several kpc.
+- Counts alone, Δχ² for S 1.25 / S 0.8 / f 1.4 / f 0.7:
+  - polar15: +248 / +33 / +116 / +65 (N_data 421);
+  - polar45: +188 / +64 / +75 / +78 (192);
+  - 1 kpc squares: +253 / +60 / +98 / +99 (285).
+  - χ²/N_data at the truth: 1.09–1.46.
+- Means + dispersions + counts, tempered ΔlogL:
+
+  | binning | S 1.25 | S 0.8 | f 1.4 | f 0.7 |
+  |---|---|---|---|---|
+  | polar15 | −4.27 | −1.12 | −2.96 | −1.05 |
+  | polar45 | −4.93 | −1.92 | −3.81 | −1.94 |
+  | 1 kpc squares | −5.01 | −1.74 | −3.73 | −1.80 |
+
+- Effect on the 64 Sobol points: with counts, only 1 of them is within ΔlogL −2 of the truth for every
+  non-Fourier binning (1–5 without counts), and 4–6 are within −4.5 (7–9 without).
+- Counts add a positive amount for the ridge point in all 9 binnings (+23 to +76), but the ridge
+  stays close: −0.18 (polar15), −1.08 (polar45), −1.84 (1 kpc squares).
+- **Caveats.**
+  - Counts depend directly on the selection function, so they need S(x) forward-modelled (Test 2a).
+  - Library noise is not in the error budget.
+  - Bins are box-centre approximations.
+  - Fourier rows use diagonal bootstrap errors.
+
+**Conclusion.**
+- Re-binning adds no information: the finest well-populated bins keep the most Δχ².
+- Under the √(2N_data) tempering, fewer bins give tighter tempered constraints at the same Δχ². The
+  tempered posterior width therefore depends on the binning convention.
+- The real gain available from the saved data is the density term.
+
 ## Next steps
 
 Agreed approach (2026-10-27): start from the simplest data and add realism one step at a time.
