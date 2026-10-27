@@ -3,7 +3,9 @@ noise floor (truth evaluated at a different integrator accuracy), and its radial
 
 Likelihoods: per-star KDE; per-star local Gaussian N(v | mu, C); two robust variants computed from the
 saved mu, C (Student-t with nu = 5 and the same scale matrix; Gaussian mixed with a 2% component of
-9x the covariance); moment chi^2 (means, all R / R >= 1 kpc; means + dispersions, R >= 1 kpc) as -chi2/2.
+9x the covariance); moment chi^2 (means, all R / R >= 1 kpc; means + dispersions, R >= 1 kpc) as the
+tempered log L = -chi2 / (2 sqrt(2 N_data)), N_data = (3 or 6) x n_cells at the truth (n_cells with R >= 1
+taken as N_CELLS_R1, from the global search; the pilot did not record it).
 """
 import json
 
@@ -17,6 +19,7 @@ from common import set_style, savefig, INK, INK_2, INK_MUTED, ACCENT, BLUE_RAMP
 from test1_nbody_pilot import OUT_DIR, MOCK
 
 NU, EPS, INFL = 5.0, 0.02, 9.0
+N_CELLS_R1 = 451
 R_BINS = ((0, 1), (1, 2), (2, 4), (4, 6), (6, 8))
 
 
@@ -55,16 +58,18 @@ def main():
                                student_t=t, gauss_mix=mix)
     i_truth = int(df.loc[df.label == "truth", "i"].iloc[0])
     names = {"kde": "per-star KDE", "gauss": "per-star Gaussian", "student_t": "per-star Student-t (ν=5)",
-             "gauss_mix": "per-star Gaussian + 2% outliers", "chi2_means": "moments: means (all R)",
-             "chi2_means_R1": "moments: means (R ≥ 1)", "chi2_meansdisp_R1": "moments: means+disp (R ≥ 1)"}
+             "gauss_mix": "per-star Gaussian + 2% outliers", "chi2_means": "tempered moments: means (all R)",
+             "chi2_means_R1": "tempered: means (R ≥ 1)", "chi2_meansdisp_R1": "tempered: means+disp (R ≥ 1)"}
     table, radial = {}, {}
     for _, row in df.iterrows():
         i = int(row.i)
         if i == i_truth:
             continue
         d = {k: float(np.sum(per[i][k] - per[i_truth][k])) for k in ("kde", "gauss", "student_t", "gauss_mix")}
-        for k in ("chi2_means", "chi2_means_R1", "chi2_meansdisp_R1"):
-            d[k] = float(-0.5 * (row[k] - df.loc[df.i == i_truth, k].iloc[0]))
+        n_all = int(df.loc[df.i == i_truth, "chi2_means_ncells"].iloc[0])
+        for k, n_data in (("chi2_means", 3 * n_all), ("chi2_means_R1", 3 * N_CELLS_R1),
+                          ("chi2_meansdisp_R1", 6 * N_CELLS_R1)):
+            d[k] = float(-0.5 * (row[k] - df.loc[df.i == i_truth, k].iloc[0]) / np.sqrt(2 * n_data))
         table[row.label] = d
         radial[row.label] = {k: {f"{a}-{b}": float(np.sum((per[i][k] - per[i_truth][k])[(R >= a) & (R < b)]))
                                  for a, b in R_BINS} for k in ("kde", "gauss", "gauss_mix")}

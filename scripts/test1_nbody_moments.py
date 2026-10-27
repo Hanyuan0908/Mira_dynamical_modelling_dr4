@@ -6,10 +6,10 @@ steady_state_likelihood (R x phi mod pi x |z|). Errors on the observed moments c
 bootstrap resamplings of the stars (they include non-Gaussian tails, unlike sigma/sqrt(2N)). The
 library moments saved by test1_nbody_qmc.py are compared with
     chi2 = sum over cells with N_obs >= N_MIN of (m_obs - m_lib)^2 / err_boot^2.
-Columns added to results/test1_nbody/qmc_evals.csv: chi2b_means, chi2b_means_R1, chi2b_meansdisp,
-chi2b_meansdisp_R1 (log L = -chi2/2), and the Schwarzschild-style tempered version
-logLs_meansdisp_R1 = -chi2b_meansdisp_R1 / (2 sqrt(2 N_data)), N_data = 6 n_cells (n_cells at the truth),
-which treats the sqrt(2 N_data) scatter of chi2 itself as the 1-sigma threshold.
+Columns added to results/test1_nbody/qmc_evals.csv: chi2b_<variant> for variant in means, means_R1,
+meansdisp, meansdisp_R1, and the Schwarzschild-style tempered log-likelihood used from now on,
+logLs_<variant> = -chi2b_<variant> / (2 sqrt(2 N_data)), N_data = (3 or 6 moments) x n_cells of that
+variant at the truth, which treats the sqrt(2 N_data) scatter of chi2 itself as the 1-sigma threshold.
 """
 import numpy as np
 import pandas as pd
@@ -50,30 +50,33 @@ def main():
     with h5py.File(MOCK, "r") as f:
         stars_mw = np.column_stack([f[k][:].astype(np.float64) for k in ("x", "y", "z", "vx", "vy", "vz")])
     cache = {}
-    out = {k: [] for k in ("chi2b_means", "chi2b_means_R1", "chi2b_meansdisp", "chi2b_meansdisp_R1", "chi2b_ncells")}
+    VARIANTS = (("chi2b_means", 0.0, False), ("chi2b_means_R1", 1.0, False),
+                ("chi2b_meansdisp", 0.0, True), ("chi2b_meansdisp_R1", 1.0, True))
+    out = {k: [] for k in [v[0] for v in VARIANTS] + [v[0] + "_ncells" for v in VARIANTS]}
     for _, row in df.iterrows():
         phi = round(float(row.phi_b_deg), 6)
         if phi not in cache:      # same bootstrap seed for every point: common random numbers
             cache[phi] = boot_errors(ssl.rotate_z(stars_mw, np.radians(phi)), np.random.default_rng(SEED))
         a = np.load(ARR_DIR / f"{int(row.idx):03d}.npz")
-        for name, rmin, disp in (("chi2b_means", 0.0, False), ("chi2b_means_R1", 1.0, False),
-                                 ("chi2b_meansdisp", 0.0, True), ("chi2b_meansdisp_R1", 1.0, True)):
+        for name, rmin, disp in VARIANTS:
             c, n = chi2(cache[phi], a["lib_m1"], a["lib_s"], rmin, disp)
             out[name].append(c)
-        out["chi2b_ncells"].append(n)
+            out[name + "_ncells"].append(n)
     for k, v in out.items():
         df[k] = v
-    n_truth = int(df.loc[df.kind == "truth", "chi2b_ncells"].iloc[0])
-    df["logLs_meansdisp_R1"] = -0.5 * df["chi2b_meansdisp_R1"] / np.sqrt(2 * 6 * n_truth)
-    print(f"tempering: N_data = 6 x {n_truth} cells, sqrt(2 N_data) = {np.sqrt(2 * 6 * n_truth):.1f}")
-    df.to_csv(OUT_CSV, index=False)
     t = df.kind == "truth"
-    for k in ("chi2b_means", "chi2b_means_R1", "chi2b_meansdisp", "chi2b_meansdisp_R1"):
-        dl = -0.5 * (df[k] - df.loc[t, k].iloc[0])
+    for name, _, disp in VARIANTS:
+        n_data = (6 if disp else 3) * int(df.loc[t, name + "_ncells"].iloc[0])
+        df[name.replace("chi2b_", "logLs_")] = -0.5 * df[name] / np.sqrt(2 * n_data)
+        print(f"tempering {name:20s}: N_data = {n_data:5d}, sqrt(2 N_data) = {np.sqrt(2 * n_data):5.1f}")
+    df.to_csv(OUT_CSV, index=False)
+    for k in ("logLs_means", "logLs_means_R1", "logLs_meansdisp", "logLs_meansdisp_R1"):
+        dl = df[k] - df.loc[t, k].iloc[0]
         b = dl.idxmax()
-        print(f"{k:20s} chi2(truth) = {df.loc[t, k].iloc[0]:8.1f} (cells {df.loc[t, 'chi2b_ncells'].iloc[0]}, x{3 if 'disp' not in k else 6} moments); "
+        print(f"{k:20s} "
               f"truth rank {int((dl > 0).sum()) + 1}/65; best: Omega {df.Omega_abs[b]:.2f} phi {df.phi_b_deg[b]:.1f} "
-              f"S {df.S[b]:.3f} f {df.bar_frac[b]:.3f} (dlogL {dl[b]:+.1f})")
+              f"S {df.S[b]:.3f} f {df.bar_frac[b]:.3f} (dlogL {dl[b]:+.2f}); second best dlogL "
+              f"{dl.drop(index=b).max():+.2f}")
 
 
 if __name__ == "__main__":

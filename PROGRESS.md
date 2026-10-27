@@ -641,6 +641,44 @@ Small numeric results (tracked): `results/au18_ground_truth.json` (pattern speed
     bar_frac: S 1.25 from −86 to −205 and f 1.4 from −41 to −159.
   - The posterior medians vary by about 0.1σ between emulator and emcee runs (emcee is not seeded).
 
+## 2026-10-27 — Tempered χ² is now the standard moment likelihood
+
+- From now on every moment-map log-likelihood is reported tempered:
+  log L = −χ² / (2 √(2 N_data)), with N_data = (number of moments) × (number of cells) at the truth.
+  On this scale ΔlogL = −0.5, −2 and −4.5 mark 1σ, 2σ and 3σ.
+- Applied to:
+  - all four χ² variants: columns `logLs_means` (√2N = 55.6), `logLs_means_R1` (52.0),
+    `logLs_meansdisp` (78.6) and `logLs_meansdisp_R1` (73.6) in `results/test1_nbody/qmc_evals.csv`;
+  - the S–bar_frac diagnostic (`results/test1_nbody/diag_SF_chi2.json`, profile figure);
+  - the pilot table (`results/test1_nbody/pilot_summary.json`).
+- Global search: the truth is still the best of 65 evaluated points for every variant. The second
+  best is −0.54 to −0.88 tempered, i.e. about 1σ away.
+- S–bar_frac diagnostic, tempered ΔlogL (means + dispersions, R ≥ 1 kpc; Ω_b and φ_b at the truth):
+
+  | model | total | ⟨v_R⟩ | ⟨v_φ⟩ | ⟨v_z⟩ | σ_R | σ_φ | σ_z |
+  |---|---|---|---|---|---|---|---|
+  | ridge S 0.82, f 1.50 | −0.71 | −0.18 | −0.06 | −0.04 | −0.12 | −0.13 | −0.18 |
+  | ridge S 1.25, f 0.70 | −1.29 | −0.10 | −0.50 | 0.00 | −0.18 | −0.48 | −0.04 |
+  | f 0.7 | −0.82 | −0.13 | −0.31 | 0.00 | −0.14 | −0.07 | −0.17 |
+  | f 1.4 | −2.60 | −0.11 | −0.41 | −0.06 | −0.80 | −0.87 | −0.36 |
+  | S 0.8 | −1.27 | −0.30 | −0.34 | −0.07 | −0.22 | −0.19 | −0.15 |
+  | S 1.25 | −3.20 | −0.19 | −0.95 | +0.02 | −0.75 | −0.96 | −0.38 |
+
+- Pilot, tempered moment ΔlogL (means all R / means R ≥ 1 / means + dispersions R ≥ 1):
+
+  | offset | means all R | means R ≥ 1 | means + disp R ≥ 1 |
+  |---|---|---|---|
+  | Ω_b = 20 | −16.3 | −17.4 | −39.8 |
+  | Ω_b = 32 | −6.8 | −7.3 | −6.9 |
+  | φ_b = 17° | −2.0 | −2.0 | −3.2 |
+  | φ_b = 37° | −1.7 | −1.6 | −2.8 |
+  | bar_frac = 0.7 | −0.7 | −0.6 | −0.7 |
+  | bar_frac = 1.4 | −0.7 | −0.9 | −2.2 |
+  | S = 0.8 | −0.9 | −1.0 | −1.1 |
+  | S = 1.25 | −1.6 | −1.7 | −2.8 |
+
+  The noise floor is about 0.0 on this scale.
+
 ## Next steps
 
 Agreed approach (2026-10-27): start from the simplest data and add realism one step at a time.

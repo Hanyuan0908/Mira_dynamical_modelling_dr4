@@ -73,11 +73,13 @@ def main():
                                      (("<vR>", pm, 0), ("<vphi>", pm, 1), ("<vz>", pm, 2),
                                       ("sR", ps, 0), ("sphi", ps, 1), ("sz", ps, 2))})
     t = chi[MODELS[0][0]]
-    print("Delta logL = -(chi2 - chi2_truth)/2   [means + dispersions of v_R, v_phi, v_z; R >= 1 kpc]")
+    temp = np.sqrt(2 * 6 * int(good.sum()))      # tempering denominator sqrt(2 N_data), N_data = 6 x n_cells
+    print(f"Delta logL = -(chi2 - chi2_truth) / (2 sqrt(2 N_data)), N_data = 6 x {int(good.sum())}, "
+          f"sqrt(2 N_data) = {temp:.1f}   [means + dispersions of v_R, v_phi, v_z; R >= 1 kpc]")
     for label in lib:
-        d = {k: -0.5 * (v - t["by_moment"][k]) for k, v in chi[label]["by_moment"].items()}
-        print(f"  {label:24s} total {-0.5 * (chi[label]['total'] - t['total']):+8.1f}   " +
-              "  ".join(f"{k} {v:+6.1f}" for k, v in d.items()))
+        d = {k: -0.5 * (v - t["by_moment"][k]) / temp for k, v in chi[label]["by_moment"].items()}
+        print(f"  {label:24s} total {-0.5 * (chi[label]['total'] - t['total']) / temp:+7.2f}   " +
+              "  ".join(f"{k} {v:+6.2f}" for k, v in d.items()))
 
     # ---------- figure 1: midplane maps ----------
     phi_e = ssl.CELL_PHI
@@ -149,18 +151,21 @@ def main():
     axes[0, 0].legend(fontsize=7.5)
     ax = axes[1, 2]
     for (label, S, f, _), c, ls in zip(MODELS[1:], cols[1:], styles[1:]):
-        ax.plot(Rc, -0.5 * (chi[label]["by_R"] - t["by_R"]), ls, color=c, lw=1.4, label=label)
+        ax.plot(Rc, -0.5 * (chi[label]["by_R"] - t["by_R"]) / temp, ls, color=c, lw=1.4, label=label)
     ax.axhline(0, color=INK_MUTED, lw=0.8)
-    ax.set_title("Δlog L vs truth per radius (all |z|, R ≥ 1)", color=INK_2, fontsize=9.5)
+    ax.set_title(f"Δlog L vs truth per radius (tempered by {temp:.1f}; all |z|, R ≥ 1)", color=INK_2, fontsize=9.5)
     ax.set_xlabel("R [kpc]")
     ax.set_xlim(0, 8)
     ax.legend(fontsize=7.5)
     fig.suptitle("N-body Test 1: what bar length S and strength f change (Ω_b, φ_b at truth)", y=0.97, fontsize=11)
     savefig(fig, "test1_nbody_SF_profiles")
     with open(OUT_DIR / "diag_SF_chi2.json", "w") as fh:
-        json.dump({l: dict(dlogL=-0.5 * (v["total"] - t["total"]),
-                           by_moment={k: -0.5 * (x - t["by_moment"][k]) for k, x in v["by_moment"].items()})
-                   for l, v in chi.items()}, fh, indent=2)
+        json.dump(dict(tempering_sqrt_2N=float(temp),
+                       models={l: dict(dlogL_tempered=-0.5 * (v["total"] - t["total"]) / temp,
+                                       dlogL_untempered=-0.5 * (v["total"] - t["total"]),
+                                       by_moment_tempered={k: -0.5 * (x - t["by_moment"][k]) / temp
+                                                           for k, x in v["by_moment"].items()})
+                               for l, v in chi.items()}), fh, indent=2)
 
 
 if __name__ == "__main__":
