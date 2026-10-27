@@ -1,12 +1,12 @@
 """Square-pixel face-on maps (bar frame, 0.5 kpc pixels, |z| < 1 kpc) of <v_R>, <v_phi>, sigma_R, sigma_phi for the
 N-body mock data and for orbit libraries at the true Omega_b and phi_b with different bar length / strength.
 
-  test1_nbody_maps_length.png    rows: data; model at ground truth, S = 1.25, S = 0.8; bootstrap data error per pixel;
+  test1_nbody_square_maps_bar_length_vs_data.png    rows: data; model at ground truth, S = 1.25, S = 0.8; bootstrap data error per pixel;
                                  each model - data; S = 1.25 - ground-truth model; S = 0.8 - ground-truth model
-  test1_nbody_maps_strength.png  same for bar_frac = 1.4 and 0.7
+  test1_nbody_square_maps_bar_strength_vs_data.png  same for bar_frac = 1.4 and 0.7
 Data are folded with the library's point symmetry ((x, y) -> (-x, -y); v_R, v_phi unchanged), so a pixel holds the stars
 of itself and of its mirror pixel; pixels with fewer than N_MIN such stars are grey. Data errors: bootstrap over stars.
-Library maps come from the saved 0.5 kpc box sums (run_SF_box_models.py; truth from the global search point 000).
+Library maps come from the saved 0.5 kpc box sums (run_bar_length_strength_models.py; truth from the global search point 000).
 
 Per panel (all over the data pixels):
   ground truth - data:  rms and chi^2 / pixel with the bootstrap errors
@@ -168,8 +168,8 @@ def main():
     sub = (f"0.5 kpc square pixels, |z| < {Z_CUT:g} kpc, bar frame (bar along x, dashed); Ω_b = {TRUTH['Omega_abs']}, "
            f"φ_b = {TRUTH['phi_b_deg']:g}°; grey = < {N_MIN} stars; χ² of these 2D maps, tempered by "
            f"√(2·4·{n_pix}) = {temper:.1f}")
-    for name, title, alt in (("test1_nbody_maps_length", "Bar LENGTH", ("S 1.25 (longer)", "S 0.8 (shorter)")),
-                             ("test1_nbody_maps_strength", "Bar STRENGTH", ("f 1.4 (stronger)", "f 0.7 (weaker)"))):
+    for name, title, alt in (("test1_nbody_square_maps_bar_length_vs_data", "Bar LENGTH", ("S 1.25 (longer)", "S 0.8 (shorter)")),
+                             ("test1_nbody_square_maps_bar_strength_vs_data", "Bar STRENGTH", ("f 1.4 (stronger)", "f 0.7 (weaker)"))):
         rows = [("data (folded)", "value", "data", None), ("ground truth", "value", "ground truth", None)]
         rows += [(a, "value", a, None) for a in alt]
         rows += [("data error (bootstrap)", "error", None, None)]
@@ -182,7 +182,7 @@ def main():
     print(f"{len(stars)} stars with |z| < {Z_CUT}; {n_pix} pixels with N >= {N_MIN} (folded); "
           f"median N per pixel {np.median(data['N'][~mask]):.0f}; sqrt(2 N_data) = {temper:.1f}")
     print("median bootstrap error per pixel [km/s]:", {k: round(v, 1) for k, v in numbers["median_boot_error_kms"].items()})
-    for name in ("test1_nbody_maps_length", "test1_nbody_maps_strength"):
+    for name in ("test1_nbody_square_maps_bar_length_vs_data", "test1_nbody_square_maps_bar_strength_vs_data"):
         print(name)
         for lab, v in numbers[name].items():
             print(f"  {lab:32s} " + "  ".join(f"{k} " + " ".join(f"{n} {x:.2f}" for n, x in d.items()) for k, d in v.items()))

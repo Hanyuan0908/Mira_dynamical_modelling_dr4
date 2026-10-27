@@ -119,7 +119,7 @@ def main():
     fig.suptitle("N-body Test 1, midplane (|z| < 0.5 kpc), bar frame (bar along x, dashed): observed moments "
                  "and pulls of the orbit library for different bar length S and strength f "
                  f"(Ω_b = {TRUE_OM}, φ_b = {TRUE_PHI}°)", y=0.995, fontsize=11)
-    savefig(fig, "test1_nbody_SF_maps")
+    savefig(fig, "test1_nbody_bar_length_strength_polar_pull_maps")
 
     # ---------- figure 2: radial profiles ----------
     def fourier(a, w):     # m = 2 amplitude and phase-free azimuthal mean over phi bins, |z| < 1 kpc
@@ -158,7 +158,7 @@ def main():
     ax.set_xlim(0, 8)
     ax.legend(fontsize=7.5)
     fig.suptitle("N-body Test 1: what bar length S and strength f change (Ω_b, φ_b at truth)", y=0.97, fontsize=11)
-    savefig(fig, "test1_nbody_SF_profiles")
+    savefig(fig, "test1_nbody_bar_length_strength_radial_profiles")
     with open(OUT_DIR / "diag_SF_chi2.json", "w") as fh:
         json.dump(dict(tempering_sqrt_2N=float(temp),
                        models={l: dict(dlogL_tempered=-0.5 * (v["total"] - t["total"]) / temp,

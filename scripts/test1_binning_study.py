@@ -1,7 +1,7 @@
 """Test 1b: does re-binning the moment maps tighten the bar length / strength constraints?
 
 No new integrations. The data and every saved orbit library (global-search points 000-064 and the four
-S / bar_frac variants of run_SF_box_models.py) are compared in bins built as unions of the saved 0.5 kpc
+S / bar_frac variants of run_bar_length_strength_models.py) are compared in bins built as unions of the saved 0.5 kpc
 library boxes (box -> bin by its centre; the same mapping for data and library), folded into y >= 0, z >= 0
 (the library is four-fold symmetric; the stars are folded the same way, v_z -> v_z sign z). Only boxes
 wholly inside R < 8 kpc and |z| < 4 kpc are used.

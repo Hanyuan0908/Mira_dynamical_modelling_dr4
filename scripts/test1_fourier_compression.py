@@ -11,10 +11,11 @@ sector centres and is dropped). Blocks with fewer usable sectors than coefficien
 
 No new integrations: data sector moments and bootstrap errors (test1_nbody_moments.boot_errors, same seed), saved
 library sector moments of the global search (000-064), the pilot offsets and accuracy-noise twin, and the diag ridge
-points. Also the non-axisymmetric part alone, chi2F2to<m> = chi2F<m> - chi2F0 (modes 2..m with the error-weighted ring
+points. Also the non-axisymmetric part alone, chi2(modes 2..m) = chi2(m_max = m) - chi2(m_max = 0) (modes 2..m with the error-weighted ring
 average projected out; N_data = N(m) - N(0)). Outputs: results/test1_nbody/fourier_compression.json, columns
-chi2F<m>_<set>, chi2F2to<m>_<set> and tempered logLs_F<m>_<set>, logLs_F2to<m>_<set> in qmc_evals.csv,
-figures/test1_nbody_fourier_compression.png.
+chi2_fourier_mmax<m>_<set>, chi2_fourier_m2to<m>_<set>, tempered logLs_fourier_mmax<m>_<set>, logLs_fourier_m2to<m>_<set>,
+and per-field schemes logLs_fourier_<field>_m<modes>... in qmc_evals.csv,
+figures/test1_nbody_fourier_compression_vs_mmax.png.
 """
 import json
 
@@ -34,8 +35,8 @@ M_LIST = (0, 2, 4, 6, 8, 10, 12)
 SETS = {"means": [0, 1, 2], "meansdisp": [0, 1, 2, 3, 4, 5], "Rphi_meansdisp": [0, 1, 3, 4]}
 FIELDS = ["<v_R>", "<v_phi>", "<v_z>", "sigma_R", "sigma_phi", "sigma_z"]
 # per-field mode schemes at m_max = 4: {field: keep the ring average (m = 0)?}; m = 2, 4 always kept (cos and sin)
-SCHEMES = {"F4_inplane": {0: False, 1: True, 3: True, 4: True},          # <v_R> m 2,4; <v_phi>, sigma_R, sigma_phi m 0,2,4
-           "F4_inplane_nos0": {0: False, 1: True, 3: False, 4: False}}   # same, dispersions without their ring average
+SCHEMES = {"fourier_vR_m24_vphi_sigR_sigphi_m024": {0: False, 1: True, 3: True, 4: True},
+           "fourier_vR_sigR_sigphi_m24_vphi_m024": {0: False, 1: True, 3: False, 4: False}}
 MODELS = [("S 1.25", "pilot_09.npz"), ("S 0.8", "pilot_08.npz"), ("f 1.4", "pilot_07.npz"), ("f 0.7", "pilot_06.npz"),
           ("ridge S 0.82, f 1.50", "diag_SF_S0.82_f1.5.npz"), ("ridge S 1.25, f 0.70", "diag_SF_S1.25_f0.7.npz"),
           ("truth, accuracy 3e-6 (integrator noise only)", "pilot_01.npz")]
@@ -124,7 +125,7 @@ def main():
 
     # ---- global search: all 65 points, every m_max; same bootstrap errors per phi as test1_nbody_moments ----
     cache = {}
-    cols = {f"chi2F{m}_{s}": [] for m in M_LIST for s in ("means", "meansdisp")}
+    cols = {f"chi2_fourier_mmax{m}_{s}": [] for m in M_LIST for s in ("means", "meansdisp")}
     pf = {(f, m): [] for f in range(6) for m in (0, 4)}
     for _, row in df.iterrows():
         phi = round(float(row.phi_b_deg), 6)
@@ -133,33 +134,34 @@ def main():
         L = lib(f"{int(row.idx):03d}.npz")
         for m in M_LIST:
             for s in ("means", "meansdisp"):
-                cols[f"chi2F{m}_{s}"].append(chi2_fourier(cache[phi], *L, m, SETS[s])[0])
+                cols[f"chi2_fourier_mmax{m}_{s}"].append(chi2_fourier(cache[phi], *L, m, SETS[s])[0])
         for (f, m) in pf:
             pf[(f, m)].append(chi2_fourier(cache[phi], *L, m, [f])[0])
     for k, v in cols.items():
         df[k] = v
     t = df.kind == "truth"
-    check = float(df.loc[t, "chi2F12_meansdisp"].iloc[0] - df.loc[t, "chi2b_meansdisp"].iloc[0])
+    check = float(df.loc[t, "chi2_fourier_mmax12_meansdisp"].iloc[0] - df.loc[t, "chi2b_meansdisp"].iloc[0])
     out["check_m12_equals_sector_chi2_meansdisp"] = check
     out["qmc"] = {}
-    variants = [(str(m), m, None) for m in M_LIST] + [(f"2to{m}", m, 0) for m in (4, 6)]
+    variants = [(f"mmax{m}", m, None) for m in M_LIST] + [(f"m2to{m}", m, 0) for m in (4, 6)]
     for key, m, lo in variants:
         for s in ("means", "meansdisp"):
             nd = out["n_data_truth"][s][m] - (0 if lo is None else out["n_data_truth"][s][lo])
             if lo is not None:
-                df[f"chi2F{key}_{s}"] = df[f"chi2F{m}_{s}"] - df[f"chi2F{lo}_{s}"]
-            df[f"logLs_F{key}_{s}"] = -0.5 * df[f"chi2F{key}_{s}"] / np.sqrt(2 * nd)
-            dl = (df[f"logLs_F{key}_{s}"] - df.loc[t, f"logLs_F{key}_{s}"].iloc[0])[~t]
+                df[f"chi2_fourier_{key}_{s}"] = df[f"chi2_fourier_mmax{m}_{s}"] - df[f"chi2_fourier_mmax{lo}_{s}"]
+            df[f"logLs_fourier_{key}_{s}"] = -0.5 * df[f"chi2_fourier_{key}_{s}"] / np.sqrt(2 * nd)
+            dl = (df[f"logLs_fourier_{key}_{s}"] - df.loc[t, f"logLs_fourier_{key}_{s}"].iloc[0])[~t]
             out["qmc"].setdefault(s, {})[key] = dict(N_data=nd, best=float(dl.max()), best_idx=int(df.idx[dl.idxmax()]),
                                                    n_gt_m2=int((dl > -2).sum()), n_gt_m4p5=int((dl > -4.5).sum()),
                                                    truth_rank=int((dl > 0).sum()) + 1)
     # hybrid: means in modes 0..4, dispersions in modes 2..4 only (their ring averages misfit even at the truth)
     nd = (out["n_data_truth"]["meansdisp"][4] - out["n_data_truth"]["meansdisp"][0]
           + out["n_data_truth"]["means"][0])
-    df["chi2F4m_F2to4d"] = df["chi2F4_meansdisp"] - df["chi2F0_meansdisp"] + df["chi2F0_means"]
-    df["logLs_F4m_F2to4d"] = -0.5 * df["chi2F4m_F2to4d"] / np.sqrt(2 * nd)
-    dl = (df["logLs_F4m_F2to4d"] - df.loc[t, "logLs_F4m_F2to4d"].iloc[0])[~t]
-    out["qmc"]["hybrid_F4m_F2to4d"] = dict(N_data=nd, best=float(dl.max()), best_idx=int(df.idx[dl.idxmax()]),
+    df["chi2_fourier_means_m024_sigmas_m24"] = (df["chi2_fourier_mmax4_meansdisp"] - df["chi2_fourier_mmax0_meansdisp"]
+                                               + df["chi2_fourier_mmax0_means"])
+    df["logLs_fourier_means_m024_sigmas_m24"] = -0.5 * df["chi2_fourier_means_m024_sigmas_m24"] / np.sqrt(2 * nd)
+    dl = (df["logLs_fourier_means_m024_sigmas_m24"] - df.loc[t, "logLs_fourier_means_m024_sigmas_m24"].iloc[0])[~t]
+    out["qmc"]["fourier_means_m024_sigmas_m24"] = dict(N_data=nd, best=float(dl.max()), best_idx=int(df.idx[dl.idxmax()]),
                                            n_gt_m2=int((dl > -2).sum()), n_gt_m4p5=int((dl > -4.5).sum()))
     for sc, spec in SCHEMES.items():
         nd = scheme_chi2(nd_pf, spec)
@@ -173,7 +175,7 @@ def main():
         json.dump(out, fh, indent=1)
 
     # ---- print ----
-    print(f"check: chi2F12_meansdisp - chi2b_meansdisp at the truth = {check:.3e}")
+    print(f"check: chi2_fourier_mmax12_meansdisp - chi2b_meansdisp at the truth = {check:.3e}")
     for sname in SETS:
         print(f"\n=== {sname} ===   m_max: " + "  ".join(f"{m:>16d}" for m in M_LIST))
         print(f"{'N_data':38s}" + "  ".join(f"{out['n_data_truth'][sname][m]:16d}" for m in M_LIST))
@@ -203,7 +205,7 @@ def main():
             for lab, _ in MODELS[:6]) + f"  | global search: {out['qmc'][sc]}")
     for s in ("means", "meansdisp"):
         print(f"\nglobal search, {s}: " + "  ".join(
-            f"\n   F{m}: best {q['best']:+.2f} (#{q['best_idx']}), n>-2 {q['n_gt_m2']}, n>-4.5 {q['n_gt_m4p5']}, rank {q['truth_rank']}"
+            f"\n   {m}: best {q['best']:+.2f} (#{q['best_idx']}), n>-2 {q['n_gt_m2']}, n>-4.5 {q['n_gt_m4p5']}, rank {q['truth_rank']}"
             for m, q in out["qmc"][s].items()))
 
     # ---- figure ----
@@ -241,7 +243,7 @@ def main():
         ax.set_xticks(M_LIST)
     fig.suptitle("Fourier compression of the polar moment maps (means + dispersions of v_R, v_φ, v_z; all R, all |z|; "
                  "Ω_b, φ_b at the truth)", y=1.02, fontsize=11)
-    savefig(fig, "test1_nbody_fourier_compression")
+    savefig(fig, "test1_nbody_fourier_compression_vs_mmax")
 
 
 if __name__ == "__main__":

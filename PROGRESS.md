@@ -564,7 +564,7 @@ Small numeric results (tracked): `results/au18_ground_truth.json` (pattern speed
       units above the emulated truth). This is within its error; the evaluated ridge point
       (S 0.82, f 1.50) is −0.7 below the truth.
 - **What S and bar_frac change** (`scripts/diagnose_bar_length_strength.py`; Ω_b and φ_b at the
-  truth; [maps](figures/test1_nbody_SF_maps.png), [radial profiles](figures/test1_nbody_SF_profiles.png),
+  truth; [maps](figures/test1_nbody_bar_length_strength_polar_pull_maps.png), [radial profiles](figures/test1_nbody_bar_length_strength_radial_profiles.png),
   `results/test1_nbody/diag_SF_chi2.json`). Untempered ΔlogL vs the truth:
 
   | model | total | ⟨v_R⟩ | ⟨v_φ⟩ | ⟨v_z⟩ | σ_R | σ_φ | σ_z |
@@ -589,13 +589,13 @@ Small numeric results (tracked): `results/au18_ground_truth.json` (pattern speed
 
 ## 2026-10-27 — Face-on mean and dispersion maps for different bar lengths and strengths
 
-- Script: `scripts/plot_SF_model_maps.py`. No new integrations: it reuses the cached library cell
+- Script: `scripts/plot_bar_length_strength_polar_maps.py`. No new integrations: it reuses the cached library cell
   moments. Numbers are in `results/test1_nbody/SF_maps_numbers.json`.
 - Figures (midplane |z| < 0.5 kpc, bar frame):
-  [values](figures/test1_nbody_SFmaps_values.png),
-  [non-axisymmetric part](figures/test1_nbody_SFmaps_nonaxi.png),
-  [model − truth model](figures/test1_nbody_SFmaps_diff.png),
-  [m = 2 amplitude and phase profiles](figures/test1_nbody_SFmaps_m2.png).
+  [values](figures/test1_nbody_bar_length_strength_polar_maps_values.png),
+  [non-axisymmetric part](figures/test1_nbody_bar_length_strength_polar_maps_nonaxisymmetric.png),
+  [model − truth model](figures/test1_nbody_bar_length_strength_polar_maps_model_minus_truth.png),
+  [m = 2 amplitude and phase profiles](figures/test1_nbody_bar_length_strength_m2_profiles.png).
 - **All four maps carry strong m = 2 structure.** Truth model, m = 2 amplitude at
   R = 2.25 / 3.25 / 4.25 / 5.25 kpc:
 
@@ -702,10 +702,10 @@ Small numeric results (tracked): `results/au18_ground_truth.json` (pattern speed
   evaluated non-truth point, (S 0.82, f 1.50), is at −26.20.
 
 **Square-pixel face-on maps.**
-- Scripts: `scripts/run_SF_box_models.py` integrates S 1.25, S 0.8, f 1.4 and f 0.7 at the true
-  Ω_b and φ_b (about 2 min each). `scripts/plot_SF_square_maps.py` makes the maps.
-- Figures: [bar length](figures/test1_nbody_maps_length.png) and
-  [bar strength](figures/test1_nbody_maps_strength.png). Pixels are 0.5 kpc, |z| < 1 kpc, in the
+- Scripts: `scripts/run_bar_length_strength_models.py` integrates S 1.25, S 0.8, f 1.4 and f 0.7 at the true
+  Ω_b and φ_b (about 2 min each). `scripts/plot_bar_length_strength_square_maps.py` makes the maps.
+- Figures: [bar length](figures/test1_nbody_square_maps_bar_length_vs_data.png) and
+  [bar strength](figures/test1_nbody_square_maps_bar_strength_vs_data.png). Pixels are 0.5 kpc, |z| < 1 kpc, in the
   bar frame; the data are folded by point symmetry.
 - Rows:
   1. data;
@@ -842,7 +842,7 @@ tempered ΔlogL in brackets:
 
 **Method.**
 - Script: `scripts/test1_fourier_compression.py`; numbers in
-  `results/test1_nbody/fourier_compression.json`; [figure](figures/test1_nbody_fourier_compression.png).
+  `results/test1_nbody/fourier_compression.json`; [figure](figures/test1_nbody_fourier_compression_vs_mmax.png).
 - Each ring (R 0.5 kpc), |z| layer and field is compressed separately. The fields are
   ⟨v_R⟩, ⟨v_φ⟩, ⟨v_z sign z⟩, σ_R, σ_φ, σ_z.
 - Its 15° sector values (N ≥ 20) are fitted with even Fourier modes up to m_max by generalised least
@@ -852,7 +852,8 @@ tempered ΔlogL in brackets:
 - Check: with all modes (m_max = 12) it equals the current sector χ² to 10⁻¹². With all modes the
   compression is lossless.
 - Inputs: the exact saved polar-cell moments (pilot offsets, ridge points, accuracy twin, all 65
-  global-search points). Columns `chi2F*`, `logLs_F*` in `qmc_evals.csv`.
+  global-search points). Columns `chi2_fourier_*`, `logLs_fourier_*` in `qmc_evals.csv` (renamed
+  2026-10-27 from the cryptic `chi2F*`/`logLs_F*`).
 
 **Does truncation lose information?** Means + dispersions; Δχ² vs the truth on the data, tempered
 ΔlogL in brackets, Ω_b and φ_b at the truth:
@@ -900,7 +901,10 @@ between runs):
 | Fourier m = 2–4 only | 1146 | 26.24 +1.96/−1.79 | 26.3 ± 3.7 | 0.974 +0.201/−0.109 | 1.074 +0.316/−0.293 | 2.7 | (0.91, 1.40), −15.42 vs −15.37 |
 | means m ≤ 4 + disp m = 2–4 | 1290 | 25.76 +1.32/−1.14 | 26.9 ± 3.7 | 0.972 +0.200/−0.127 | 1.012 +0.382/−0.294 | 3.9 | (0.83, 1.59), −16.74 vs −16.31 |
 
-Figures: `figures/test1_nbody_emulator_corner_logLs_{F4_meansdisp,F2to4_meansdisp,F4m_F2to4d}.png`.
+Corners: `figures/test1_nbody_emulator_corner_logLs_fourier_mmax4_meansdisp.png` (m ≤ 4),
+`figures/test1_nbody_emulator_corner_logLs_fourier_m2to4_meansdisp.png` (m = 2–4) and
+`figures/test1_nbody_emulator_corner_logLs_fourier_means_m024_sigmas_m24.png` (hybrid). These were regenerated
+after the 1/N fix with a seeded emcee, so they match the numbers in the next entry, not this table.
 
 - All truth values lie within 0.35σ in every variant.
 - Dropping the dispersion ring averages centres S and bar_frac on the truth (medians 0.97 and
@@ -917,7 +921,7 @@ Figures: `figures/test1_nbody_emulator_corner_logLs_{F4_meansdisp,F2to4_meansdis
 **Bug fix.**
 - `ssl.cell_moments` now uses the unbiased (reliability-weights) variance: W²/(W² − Σw²) × the 1/W one,
   i.e. N/(N−1) for unit weights. The same fix was made in the data paths of
-  `plot_SF_square_maps.py`, `test1_binning_study.py` and `diagnose_moment_likelihood.py`.
+  `plot_bar_length_strength_square_maps.py`, `test1_binning_study.py` and `diagnose_moment_likelihood.py`.
 - The library does not need recomputing. Its effective number of independent orbits per cell has a
   median of 1145 (minimum 128), so its relative bias is 4×10⁻⁴, against 9×10⁻³ for the data (median N 57).
 - Rerun: `test1_nbody_moments.py` (all `chi2b_*`/`logLs_*` columns), `test1_fourier_compression.py`
@@ -945,31 +949,109 @@ ridge 1.25,0.70; "m0" = ring average, "m2–4" = modes 2 and 4 with the ring ave
 - The σ_φ and σ_z ring averages are what favour the weaker or shorter bars.
 
 **Schemes** (both cos and sin of every m kept):
-- `F4_inplane` (proposed): ⟨v_R⟩ m = 2, 4; ⟨v_φ⟩, σ_R, σ_φ m = 0, 2, 4. N_data 908.
-- `F4_inplane_nos0`: the same, but σ_R, σ_φ m = 2, 4 only. N_data 812.
+- `fourier_vR_m24_vphi_sigR_sigphi_m024` (proposed): ⟨v_R⟩ m = 2, 4; ⟨v_φ⟩, σ_R, σ_φ m = 0, 2, 4. N_data 908.
+- `fourier_vR_sigR_sigphi_m24_vphi_m024`: the same, but σ_R, σ_φ m = 2, 4 only. N_data 812.
 
 Tempered ΔlogL of the S/f models:
 
 | likelihood | S 1.25 | S 0.8 | f 1.4 | f 0.7 | ridge 0.82,1.50 | ridge 1.25,0.70 |
 |---|---|---|---|---|---|---|
 | sectors (current, fixed) | −2.77 | −1.22 | −2.20 | −0.98 | −0.72 | −1.25 |
-| F4_inplane | −4.46 | −2.11 | −3.42 | −1.59 | −0.87 | −2.35 |
-| F4_inplane_nos0 | −2.97 | −2.44 | −1.53 | −2.09 | −0.46 | −1.94 |
+| vR m24, vphi/σ_R/σ_φ m024 (proposed) | −4.46 | −2.11 | −3.42 | −1.59 | −0.87 | −2.35 |
+| vR/σ_R/σ_φ m24, vphi m024 | −2.97 | −2.44 | −1.53 | −2.09 | −0.46 | −1.94 |
 
-**Posteriors** (after the fix):
+**Posteriors** (after the fix; emcee seeded from here on, so reruns reproduce; corner =
+`figures/test1_nbody_emulator_corner_logLs_<column>.png`):
 
-| likelihood | Ω_b | φ_b [°] | S | bar_frac | LOO |
+| likelihood (column `logLs_...`) | Ω_b | φ_b [°] | S | bar_frac | LOO |
 |---|---|---|---|---|---|
-| sectors (current) | 26.23 +1.36/−1.18 | 27.9 ± 4.2 | 0.966 +0.246/−0.161 | 0.930 +0.395/−0.244 | 6.1 |
-| means m ≤ 4 + disp m 2–4 (all 3 components) | 25.81 +1.35/−1.19 | 26.9 ± 3.7 | 0.971 +0.210/−0.128 | 0.985 +0.398/−0.279 | 3.7 |
-| F4_inplane | 26.26 +1.12/−0.98 | 27.6 ± 3.3 | 0.938 +0.309/−0.159 | 1.043 +0.417/−0.340 | **10.8** |
-| F4_inplane_nos0 | 25.69 +1.21/−1.10 | 27.3 ± 3.4 | 0.956 +0.180/−0.132 | 0.975 +0.442/−0.277 | 4.0 |
+| sectors, current (`meansdisp`) | 26.16 +1.37/−1.15 | 27.6 ± 4.6 | 0.976 +0.233/−0.162 | 0.912 +0.390/−0.237 | 6.1 |
+| all six, m ≤ 4 (`fourier_mmax4_meansdisp`) | 26.25 +1.14/−1.00 | 27.1 ± 3.7 | 0.986 +0.287/−0.192 | 0.924 +0.490/−0.226 | 9.7 |
+| all six, m = 2–4 (`fourier_m2to4_meansdisp`) | 26.19 +1.90/−1.83 | 26.1 ± 3.7 | 0.975 +0.187/−0.111 | 1.052 +0.333/−0.280 | 2.7 |
+| means m ≤ 4 + all σ m = 2–4 (`fourier_means_m024_sigmas_m24`) | 25.81 +1.31/−1.22 | 26.9 ± 3.6 | 0.987 +0.200/−0.134 | 0.954 +0.416/−0.257 | 3.7 |
+| proposed (`fourier_vR_m24_vphi_sigR_sigphi_m024`) | 26.26 +1.11/−0.96 | 27.6 ± 3.4 | 0.929 +0.312/−0.149 | 1.028 +0.431/−0.321 | **10.8** |
+| proposed, σ ring averages dropped (`fourier_vR_sigR_sigphi_m24_vphi_m024`) | 25.66 +1.23/−1.08 | 27.2 ± 3.3 | 0.957 +0.194/−0.134 | 0.978 +0.432/−0.276 | 4.0 |
 
-- **F4_inplane:** the corner is bimodal along the ridge (bar_frac near 0.7 and 1.5, S piled at 0.75).
+- **Proposed scheme:** the corner is bimodal along the ridge (bar_frac near 0.7 and 1.5, S piled at 0.75).
   The emulator LOO of 10.8 is ≫ the ΔlogL ≈ 1 scale, so that corner is not reliable.
   - Its maximum (S 0.75, f 1.6, −14.92) is an extrapolation above the evaluated truth (−15.57).
   - Of the evaluated points, the truth is the best; the runner-up is −0.72.
-- All truth values lie within 0.3σ.
+- All truth values lie within 0.31σ.
+
+## 2026-10-27 — How much hotter is the ground-truth library? (ring-averaged dispersions)
+
+- Script: `scripts/plot_ring_average_dispersion_residuals.py`.
+- Figure: `figures/test1_nbody_ring_avg_dispersion_residuals_vs_R.png`. It plots model − data per 0.5 kpc ring
+  and |z| layer, with the ±1σ data band.
+- Numbers: `results/test1_nbody/ring_avg_dispersion_residuals.json`.
+- "Ring average" is the m = 0 Fourier term of the χ²: the error-weighted mean of the 15° sectors with ≥ 20 stars.
+  The data are unbiased (N/(N−1)). The |z| > 2 kpc layer has no usable sector.
+- **Ground-truth library − data**, weighted over the 48 ring-layers of each dispersion:
+
+  | | all R | R > 0.5 kpc | median relative | rings hotter |
+  |---|---|---|---|---|
+  | σ_R | +1.48 ± 0.25 km/s | +1.38 ± 0.25 km/s | +1.6% | 71% |
+  | σ_φ | +1.65 ± 0.20 km/s | +1.64 ± 0.20 km/s | +2.4% | 88% |
+  | σ_z | +1.00 ± 0.19 km/s | +0.85 ± 0.20 km/s | +1.9% | 71% |
+
+- **The offset is 5–8σ when pooled, but below the error of any single ring** (1.6–1.9 km/s median).
+  That is why it is invisible on `figures/test1_nbody_bar_length_strength_radial_profiles.png`, whose σ axes
+  run from 40 to 200 km/s and whose data points are biased low by the 1/N bug.
+- **S and bar_frac move the ring averages by only a fraction of a km/s**, model − truth mean:
+  - σ_R: f 0.7 −0.60, S 0.8 −0.56, f 1.4 +0.68, S 1.25 +0.68 km/s;
+  - σ_φ: −0.55, −0.16, +1.06, +0.51 km/s.
+  So no single ring separates the models. The χ² sums 48 rings per dispersion.
+- **The offset is what makes the ring averages prefer weaker or shorter bars.** A colder library sits closer
+  to data that are already 1–1.6 km/s colder than the truth library. With the truth's offset subtracted
+  (R > 0.5), the Δχ² of f 0.7 / S 0.8 becomes:
+  - σ_R: −1 / −6 → +19 / +12;
+  - σ_φ: −34 / −13 → +4 / 0;
+  - σ_z: −16 / −14 → −11 / −11.
+- The centre is not the main cause. R < 0.5 kpc is hotter by +6 to +11 km/s (the softening region), but
+  excluding it barely changes the offset.
+- **Excess scatter.** After removing the offset, χ²/N is still 2.44 (σ_R), 1.64 (σ_φ) and 2.10 (σ_z). Ring to
+  ring, the residuals scatter 1.3–1.6× more than the bootstrap errors.
+- The cause of the offset is not yet known. Untested candidates:
+  - the spherical halo (F_z 2.5% low);
+  - bias of 1/τ̂ from 40 snapshots;
+  - residual non-equilibrium of the N-body.
+
+**Renamed for clarity (2026-10-27).**
+- "SF" meant bar length S and strength f; it read like "selection function".
+- Scripts:
+  - `plot_SF_square_maps.py` → `plot_bar_length_strength_square_maps.py`
+  - `plot_SF_model_maps.py` → `plot_bar_length_strength_polar_maps.py`
+  - `run_SF_box_models.py` → `run_bar_length_strength_models.py`
+- Figures:
+  - `test1_nbody_SF_maps` → `test1_nbody_bar_length_strength_polar_pull_maps`
+  - `test1_nbody_SF_profiles` → `..._bar_length_strength_radial_profiles`
+  - `test1_nbody_SFmaps_{values,nonaxi,diff,m2}` → `..._bar_length_strength_polar_maps_values`,
+    `..._polar_maps_nonaxisymmetric`, `..._polar_maps_model_minus_truth`, `..._m2_profiles`
+  - `test1_nbody_maps_{length,strength}` → `test1_nbody_square_maps_bar_{length,strength}_vs_data`
+  - `test1_nbody_fourier_compression` → `test1_nbody_fourier_compression_vs_mmax`
+- Fourier columns and corners: `logLs_F4_inplane` → `logLs_fourier_vR_m24_vphi_sigR_sigphi_m024`, etc.
+  The links above were updated.
+
+## Figure index (Test 1b, N-body, perfect mock)
+
+All in `figures/`.
+
+| file | what it shows |
+|---|---|
+| `test1_nbody_square_maps_bar_length_vs_data.png` | face-on 0.5 kpc square maps of ⟨v_R⟩, ⟨v_φ⟩, σ_R, σ_φ: data, ground truth, S 1.25, S 0.8, data errors, residuals |
+| `test1_nbody_square_maps_bar_strength_vs_data.png` | the same for bar_frac 1.4 and 0.7 |
+| `test1_nbody_bar_length_strength_radial_profiles.png` | m = 2 amplitudes and azimuthal means vs R for the S/f models (before the 1/N fix) |
+| `test1_nbody_bar_length_strength_polar_maps_*.png`, `..._polar_pull_maps.png`, `..._m2_profiles.png` | polar-cell maps and m = 2 profiles of the S/f models |
+| `test1_nbody_ring_avg_dispersion_residuals_vs_R.png` | ring-averaged σ_R, σ_φ, σ_z: models − data vs R, with the data error band (the "hot library") |
+| `test1_nbody_fourier_compression_vs_mmax.png` | Δχ² and tempered ΔlogL of the S/f models vs the highest Fourier mode kept |
+| `test1_nbody_emulator_corner_logLs_meansdisp.png` | posterior: current sector likelihood, means + dispersions (tempered) |
+| `test1_nbody_emulator_corner_logLs_means.png` | posterior: current sector likelihood, means only (tempered; made before the 1/N fix, which does not affect means) |
+| `test1_nbody_emulator_corner_logLs_fourier_vR_m24_vphi_sigR_sigphi_m024.png` | posterior: proposed Fourier scheme |
+| `test1_nbody_emulator_corner_logLs_fourier_vR_sigR_sigphi_m24_vphi_m024.png` | posterior: proposed scheme with the σ ring averages dropped |
+| `test1_nbody_emulator_corner_logLs_fourier_means_m024_sigmas_m24.png` | posterior: means m ≤ 4 + all σ m = 2–4 (incl. v_z) |
+| `test1_nbody_emulator_corner_logLs_fourier_{mmax4,m2to4}_meansdisp.png` | posterior: all six moments, m ≤ 4 or m = 2–4 |
+| `test1_nbody_logl_corner_logLs_*.png` | log L of the 65 evaluated points (no emulator) |
+| `test1_nbody_density_stationarity.png` | density change of the libraries; counts statistic retracted (needs the selection function) |
 
 ## Next steps
 

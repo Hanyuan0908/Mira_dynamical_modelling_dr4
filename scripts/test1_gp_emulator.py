@@ -150,6 +150,7 @@ def main():
     nw = 32
     p0 = np.clip(best.x + 1e-3 * np.random.default_rng(1).standard_normal((nw, 4)), 0, 1)
     sampler = emcee.EnsembleSampler(nw, 4, logpost)
+    sampler.random_state = np.random.RandomState(2).get_state()     # reproducible chains
     sampler.run_mcmc(p0, 3000, progress=False)
     chain = sampler.get_chain(discard=1000, thin=5, flat=True)
     post = from_unit(chain)

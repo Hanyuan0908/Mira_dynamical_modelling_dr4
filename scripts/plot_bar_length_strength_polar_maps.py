@@ -3,10 +3,10 @@ models with different bar length S and strength f (Omega_b, phi_b at the truth).
 cell moments come from the pilot (results/test1_nbody/pilot_NN.npz) and diagnose_bar_length_strength.py
 (diag_SF_*.npz). Cells: folded bar-frame polar cells (R 0.5 kpc x phi 15 deg), midplane layer |z| < 0.5 kpc.
 
-  test1_nbody_SFmaps_values.png    actual values
-  test1_nbody_SFmaps_nonaxi.png    value minus its azimuthal (ring) mean: the non-axisymmetric part
-  test1_nbody_SFmaps_diff.png      model minus the truth model (library noise only, ~1-2 km/s)
-  test1_nbody_SFmaps_m2.png        m = 2 amplitude and phase vs R of all four quantities
+  test1_nbody_bar_length_strength_polar_maps_values.png    actual values
+  test1_nbody_bar_length_strength_polar_maps_nonaxisymmetric.png    value minus its azimuthal (ring) mean: the non-axisymmetric part
+  test1_nbody_bar_length_strength_polar_maps_model_minus_truth.png      model minus the truth model (library noise only, ~1-2 km/s)
+  test1_nbody_bar_length_strength_m2_profiles.png        m = 2 amplitude and phase vs R of all four quantities
 Also prints rms differences and m = 2 amplitudes (numbers in results/test1_nbody/SF_maps_numbers.json).
 """
 import json
@@ -92,7 +92,7 @@ def main():
             panel(fig, axes[i, j], d, CMAP_DIV if name == "<v_R>" else CMAP_SEQ_W, *lims[name], f"{lab}: {name}")
     fig.suptitle("Values: midplane (|z| < 0.5 kpc), bar frame, bar along x (dashed); Ω_b = 26.02, φ_b = 27°",
                  y=0.995, fontsize=11)
-    savefig(fig, "test1_nbody_SFmaps_values")
+    savefig(fig, "test1_nbody_bar_length_strength_polar_maps_values")
 
     # ---------- 2. non-axisymmetric part ----------
     fig, axes = plt.subplots(len(rows), 4, figsize=(15, 3.2 * len(rows)), gridspec_kw=dict(hspace=0.35, wspace=0.35))
@@ -103,7 +103,7 @@ def main():
                 d = np.where(obs_mask, np.nan, d)
             panel(fig, axes[i, j], d - ring_mean(d), CMAP_DIV, -30, 30, f"{lab}: {name} − ring mean")
     fig.suptitle("Non-axisymmetric part (value minus its azimuthal mean in each ring), midplane", y=0.995, fontsize=11)
-    savefig(fig, "test1_nbody_SFmaps_nonaxi")
+    savefig(fig, "test1_nbody_bar_length_strength_polar_maps_nonaxisymmetric")
 
     # ---------- 3. model minus truth model ----------
     fig, axes = plt.subplots(len(labels) - 1, 4, figsize=(15, 3.2 * (len(labels) - 1)),
@@ -126,7 +126,7 @@ def main():
     fig.suptitle("Model minus truth model (both libraries, so no data noise), midplane; "
                  "typical data error per cell: " + ", ".join(f"{k} {v:.1f}" for k, v in numbers["typical_data_error_kms"].items())
                  + " km/s", y=0.995, fontsize=10.5)
-    savefig(fig, "test1_nbody_SFmaps_diff")
+    savefig(fig, "test1_nbody_bar_length_strength_polar_maps_model_minus_truth")
 
     # ---------- 4. m = 2 profiles of all four quantities (|z| < 0.5 kpc) ----------
     cols = [INK, ACCENT, "#e87ba4", BLUE_RAMP[2], BLUE_RAMP[5], "#1baf7a", "#8a8984"]
@@ -151,7 +151,7 @@ def main():
         axes[1, j].set_ylim(-90, 90)
     axes[0, 0].legend(fontsize=7.5)
     fig.suptitle("m = 2 Fourier profiles of the mean and dispersion maps (phase 0 = bar major axis)", y=0.97, fontsize=11)
-    savefig(fig, "test1_nbody_SFmaps_m2")
+    savefig(fig, "test1_nbody_bar_length_strength_m2_profiles")
 
     with open(OUT_DIR / "SF_maps_numbers.json", "w") as fh:
         json.dump(numbers, fh, indent=2)

@@ -12,7 +12,7 @@ from common import set_style, savefig, INK_2, ACCENT
 from plot_au18_velocity_maps import CMAP_DIV
 import steady_state_likelihood as ssl
 from test1_nbody_qmc import ARR_DIR, MOCK, TRUTH
-from plot_SF_square_maps import grey_bad
+from plot_bar_length_strength_square_maps import grey_bad
 
 Z_CUT = 1.0
 E = ssl.BOX_XY
