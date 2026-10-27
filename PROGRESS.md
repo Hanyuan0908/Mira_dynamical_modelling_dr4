@@ -832,7 +832,85 @@ tempered ΔlogL in brackets:
 - Re-binning adds no information: the finest well-populated bins keep the most Δχ².
 - Under the √(2N_data) tempering, fewer bins give tighter tempered constraints at the same Δχ². The
   tempered posterior width therefore depends on the binning convention.
-- The real gain available from the saved data is the density term.
+- ~~The real gain available from the saved data is the density term.~~
+- **Retracted (2026-10-27, user):** counts are not usable. Gaia's selection function cannot be worked
+  out, and if it could, the counts divided by the selection function would give the bar potential
+  directly. The method exists precisely because velocities at fixed position do not need the spatial
+  selection function. The density figure and numbers stay only as a record.
+
+## 2026-10-27 — Fourier compression of the moment maps in φ (no new integrations)
+
+**Method.**
+- Script: `scripts/test1_fourier_compression.py`; numbers in
+  `results/test1_nbody/fourier_compression.json`; [figure](figures/test1_nbody_fourier_compression.png).
+- Each ring (R 0.5 kpc), |z| layer and field is compressed separately. The fields are
+  ⟨v_R⟩, ⟨v_φ⟩, ⟨v_z sign z⟩, σ_R, σ_φ, σ_z.
+- Its 15° sector values (N ≥ 20) are fitted with even Fourier modes up to m_max by generalised least
+  squares, weighted by the data's bootstrap errors.
+- The same linear operator is applied to the data and the library, so χ²(m_max) is the part of the
+  current sector χ² that lies in modes ≤ m_max.
+- Check: with all modes (m_max = 12) it equals the current sector χ² to 10⁻¹². With all modes the
+  compression is lossless.
+- Inputs: the exact saved polar-cell moments (pilot offsets, ridge points, accuracy twin, all 65
+  global-search points). Columns `chi2F*`, `logLs_F*` in `qmc_evals.csv`.
+
+**Does truncation lose information?** Means + dispersions; Δχ² vs the truth on the data, tempered
+ΔlogL in brackets, Ω_b and φ_b at the truth:
+
+| m_max | N_data | S 1.25 | S 0.8 | f 1.4 | f 0.7 | ridge S 0.82/f 1.50 | ridge S 1.25/f 0.70 |
+|---|---|---|---|---|---|---|---|
+| 0 | 288 | +276 (−5.75) | −44 (+0.92) | +278 (−5.79) | −71 (+1.48) | +54 (−1.12) | +69 (−1.44) |
+| 2 | 864 | +388 (−4.67) | +132 (−1.59) | +362 (−4.35) | +74 (−0.90) | +88 (−1.05) | +187 (−2.25) |
+| 4 | 1434 | +447 (−4.17) | +205 (−1.91) | +383 (−3.57) | +136 (−1.27) | +130 (−1.21) | +213 (−1.99) |
+| 12 (= current) | 3090 | +474 (−3.02) | +183 (−1.16) | +381 (−2.42) | +138 (−0.88) | +120 (−0.76) | +204 (−1.29) |
+
+- **The realised Δχ² plateaus by m_max ≈ 4.** m_max = 4 keeps 94–113% of the full value for all six
+  models, within the ±30–47 noise, with 46% of N_data.
+- **Above m ≈ 4 the extra separation is library noise.** The noise-free separation (library − truth
+  library) keeps rising at 0.10–0.11 per added coefficient, the same for every model.
+  - Two libraries with independent sampling noise of 20–24% of the data error (measured earlier)
+    would give 2 × 0.20²–0.24² = 0.08–0.12.
+  - The accuracy twin (same orbits, accuracy 3×10⁻⁶) differs by only 20 in total, so integrator
+    chaos is negligible.
+
+**The ring averages (m = 0) are where even the true model fails.**
+- Truth vs data χ² per coefficient: 2.59 at m = 0, 1.37 at m = 2, 1.20 at m = 4, then 1.02–1.13.
+- The misfit is in the dispersions. Ring-average χ²/N_data is 3.98 for σ_R, 4.26 for σ_φ and 3.41
+  for σ_z, against 1.03–1.48 for the means.
+- The truth library is hotter than the data at almost every R and |z|: ring-average pulls are mostly
+  −1 to −4.
+- Part of it is a bug: data dispersions use 1/N, not 1/(N−1), while the library has thousands of
+  samples per cell (median N = 57, bias σ/2N = 0.65 km/s against an error of 6.0). Correcting it
+  lowers the m = 0 dispersion χ²/N to 3.28 / 3.15 / 2.72, so it explains about 20–25% of the excess.
+- The rest is not yet explained. Untested candidates:
+  - the spherical halo (F_z 2.5% low);
+  - bias of the 1/τ̂ weights estimated from 40 snapshots;
+  - residual non-equilibrium.
+- **m = 0 drives the preference for weaker or shorter bars.** In m = 0 alone, f 0.7 and S 0.8 fit
+  *better* than the truth (Δχ² −71, −44). In modes 2–4 alone the truth beats all of them: S 1.25 +171,
+  S 0.8 +249, f 1.4 +105, f 0.7 +207, ridges +76 and +144. Truth χ²/N in modes 2–4 is 1.28.
+
+**Posteriors** (GP emulator, 64 Sobol points + truth; emcee unseeded, so medians vary by about 0.1σ
+between runs):
+
+| likelihood | N_data | Ω_b | φ_b [°] | S | bar_frac | LOO | emulator max (S, f) vs evaluated truth |
+|---|---|---|---|---|---|---|---|
+| sectors (current) | 3090 | 26.26 +1.32/−1.13 | 27.7 ± 4.6 | 0.941 +0.229/−0.141 | 0.936 +0.403/−0.251 | 6.4 | (0.75, 1.56), −25.49 vs −25.38 |
+| Fourier m ≤ 4 | 1434 | 26.39 +1.14/−1.01 | 27.3 ± 3.7 | 0.963 +0.293/−0.177 | 0.957 +0.460/−0.251 | 10.1 | (0.75, 1.60), −19.86 vs −20.69 |
+| Fourier m = 2–4 only | 1146 | 26.24 +1.96/−1.79 | 26.3 ± 3.7 | 0.974 +0.201/−0.109 | 1.074 +0.316/−0.293 | 2.7 | (0.91, 1.40), −15.42 vs −15.37 |
+| means m ≤ 4 + disp m = 2–4 | 1290 | 25.76 +1.32/−1.14 | 26.9 ± 3.7 | 0.972 +0.200/−0.127 | 1.012 +0.382/−0.294 | 3.9 | (0.83, 1.59), −16.74 vs −16.31 |
+
+Figures: `figures/test1_nbody_emulator_corner_logLs_{F4_meansdisp,F2to4_meansdisp,F4m_F2to4d}.png`.
+
+- All truth values lie within 0.35σ in every variant.
+- Dropping the dispersion ring averages centres S and bar_frac on the truth (medians 0.97 and
+  1.01–1.07, against 0.94 and 0.94).
+  - With m = 2–4 only, the emulator maximum moves off the box corner.
+  - φ_b tightens from ±4.6° to ±3.7°.
+- Ω_b needs the m = 0 means: without them it widens from ±1.2 to ±1.9 km/s/kpc. The hybrid restores
+  ±1.2.
+- **No variant breaks the S–bar_frac ridge.** Widths change by ≤ 25%, and in the hybrid the ridge
+  still reaches (S 0.75–0.85, f 1.4–1.6).
 
 ## Next steps
 
