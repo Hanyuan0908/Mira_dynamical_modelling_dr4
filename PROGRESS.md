@@ -1125,8 +1125,31 @@ Tempered ΔlogL of the S/f models:
   - `sectors_means`, `sectors_meansdisp` (current likelihood).
 - Truth χ²/N_data on the proposed scheme: 973/669 = 1.45.
 
+**Fourier moments fitted directly to the stars (main method; replaces the sectors).**
+- Script: `scripts/test1_nbody_qmc_focused_fourier_stars.py`; per point
+  `~/mira_dr4_runs/test1_nbody_qmc_focused/fourier_stars_NNN.npz`.
+- In each (ring, layer) block:
+  - stage 1: least squares over the individual stars of v_i = Σ a_k f_k(φ_i), with f = 1, cos 2φ, sin 2φ, cos 4φ,
+    sin 4φ, giving ⟨v⟩(φ);
+  - stage 2: least squares of r_i²/(1 − h_ii) on the same basis (leverage-corrected; equals N/(N−1) for a constant),
+    giving σ²(φ).
+- The normal equations are sums over stars, so no sectors are needed. Library: all samples t ≥ 0.25 Gyr from the
+  trajectories, weights 1/τ. Data covariance: 5×5 per block from 200 bootstraps. A block needs ≥ 50 stars.
+- **Why a least-squares fit and not the plain sum (2/N) Σ v_i cos 2φ_i.** The plain sum measures the density-weighted
+  field n⟨v⟩. For ⟨v_φ⟩ m = 2 cos at |z| < 1:
+  - plain sum +50 to +84 km/s vs least squares −6 to −45 km/s at R = 1.8–4.8 kpc;
+  - the plain sum is dominated by ⟨v_φ⟩₀ × density A₂ (A₂ = 0.45–0.77).
+  - Fake selection, removing 60% of the stars within 30° of the bar axis, at R = 3.0–3.3: the plain sum goes
+    +65.3 → −8.4 km/s, least squares −43.3 → −41.6 km/s.
+- Usable blocks now: all of |z| 0–1 and |z| 1–2 (24 rings each), plus 5 rings at |z| 2–3.
+- At the truth, proposed scheme: χ²/N_data = 1170/855 = 1.37 (sectors: 669 terms). Ridge point #15: Δχ² = +46.
+- Columns (`logLs_fourier_stars_*` in `results/test1_nbody_qmc_focused/evals.csv`):
+  `R0to6_vR_m24_vphi_sigR_sigphi_m024` (855), `R0to6_vR_sigR_sigphi_m24_vphi_m024` (765), `R0to6_all6_m024` (1350),
+  `R0to8_vR_m24_vphi_sigR_sigphi_m024` (1007).
+
 **Post-processing.**
 - Runs automatically when the integrations finish: `scripts/run_test1_nbody_qmc_focused_postprocess.sh`.
+  It runs the sector version too, for comparison.
 - Emulator corners use leave-one-out on the 32 best points; there are also log L corners. Emulator registered as run
   `nbody_qmc_focused`.
 - Figures: `figures/test1_nbody_qmc_focused_emulator_corner_<column>.png` and
