@@ -512,10 +512,32 @@ Small numeric results (tracked): `results/au18_ground_truth.json` (pattern speed
 
 ## Next steps
 
-1. ~~Pattern speed~~, ~~ground-truth potential~~ and ~~trial-potential family~~: done
-   (2026-10-26). Still to decide: spherical vs non-spherical DM (caveat 1 above).
-2. Test 1 itself: integrate the perfect mock in the true potential (the null test) and in
-   trial potentials with m ≠ 0 rescaled in amplitude, length and Ω_p. Choose the
-   discrepancy statistic and the integration time.
-3. Add realism step by step: distance errors (forward-modelled), RV jitter, selection
-   function, period–age tracer weighting.
+Agreed approach (2026-10-27): start from the simplest data and add realism one step at a time.
+
+**Likelihood.** Fit 3D mean and dispersion maps of v_R, v_φ, v_z (later also cross terms).
+- Cells are (R, φ mod π, |z|) or 0.5 kpc boxes, with bootstrap errors on the data.
+- A per-star local Gaussian with cell-constant μ, C is algebraically the same thing. The map form
+  makes the error model explicit (bootstrap errors capture non-Gaussianity) and lets us choose
+  which moments and cells enter.
+
+1. **Test 1b (perfect N-body mock):** the global search launched 2026-10-27 14:06 saves the library
+   box sums and polar cell moments for every point.
+   - Fit the 3D moment maps (means; means + dispersions; with and without R < 1 kpc), plus the
+     local Gaussian and the KDE for comparison.
+   - Fit a GP emulator and draw the corner plot for each, and check recovery of
+     (Ω_b, φ_b, S, bar_frac).
+   - Expected bias: bar_frac about +3%, from the spherical halo.
+2. **Test 2a (selection function):** a Mira-like N-body mock with a Gaia-like footprint, extinction
+   and magnitude limit.
+   - Library orbits weighted by 1/τ_i with τ_i = ⟨S(x(t))⟩ along the orbit.
+   - Model cell moments computed with library samples weighted by S(x_j).
+   - Unfolded cells for the data (S is not symmetric); the library can stay folded.
+3. **Test 2b (distance and RV errors):** PL distance errors of about 10–15% plus v_los jitter.
+   - Compare (i) no correction, (ii) forward-modelling the errors into the library and comparing
+     moments of (μ_l, μ_b, v_los) in (l, b, distance-modulus) cells, as in Portail+17 and
+     Clarke & Gerhard 2022, and (iii) seeding several orbits per star from its distance posterior
+     (to avoid counting the errors twice when the library starts from noisy initial conditions).
+4. **Later:**
+   - age-dependent selection (hotter vs colder Mira populations) with Auriga;
+   - model mismatch (an N-body bar outside the AGAMA family);
+   - DR4 sample size and footprint.
