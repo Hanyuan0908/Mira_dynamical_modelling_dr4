@@ -578,13 +578,68 @@ Small numeric results (tracked): `results/au18_ground_truth.json` (pattern speed
 
   - The truth is best. The two ridge points cost much less than single offsets of similar size,
     which is the degeneracy.
-  - The axisymmetric moments (mean v_φ, σ_R, σ_φ averaged over azimuth) are identical for all
-    models, because the family keeps the m = 0 part fixed. So S and bar_frac are constrained only
-    by the bar's non-axisymmetric signatures: the v_R and v_φ m = 2 streaming, and bar-induced
-    heating (a stronger or longer bar inflates σ_R and σ_φ near the bar ends).
+  - **Correction (2026-10-27):** an earlier version of this entry said the moments carry no
+    information on S or bar_frac. That is wrong: only the azimuthal means are identical. The
+    m = 2 parts of all four maps, dispersions included, respond to S and bar_frac (see the next
+    entry and the table above: dispersions give −123 of −192 for f 1.4 and −125 of −236 for
+    S 1.25).
   - Along the ridge, stretching and weakening the bar keeps the m = 2 amplitude at 2–4 kpc similar.
     S 0.82/f 1.5 under-predicts the v_R quadrupole at 3–4 kpc (18 vs 23 km/s); S 1.25/f 0.70 fails
     mainly at 7–8 kpc (ΔlogL ≈ −20 there).
+
+## 2026-10-27 — Face-on mean and dispersion maps for different bar lengths and strengths
+
+- Script: `scripts/plot_SF_model_maps.py`. No new integrations: it reuses the cached library cell
+  moments. Numbers are in `results/test1_nbody/SF_maps_numbers.json`.
+- Figures (midplane |z| < 0.5 kpc, bar frame):
+  [values](figures/test1_nbody_SFmaps_values.png),
+  [non-axisymmetric part](figures/test1_nbody_SFmaps_nonaxi.png),
+  [model − truth model](figures/test1_nbody_SFmaps_diff.png),
+  [m = 2 amplitude and phase profiles](figures/test1_nbody_SFmaps_m2.png).
+- **All four maps carry strong m = 2 structure.** Truth model, m = 2 amplitude at
+  R = 2.25 / 3.25 / 4.25 / 5.25 kpc:
+
+  | quantity | m = 2 amplitude [km/s] | phase |
+  |---|---|---|
+  | ⟨v_R⟩ | 17.2 / 26.5 / 16.8 / 6.7 | ≈ 45° |
+  | ⟨v_φ⟩ | 15.8 / 41.1 / 30.3 / 8.9 | ≈ ±90° |
+  | σ_R | 20.7 / 23.1 / 9.8 / 3.3 | 0°, peaking along the bar |
+  | σ_φ | 13.5 / 6.2 / 20.5 / 9.5 | changes sign near R ≈ 3.2 kpc |
+
+- **The m = 2 amplitudes respond to S and bar_frac.**
+  - At R = 4.25 kpc the σ_R m = 2 amplitude is 6.1 (f 0.7), 9.8 (truth), 14.2 (f 1.4),
+    5.1 (S 0.8) and 12.8 (S 1.25).
+  - In ⟨v_R⟩ at 4.25 kpc: 12.1, 16.8, 21.6, 8.6, 23.3.
+  - The model − truth maps show coherent m = 2 residuals for the single offsets: a weaker or
+    stronger quadrupole in ⟨v_R⟩, ±5–8 km/s in σ_R at the bar ends, and an outward shift of the
+    patterns for S 1.25.
+- **The degeneracy is in all four maps at once.** rms(model − truth model) over cells with
+  |z| < 1, R ≥ 1 and N ≥ 20, for ⟨v_R⟩, ⟨v_φ⟩, σ_R, σ_φ:
+
+  | model | rms [km/s] |
+  |---|---|
+  | ridge S 0.82, f 1.50 | 3.2, 2.9, 1.8, 2.1 |
+  | ridge S 1.25, f 0.70 | 2.9, 3.0, 1.9, 2.0 |
+  | single offsets | 3.3–4.6, 3.4–3.9, 2.3–2.7, 2.1–2.5 |
+
+  - Library noise floor for a difference of two libraries: √2 × the orbit-bootstrap error, i.e.
+    2.1–3.0 km/s for means and 1.6–1.8 km/s for dispersions.
+  - Typical data error per cell: 9.4, 6.9, 6.7, 4.9 km/s.
+  - So the differences are 0.3–0.5σ per cell and are detected only by summing about 450 cells.
+- **Means only vs means + dispersions** (emulator posteriors, 64 Sobol points; offsets in σ):
+
+  | likelihood | Ω_b | φ_b | S | bar_frac | LOO near max |
+  |---|---|---|---|---|---|
+  | means, untempered | 25.03 (+6.7σ) | 25.8 (+1.5σ) | 1.025 (−0.8σ) | 0.677 (+11.9σ) | 85 |
+  | means + disp R ≥ 1, untempered | 26.29 (−2.0σ) | 29.4 (−5.1σ) | 0.751 (+301σ) | 1.556 (−18σ) | 241 |
+  | means, tempered (√2N = 55.6) | 25.7 +1.4/−1.3 | 26.9 ± 5.8 | 1.00 +0.22/−0.16 | 0.82 +0.42/−0.20 | 2.5 |
+  | means + disp R ≥ 1, tempered (73.6) | 26.2 +1.3/−1.2 | 27.2 ± 4.3 | 0.95 +0.23/−0.15 | 0.92 +0.40/−0.24 | 6.7 |
+
+  - Both untempered emulators are biased, because their emulator error ≫ the logL scale.
+  - Both tempered versions recover the truth within 0.6σ.
+  - Adding the dispersions tightens φ_b. In the pilot it increased the penalties for wrong S and
+    bar_frac: S 1.25 from −86 to −205 and f 1.4 from −41 to −159.
+  - The posterior medians vary by about 0.1σ between emulator and emcee runs (emcee is not seeded).
 
 ## Next steps
 
