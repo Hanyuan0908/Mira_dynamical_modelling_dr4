@@ -1,0 +1,15 @@
+{
+  "N": 50000,
+  "T_Gyr": 1.0,
+  "trajsize": 101,
+  "threads": "all (OpenMP default)",
+  "accuracy": 1e-08,
+  "inertial": {
+    "wall_s": 481.7,
+    "orbits_per_s": 103.8,
+    "dEJ_rel_median": 1.7079115760543218e-07,
+    "dEJ_rel_99pct": 1.5161096228610862e-06,
+    "dEJ_rel_max": 0.035945979601390565
+  },
+  "peak_rss_GB": 0.29
+}

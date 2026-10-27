@@ -91,6 +91,24 @@ def make_potential(bar_frac=1.0, S=1.0, Omega_b=OMEGA_B_TRUE, phi0=0.0, bartime=
     return agama.Potential(pot_axi, pot_bary_scaled, pot_bary_axi_neg)
 
 
+def make_static_fast(bar_frac=1.0, S=1.0, phi0=0.0, mmax=4, symmetry="bisymmetric", pot_dm_bh=None,
+                     grid=None):
+    """Fast, non-rotating version of make_potential for integration in the bar frame with
+    agama.orbit(..., Omega=Omega_b). The barred baryonic potential (axisymmetric + scaled bar,
+    turned by phi0) is re-expanded into a single CylSpline with the given mmax and symmetry;
+    DM and BH are kept as they are."""
+    bary = agama.Potential(agama.Potential(file=str(FILES["baryon_axi"])),
+                           agama.Potential(file=str(FILES["baryon_full"]), scale=[bar_frac * S, S],
+                                           rotation=phi0),
+                           agama.Potential(file=str(FILES["baryon_axi"]), scale=[-bar_frac * S, S]))
+    grid = grid or {k: v for k, v in CYL_PARAMS.items() if k not in ("type", "symmetry", "mmax")}
+    one = agama.Potential(type="CylSpline", potential=bary, mmax=mmax, symmetry=symmetry, **grid)
+    if pot_dm_bh is None:
+        pot_dm_bh = agama.Potential(agama.Potential(str(POT_DIR / "dm.ini")),
+                                    agama.Potential(str(POT_DIR / "bh.ini")))
+    return agama.Potential(pot_dm_bh, one)
+
+
 def bar_angle(t, Omega_b=OMEGA_B_TRUE, phi0=0.0):
     """Rotation of the bar relative to t = 0 [rad] for constant Omega_b."""
     return phi0 + Omega_b * np.asarray(t)

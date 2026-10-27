@@ -224,6 +224,45 @@ Small numeric results (tracked): `results/au18_ground_truth.json` (pattern speed
   - `export()` of a composite loses the parameters of analytic components (the Plummer BH).
     The `Au18_*.ini` files are therefore written by concatenating the component files.
 
+## 2026-10-27 — Orbit-integration cost and fast-potential benchmark
+
+- Scripts: `scripts/time_orbit_integration.py`; `scripts/benchmark_fast_potential.py`
+  (5000 random mock stars). `make_static_fast()` was added to `scripts/potential_family.py`.
+  It re-expands the barred baryons into one CylSpline with a chosen mmax and symmetry, for
+  integration in the bar frame with `Omega=Omega_b`.
+- Results: `results/orbit_timing.json`, `results/fast_potential_benchmark.json`.
+  Machine: Apple M5 Pro, 15 cores (about 13 busy), AGAMA OpenMP.
+- **Full run:** all 50k mock stars for 1 Gyr in the true potential (`make_potential` with
+  `rotation=`, inertial frame, accuracy 10⁻⁸, snapshots every 10 Myr).
+  - Wall time 482 s (8.0 min), 104 orbits/s, peak memory 0.29 GB.
+  - Jacobi integral |ΔE_J/E_J|: median 2×10⁻⁷, 99th percentile 1.5×10⁻⁶. One orbit reached
+    4×10⁻², probably a close pass by the central black hole.
+- **Speed vs accuracy** (5000 random stars, 1 Gyr, projected to 50k; the map change is the rms
+  over 1 kpc face-on pixels of ⟨v_R⟩ after 1 Gyr, relative to the exact run):
+
+  | set-up | 50k × 1 Gyr | force error / bar force (rms) | by R: 0–1, 1–3, 3–6, 6–10 kpc | map change ⟨v_R⟩ |
+  |---|---|---|---|---|
+  | exact, acc 10⁻⁸ | 8.2 min | — | — | — |
+  | exact, acc 10⁻⁷ / 10⁻⁶ (chaos floor) | 5.2 / 3.2 min | — | — | 1.5 / 3.1 km/s |
+  | merged, mmax 8, no symmetry, 10⁻⁶ | 1.6 min | 0.13% | 0.2, 0.1, 0.1, 0.2% | 4.4 km/s |
+  | merged, mmax 8, "reflection", 10⁻⁶ | 1.6 min | 0.13% | same | 4.4 km/s |
+  | merged, **mmax 4**, no symmetry, 10⁻⁶ | 0.8 min | **7%** | 3.5, 6, 12, 9% | 16.5 km/s |
+  | merged, mmax 8 / 6, bisymmetric, 10⁻⁶ | 0.8 / 0.6 min | 15% | 9, 11, 26, 27% | 21 / 17 km/s |
+  | merged, mmax 4, bisymmetric, 10⁻⁶ / 10⁻⁵ | 0.45 / 0.34 min | 17% | 10, 12, 28, 28% | 20 / 22 km/s |
+  | merged, mmax 2, bisymmetric, 10⁻⁵ | 0.21 min | 26% | 14, 25, 38, 33% | 25 km/s |
+
+  - Merging into one CylSpline costs 0.1 s per trial potential and loses nothing at mmax 8.
+  - Au18's bar has real m = 6–8 content near its ends: mmax 4 loses 12% of the bar force at
+    3–6 kpc.
+  - "Bisymmetric" also drops the odd-m and z-asymmetric parts, which at 3–10 kpc are a quarter
+    of the bar force.
+  - Every set-up faster than 1.6 min changes the evolved kinematic maps by 15–25 km/s rms,
+    5–8× the chaos floor. That is comparable to the bar's own v_R quadrupole (about 35 km/s).
+  - **Conclusion:** at mmax 8 the merged CylSpline at accuracy 10⁻⁶ gives a 5× speed-up and is
+    accurate. Lower mmax buys another factor of 2–4 but makes the potential a different galaxy.
+    MCMC needs reductions elsewhere: fewer stars, a shorter integration, an emulator
+    (see the chat discussion).
+
 ---
 
 ## Next steps

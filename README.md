@@ -36,6 +36,8 @@ python scripts/measure_au18_pattern_speed.py
 python scripts/check_au18_potential.py
 python scripts/potential_family.py          # Au18_{full,axi,baryon_full,baryon_axi}.ini
 python scripts/test_potential_family.py
+python scripts/time_orbit_integration.py --methods inertial   # 50k orbits x 1 Gyr, ~8 min
+python scripts/benchmark_fast_potential.py --n 5000           # speed vs accuracy, ~4 min
 ```
 
 ## Mock galaxy
