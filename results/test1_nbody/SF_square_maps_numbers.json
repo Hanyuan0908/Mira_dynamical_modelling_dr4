@@ -1,0 +1,259 @@
+{
+  "n_pixels": 788,
+  "n_stars_abs_z_lt_1": 42249,
+  "sqrt_2_N_data": 79.39773296511683,
+  "median_boot_error_kms": {
+    "<v_R>": 9.564213850592008,
+    "<v_phi>": 7.018314624364129,
+    "sigma_R": 5.770073141187941,
+    "sigma_phi": 4.520960233330756
+  },
+  "test1_nbody_maps_length": {
+    "ground truth \u2212 data": {
+      "<v_R>": {
+        "rms_kms": 11.045535827814103,
+        "delta_chi2": 0.0,
+        "dlogL_tempered": -0.0,
+        "chi2_per_pixel": 1.3510786650788333
+      },
+      "<v_phi>": {
+        "rms_kms": 9.0594662662618,
+        "delta_chi2": 0.0,
+        "dlogL_tempered": -0.0,
+        "chi2_per_pixel": 1.2273518668642616
+      },
+      "sigma_R": {
+        "rms_kms": 6.491041028527877,
+        "delta_chi2": 0.0,
+        "dlogL_tempered": -0.0,
+        "chi2_per_pixel": 1.4798157948850212
+      },
+      "sigma_phi": {
+        "rms_kms": 6.834232067534144,
+        "delta_chi2": 0.0,
+        "dlogL_tempered": -0.0,
+        "chi2_per_pixel": 1.8017382381134803
+      }
+    },
+    "S 1.25 (longer) \u2212 data": {
+      "<v_R>": {
+        "rms_kms": 11.36326620056613,
+        "delta_chi2": 52.469019895858764,
+        "dlogL_tempered": -0.330418879333185,
+        "chi2_per_pixel": 1.4176637157080958
+      },
+      "<v_phi>": {
+        "rms_kms": 9.43450804844856,
+        "delta_chi2": 186.27629374662797,
+        "dlogL_tempered": -1.1730580130572994,
+        "chi2_per_pixel": 1.4637431025833325
+      },
+      "sigma_R": {
+        "rms_kms": 6.834090019389345,
+        "delta_chi2": 126.84717167003782,
+        "dlogL_tempered": -0.7988085234484451,
+        "chi2_per_pixel": 1.6407893629942063
+      },
+      "sigma_phi": {
+        "rms_kms": 7.182448355470274,
+        "delta_chi2": 295.1331721685938,
+        "dlogL_tempered": -1.8585743014744496,
+        "chi2_per_pixel": 2.1762727205609345
+      }
+    },
+    "S 0.8 (shorter) \u2212 data": {
+      "<v_R>": {
+        "rms_kms": 11.317537667534506,
+        "delta_chi2": 40.62870709488061,
+        "dlogL_tempered": -0.2558555866622207,
+        "chi2_per_pixel": 1.4026379380418799
+      },
+      "<v_phi>": {
+        "rms_kms": 9.281975361935276,
+        "delta_chi2": 47.43766106538135,
+        "dlogL_tempered": -0.2987343548349356,
+        "chi2_per_pixel": 1.2875519443584003
+      },
+      "sigma_R": {
+        "rms_kms": 6.6932828636304915,
+        "delta_chi2": 65.95541006517192,
+        "dlogL_tempered": -0.41534819447646726,
+        "chi2_per_pixel": 1.5635155538509753
+      },
+      "sigma_phi": {
+        "rms_kms": 6.795215365872966,
+        "delta_chi2": 66.04606665136885,
+        "dlogL_tempered": -0.4159190960804007,
+        "chi2_per_pixel": 1.8855530435086183
+      }
+    },
+    "S 1.25 (longer) \u2212 ground truth": {
+      "<v_R>": {
+        "rms_kms": 4.4954625395905845,
+        "library_noise_kms": 2.0477788039735993,
+        "sum_sq_over_err_incl_library_noise": 169.48260610123248
+      },
+      "<v_phi>": {
+        "rms_kms": 3.9932066530980355,
+        "library_noise_kms": 1.7413137489545154,
+        "sum_sq_over_err_incl_library_noise": 251.77222800305196
+      },
+      "sigma_R": {
+        "rms_kms": 2.762673140863715,
+        "library_noise_kms": 1.4263636110671807,
+        "sum_sq_over_err_incl_library_noise": 188.32301274028876
+      },
+      "sigma_phi": {
+        "rms_kms": 2.729298161113441,
+        "library_noise_kms": 1.3028836008517037,
+        "sum_sq_over_err_incl_library_noise": 305.2527492788646
+      }
+    },
+    "S 0.8 (shorter) \u2212 ground truth": {
+      "<v_R>": {
+        "rms_kms": 4.659698020473343,
+        "library_noise_kms": 2.081674655771954,
+        "sum_sq_over_err_incl_library_noise": 175.37746072518132
+      },
+      "<v_phi>": {
+        "rms_kms": 3.6808737286514868,
+        "library_noise_kms": 1.7594265274952283,
+        "sum_sq_over_err_incl_library_noise": 192.94490966010272
+      },
+      "sigma_R": {
+        "rms_kms": 2.802904485877869,
+        "library_noise_kms": 1.283481590151658,
+        "sum_sq_over_err_incl_library_noise": 194.3132356971788
+      },
+      "sigma_phi": {
+        "rms_kms": 2.5104412753045238,
+        "library_noise_kms": 1.2247769079880082,
+        "sum_sq_over_err_incl_library_noise": 241.9517807989501
+      }
+    }
+  },
+  "test1_nbody_maps_strength": {
+    "ground truth \u2212 data": {
+      "<v_R>": {
+        "rms_kms": 11.045535827814103,
+        "delta_chi2": 0.0,
+        "dlogL_tempered": -0.0,
+        "chi2_per_pixel": 1.3510786650788333
+      },
+      "<v_phi>": {
+        "rms_kms": 9.0594662662618,
+        "delta_chi2": 0.0,
+        "dlogL_tempered": -0.0,
+        "chi2_per_pixel": 1.2273518668642616
+      },
+      "sigma_R": {
+        "rms_kms": 6.491041028527877,
+        "delta_chi2": 0.0,
+        "dlogL_tempered": -0.0,
+        "chi2_per_pixel": 1.4798157948850212
+      },
+      "sigma_phi": {
+        "rms_kms": 6.834232067534144,
+        "delta_chi2": 0.0,
+        "dlogL_tempered": -0.0,
+        "chi2_per_pixel": 1.8017382381134803
+      }
+    },
+    "f 1.4 (stronger) \u2212 data": {
+      "<v_R>": {
+        "rms_kms": 11.19152519473388,
+        "delta_chi2": 9.366090384293784,
+        "dlogL_tempered": -0.058982102098612495,
+        "chi2_per_pixel": 1.3629645665817443
+      },
+      "<v_phi>": {
+        "rms_kms": 9.219048401374822,
+        "delta_chi2": 97.67690657994444,
+        "dlogL_tempered": -0.615111432859541,
+        "chi2_per_pixel": 1.3513073320672366
+      },
+      "sigma_R": {
+        "rms_kms": 6.68952724331774,
+        "delta_chi2": 53.80855188891837,
+        "dlogL_tempered": -0.3388544601932086,
+        "chi2_per_pixel": 1.5481007592110598
+      },
+      "sigma_phi": {
+        "rms_kms": 7.084294074930489,
+        "delta_chi2": 195.56403425902772,
+        "dlogL_tempered": -1.231546713965676,
+        "chi2_per_pixel": 2.049915946564023
+      }
+    },
+    "f 0.7 (weaker) \u2212 data": {
+      "<v_R>": {
+        "rms_kms": 11.14989128529462,
+        "delta_chi2": 2.4847737047566625,
+        "dlogL_tempered": -0.01564763634906516,
+        "chi2_per_pixel": 1.3542319312016209
+      },
+      "<v_phi>": {
+        "rms_kms": 9.1060598960533,
+        "delta_chi2": 43.930649482463195,
+        "dlogL_tempered": -0.2766492684480299,
+        "chi2_per_pixel": 1.2831014220450523
+      },
+      "sigma_R": {
+        "rms_kms": 6.6620438824257455,
+        "delta_chi2": 72.19009031130804,
+        "dlogL_tempered": -0.4546105261155539,
+        "chi2_per_pixel": 1.5714275846201837
+      },
+      "sigma_phi": {
+        "rms_kms": 6.793228454805728,
+        "delta_chi2": 38.77597849156359,
+        "dlogL_tempered": -0.24418819683806153,
+        "chi2_per_pixel": 1.8509463326459215
+      }
+    },
+    "f 1.4 (stronger) \u2212 ground truth": {
+      "<v_R>": {
+        "rms_kms": 3.561118834373818,
+        "library_noise_kms": 2.075295458519309,
+        "sum_sq_over_err_incl_library_noise": 109.57972658899155
+      },
+      "<v_phi>": {
+        "rms_kms": 3.688375008447855,
+        "library_noise_kms": 1.7035476021970992,
+        "sum_sq_over_err_incl_library_noise": 182.11118800344315
+      },
+      "sigma_R": {
+        "rms_kms": 2.9643251199354776,
+        "library_noise_kms": 1.4813714456645004,
+        "sum_sq_over_err_incl_library_noise": 233.15737203919375
+      },
+      "sigma_phi": {
+        "rms_kms": 2.619801892172428,
+        "library_noise_kms": 1.4180781233422755,
+        "sum_sq_over_err_incl_library_noise": 268.402505826133
+      }
+    },
+    "f 0.7 (weaker) \u2212 ground truth": {
+      "<v_R>": {
+        "rms_kms": 3.6942182704775495,
+        "library_noise_kms": 2.0706961374951622,
+        "sum_sq_over_err_incl_library_noise": 117.807319891769
+      },
+      "<v_phi>": {
+        "rms_kms": 3.4008448140444867,
+        "library_noise_kms": 1.6370771594956113,
+        "sum_sq_over_err_incl_library_noise": 167.76967770191786
+      },
+      "sigma_R": {
+        "rms_kms": 2.4633526365416167,
+        "library_noise_kms": 1.3966220152057824,
+        "sum_sq_over_err_incl_library_noise": 158.12255207786615
+      },
+      "sigma_phi": {
+        "rms_kms": 2.2801152608272997,
+        "library_noise_kms": 1.2005866032067043,
+        "sum_sq_over_err_incl_library_noise": 209.80049842863494
+      }
+    }
+  }
+}

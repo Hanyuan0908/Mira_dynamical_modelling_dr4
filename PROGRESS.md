@@ -679,6 +679,79 @@ Small numeric results (tracked): `results/au18_ground_truth.json` (pattern speed
 
   The noise floor is about 0.0 on this scale.
 
+## 2026-10-27 — Tempered corner plots and square-pixel maps for bar length and strength
+
+**Tempered corner plots (all R, 64 Sobol points + truth, GP emulator).**
+- Figures: [means](figures/test1_nbody_emulator_corner_logLs_means.png) and
+  [means + dispersions](figures/test1_nbody_emulator_corner_logLs_meansdisp.png). Profiles of the
+  evaluated points: [means](figures/test1_nbody_logl_corner_logLs_means.png),
+  [means + dispersions](figures/test1_nbody_logl_corner_logLs_meansdisp.png).
+- Numbers: `results/test1_nbody/emulator_results_logLs_{means,meansdisp}.json`.
+
+  | likelihood | √(2N_data) | Ω_b | φ_b [°] | S | bar_frac | LOO rms |
+  |---|---|---|---|---|---|---|
+  | means | 55.6 | 25.68 +1.53/−1.30 | 26.7 +6.2/−5.7 | 1.008 +0.216/−0.157 | 0.804 +0.428/−0.183 | 2.5 |
+  | means + disp | 78.6 | 26.26 +1.32/−1.13 | 27.7 +4.6/−4.6 | 0.941 +0.229/−0.141 | 0.936 +0.403/−0.251 | 6.4 |
+
+- All four truth values lie within 0.65σ in both cases.
+- S and bar_frac follow an anticorrelated ridge that runs into the prior box edges:
+  - means: the bar_frac marginal peaks at the lower edge (0.55);
+  - means + disp: the S marginal peaks at the lower edge (0.75).
+- At the edges the emulator is extrapolating. For means + disp its maximum is at the box corner
+  (S 0.75, bar_frac 1.56), logL −25.49. That is *below* the evaluated truth (−25.38). The best
+  evaluated non-truth point, (S 0.82, f 1.50), is at −26.20.
+
+**Square-pixel face-on maps.**
+- Scripts: `scripts/run_SF_box_models.py` integrates S 1.25, S 0.8, f 1.4 and f 0.7 at the true
+  Ω_b and φ_b (about 2 min each). `scripts/plot_SF_square_maps.py` makes the maps.
+- Figures: [bar length](figures/test1_nbody_maps_length.png) and
+  [bar strength](figures/test1_nbody_maps_strength.png). Pixels are 0.5 kpc, |z| < 1 kpc, in the
+  bar frame; the data are folded by point symmetry.
+- Rows:
+  1. data;
+  2. ground-truth model;
+  3. the two alternatives;
+  4. bootstrap data error;
+  5. each model − data;
+  6. each alternative − ground-truth model.
+- Numbers: `results/test1_nbody/SF_square_maps_numbers.json`.
+- Sample: 42,249 stars with |z| < 1; 788 pixels with ≥ 20 stars; median 37 stars per pixel.
+- Median bootstrap error per pixel, for ⟨v_R⟩, ⟨v_φ⟩, σ_R, σ_φ: **9.6, 7.0, 5.8, 4.5 km/s**.
+- Ground-truth model vs data: rms 11.0, 9.1, 6.5, 6.8 km/s; χ²/pixel 1.35, 1.23, 1.48, 1.80.
+  These use data errors only, without library noise.
+- **Alternative − ground-truth model:** rms 2.3–4.7 km/s. The pixel-scale library noise in these
+  differences is 1.2–2.1 km/s (neighbour-difference estimate). Region averages, in km/s:
+
+  | model | ⟨v_R⟩ quadrupole, R 1.5–3.5 / 3.5–5.5 | σ_R at bar ends, \|x\| ≈ 3.5 / 4.5 | ⟨v_φ⟩ at \|x\| ≈ 4.5 | ⟨v_φ⟩ on minor axis, \|y\| ≈ 2.5 |
+  |---|---|---|---|---|
+  | (truth's own quadrupole) | 11.3 / 8.0 | | | |
+  | S 1.25 | +2.1 / +3.7 | +3.3 / +4.9 | −5.9 | +3.4 |
+  | S 0.8 | −3.4 / −4.5 | −4.7 / −4.2 | +6.5 | −4.2 |
+  | f 1.4 | +1.1 / +1.7 | +5.6 / +6.4 | −6.9 | +5.1 |
+  | f 0.7 | −1.8 / −2.4 | −4.6 / −4.0 | +7.2 | −3.6 |
+
+  "Quadrupole" means the mean of Δ⟨v_R⟩ × sign(sin 2φ), i.e. projected on the truth's own pattern.
+  - A longer bar acts like a stronger one in σ_R and ⟨v_φ⟩: same sign, similar size. This is the
+    S–bar_frac ridge.
+  - ⟨v_R⟩ separates them. ±25% in S changes the ⟨v_R⟩ quadrupole about twice as much as ±40% in
+    bar_frac (3.7–4.5 vs 1.7–2.4 km/s at R 3.5–5.5).
+- **These differences are below the per-pixel data error.** Model − truth is 2.3–4.7 km/s against
+  4.5–9.6 km/s errors. They are not visible by eye in the model − data rows, whose rms changes by only
+  −0.04 to +0.37 km/s relative to the truth's.
+- Δχ² vs the ground truth on these 2D maps, tempered by √(2·4·788) = 79.4:
+
+  | model | ⟨v_R⟩ | ⟨v_φ⟩ | σ_R | σ_φ | total Δχ² | total ΔlogL |
+  |---|---|---|---|---|---|---|
+  | S 1.25 | +52 | +186 | +127 | +295 | +661 | −4.16 |
+  | S 0.8 | +41 | +47 | +66 | +66 | +220 | −1.39 |
+  | f 1.4 | +9 | +98 | +54 | +196 | +356 | −2.24 |
+  | f 0.7 | +2 | +44 | +72 | +39 | +157 | −0.99 |
+
+  - This ordering matches the 3D polar-cell diagnostic of the previous entry: S 1.25 −3.20,
+    f 1.4 −2.60, S 0.8 −1.27, f 0.7 −0.82.
+  - Shorter or weaker bars are penalised about 2–3× less than longer or stronger ones.
+  - The mean-velocity maps alone (⟨v_R⟩ + ⟨v_φ⟩) give f 0.7 only Δχ² = +46, i.e. ΔlogL −0.29.
+
 ## Next steps
 
 Agreed approach (2026-10-27): start from the simplest data and add realism one step at a time.

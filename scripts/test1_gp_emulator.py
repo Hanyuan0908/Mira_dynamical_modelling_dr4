@@ -189,7 +189,9 @@ def main():
     fig = corner.corner(post, labels=NAMES, truths=tv, truth_color=ACCENT, color=BLUE_RAMP[5],
                         quantiles=[0.16, 0.5, 0.84], show_titles=True, title_fmt=".3f",
                         title_kwargs=dict(fontsize=9), label_kwargs=dict(fontsize=10))
-    fig.suptitle("Test 1 posterior from the GP emulator (formal likelihood); orange = truth", y=1.02)
+    fig.suptitle(f"{pre}: posterior from the GP emulator of {args.column}"
+                 + (" (tempered: -chi2 / 2 sqrt(2 N_data))" if args.column.startswith("logLs_") else "")
+                 + "; orange = truth", y=1.02)
     savefig(fig, f"{pre}_emulator_corner{tag}")
 
     # figure 3: leave-one-out
