@@ -1239,11 +1239,25 @@ Truth: 26.02, 27°, 1, 1. All truth offsets are within 0.54σ. (*LOO on the old 
     (`figures/test1_nbody_qmc_focused_emulator_slices_logLs_fourier_stars_R0to6_vR_m24_vphi_sigR_sigphi_m024.png`).
 - **Tighter than the old run.** Same scheme, old 65-point run → this run: σ(Ω) 1.04 → 0.87 (sector GLS 0.77),
   σ(S) 0.23 → 0.19, σ(f) 0.38 → 0.28.
-- **The per-star fit is not what tightened it.** On the same 172 points, the sector GLS version of the scheme gives the
-  same widths within ~10% (Ω 0.77 vs 0.87, φ 2.8 vs 3.0, S 0.20 vs 0.19, f 0.27 vs 0.28). The gain comes from the
-  denser, focused design. The per-star fit's benefits are that it needs no sectors (all |z| 0–2 blocks and 5 at
-  |z| 2–3 are usable) and that it does not depend on the azimuthal density (fake-selection test, previous entry).
-  Its information content is the same.
+- **The per-star fit is not what tightened it.** On the same 172 points and the same R–|z| grid, the sector GLS
+  version of the scheme gives the same widths within ~10% (Ω 0.77 vs 0.87, φ 2.8 vs 3.0, S 0.20 vs 0.19, f 0.27 vs
+  0.28). The per-star fit's benefits are that it needs no sectors (all |z| 0–2 blocks and 5 at |z| 2–3 are usable)
+  and that it does not depend on the azimuthal density (fake-selection test, previous entry). Its information
+  content is the same.
+- **Design vs grid: not yet separated** (corrected 2026-10-28; an earlier version of this entry credited the design
+  alone).
+  - Old → new changes both the design (65 → 173 points, box containing the ridge) and the grid
+    (0.5 kpc polar rings, |z| 0/0.5/1/2/∞ → 0.3 kpc rings, |z| 0–1/1–2/2–3).
+  - The polar-cell likelihood, identical in both runs, isolates the design. Its widths barely change:
+    - Ω 1.26 → 1.20, φ 4.6° → 4.4°, S 0.20 → 0.18, f 0.31 → 0.36;
+    - its emulator maximum leaves the box corner: (S, f) = (0.75, 1.56) → (0.91, 1.13).
+  - The old Fourier corner was bimodal, with S piled at the box edge 0.75 and f peaks near 0.7 and 1.5. Its
+    maximum (0.75, 1.60) was at the box corner.
+  - Emulator accuracy near the peak, LOO on the same number of best points (old values recomputed today):
+    - best 16: old 1.48, new 0.44;
+    - best 32: old 1.90, new 0.86.
+    - The 16 best old points span ΔlogL 0 to −12; the new ones span 0 to −3.9.
+    - The old LOO of 10.8 was over all 64 points, so it is not comparable.
 - **Proposed vs current sector likelihood.** σ(Ω) 0.87 vs 1.20 and σ(φ_b) 3.0° vs 4.4°; S and f are about the same
   (0.19 vs 0.18 and 0.28 vs 0.36).
 - **The S–bar_frac degeneracy is still there.** Shorter and stronger, or longer and weaker; see the S–bar_frac panels
