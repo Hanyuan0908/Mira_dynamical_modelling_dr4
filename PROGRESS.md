@@ -1277,6 +1277,83 @@ Truth: 26.02, 27°, 1, 1. All truth offsets are within 0.54σ. (*LOO on the old 
 - `test1_nbody_qmc_focused_emulator_slices_<column>.png` — 1D slices through the truth and the emulator maximum;
 - `test1_nbody_qmc_focused_emulator_loo_<column>.png` — leave-one-out check.
 
+## 2026-10-28 — Is the per-star Fourier fit right? Check against the true N-body maps
+
+- Script: `scripts/check_fourier_star_fit_vs_true_maps.py`; numbers in
+  `results/test1_nbody_qmc_focused/fourier_star_fit_vs_true_maps.json`.
+- Figures: `figures/test1_nbody_fourier_star_fit_vs_true_maps_absz_0to1.png` (0.25 kpc pixels) and
+  `figures/test1_nbody_fourier_star_fit_vs_true_maps_absz_1to2.png` (0.5 kpc pixels).
+  - Columns: true map; m ≤ 4 reconstruction from the 50k mock; their difference in km/s and in units of the error;
+    m ≤ 4 fit to all particles minus the truth.
+  - Rows: ⟨v_R⟩, ⟨v_φ⟩, σ_R, σ_φ.
+- **Ground truth** = all 1,493,610 star particles at R < 8 kpc. The mock is a random 50k subset of these (checked:
+  same pool size). Bar frame at 27°.
+- A pixel's reconstruction is evaluated at the true particles in that pixel, so the comparison is like for like.
+- Re-fitting the mock in this script reproduces the saved coefficients exactly (max difference 0).
+
+**1. The reconstruction agrees with the truth within its errors.**
+
+| layer | field | mock − true rms [km/s] | pulls: mean, std | \|pull\| > 3 |
+|---|---|---|---|---|
+| \|z\| < 1 | ⟨v_R⟩ / ⟨v_φ⟩ / σ_R / σ_φ | 7.1 / 6.0 / 4.3 / 4.4 | +0.06, 1.07 / +0.01, 1.09 / +0.07, 0.93 / +0.11, 1.09 | 0.7 / 0.8 / 0.2 / 0.9% |
+| 1 < \|z\| < 2 | same | 9.1 / 7.8 / 6.0 / 5.3 | +0.13, 1.03 / −0.01, 1.10 / +0.16, 0.94 / +0.11, 1.01 | ≤ 0.4% |
+
+- No bias in the ring averages. Mean pull of the m = 0 coefficients (mock − true) over the 45 blocks:
+  - means: ⟨v_R⟩ −0.00, ⟨v_φ⟩ −0.14, ⟨v_z⟩ −0.07;
+  - variances: σ_R² +0.08, σ_φ² −0.26, σ_z² −0.02;
+  - each ±0.13–0.16.
+- The reconstructed maps show ring-to-ring noise (each 0.3 kpc ring is fitted independently); it is consistent with
+  the errors (pulls above).
+
+**2. m ≤ 4 truncation is small.**
+- Fit to all particles − truth, rms against the truth-pixel noise alone (|z| < 1):
+  - ⟨v_R⟩ 5.8 vs 5.2;
+  - ⟨v_φ⟩ 4.9 vs 4.3;
+  - σ_R 3.4 vs 3.7;
+  - σ_φ 3.2 vs 3.0 km/s.
+  - So ~2.4 km/s (in quadrature) of unresolved structure in the means, and ≤ 1.2 km/s in the dispersions.
+- What is left out, as mode amplitudes of the true maps per ring (|z| < 1, R < 6; median and max; pool noise ≈ 0.9):
+  - m = 1: 2.3 (4.5) for ⟨v_R⟩ and 2.1 (4.5) for ⟨v_φ⟩ — a lopsided part of the N-body. An even-m bar model cannot
+    produce it, and the even-m fit ignores it by construction. It is visible as a top/bottom pattern in the ⟨v_φ⟩
+    truncation panel.
+  - m = 6: 1.5 (2.9) and 1.6 (4.2).
+  - m = 3 and m = 8: ≈ 1, i.e. at the noise level.
+  - All are ≲ 0.5× the mock's per-ring coefficient error (~5 km/s).
+
+**3–4. The joint bootstrap covariance is miscalibrated in sparse blocks.**
+- Test: 200 independent 50k mocks drawn from the same particles give the true sampling covariance.
+- Proposed scheme, χ²/N of mock − true coefficients (expected 0.97 with a correct covariance):
+
+  | layer (stars per block) | real mock, bootstrap cov | real mock, true cov | 200 independent mocks, bootstrap cov (mean, 16–84%) |
+  |---|---|---|---|
+  | \|z\| 0–1 (674–5538) | 1.09 | 1.07 | 1.02 (0.94–1.12) |
+  | \|z\| 1–2 (85–513) | 1.49 | 1.02 | 1.25 (1.12–1.37) |
+  | \|z\| 2–3 (50–60) | 1.52 | 0.64 | 2.19 (1.56–2.90) |
+  | all R < 6 | **1.31** | **1.00** | — |
+
+- Diagonal variances (bootstrap / true):
+  - 0.96–1.04 at |z| < 1;
+  - 0.92–1.10 at |z| 1–2;
+  - 0.69–1.02 at |z| 2–3.
+- So at |z| 1–2 the excess comes from the estimated correlations. The joint covariance (19 terms) is estimated from
+  85–513 stars, and its inverse is too large. Hartlap only corrects for the 300 bootstraps, not for the few stars.
+- Same independent mocks:
+  - per-field covariance: 0.99 / 1.13 / 1.75;
+  - diagonal only: 0.95 / 1.01 / 1.24.
+  - Diagonal-only is calibrated on average but ignores the mean–dispersion correlations (−0.4 to −0.5), so it
+    double-counts.
+- **Consequence 1: the |z| ≥ 1 blocks currently get ~25–50% too much weight in the likelihood.**
+- **Consequence 2: the truth's χ²/N = 1.50 is mostly the error model, not the model.**
+  - Truth library vs mock 1.50 ≈ mock vs true N-body 1.31 + truth library vs true N-body 0.18 (all with the
+    bootstrap covariance).
+  - With the true covariance: mock vs true 1.00, truth library vs true 0.16.
+  - The library's misfit is concentrated in the m = 0 dispersion terms (σ_R² 0.56, σ_z² 0.50, σ_φ² 0.40 per term,
+    against 0.07–0.13 for m = 2, 4). That is the "hot library".
+- Options, not yet done:
+  - bigger blocks at |z| ≥ 1 (e.g. 0.6 kpc rings at |z| 1–2, drop |z| 2–3);
+  - a model-based covariance (mock-sized draws from a reference library, one random snapshot per orbit);
+  - shrinking the joint covariance towards per-field.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 All in `figures/`.
@@ -1304,6 +1381,7 @@ All in `figures/`.
 | `test1_nbody_qmc_focused_emulator_corner_logLs_sectors_meansdisp.png` | focused run, posterior: current polar-cell likelihood, means + dispersions |
 | `test1_nbody_qmc_focused_logl_corner_<column>.png` | focused run: evaluated log L (upper) and GP profile (lower) for the columns above and `logLs_fourier_stars_R0to8_…` |
 | `test1_nbody_qmc_focused_emulator_{slices,loo}_<column>.png` | focused run: 1D emulator slices through truth and maximum; leave-one-out check |
+| `test1_nbody_fourier_star_fit_vs_true_maps_absz_{0to1,1to2}.png` | per-star Fourier fit (m ≤ 4) from the 50k mock vs the true N-body maps (1.49 M particles): truth, reconstruction, difference, pulls, truncation |
 | `test1_nbody_density_stationarity.png` | density change of the libraries; counts statistic retracted (needs the selection function) |
 
 ## Next steps

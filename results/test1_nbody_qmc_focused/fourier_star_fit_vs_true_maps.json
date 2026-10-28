@@ -1,0 +1,429 @@
+{
+ "n_pool": 1493610,
+ "pool_size_in_mock_file": 1493610,
+ "refit_max_abs_diff": 0.0,
+ "expected_chi2_per_N_mock_vs_pool": 0.9665240591586827,
+ "chi2_per_N": {
+  "fourier_stars_R0to6_vR_m24_vphi_sigR_sigphi_m024": {
+   "mock_vs_pool": 1.314,
+   "truth_library_vs_pool": 0.181,
+   "truth_library_vs_mock": 1.498,
+   "N_data": 855
+  },
+  "fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024": {
+   "mock_vs_pool": 1.176,
+   "truth_library_vs_pool": 0.125,
+   "truth_library_vs_mock": 1.266,
+   "N_data": 765
+  },
+  "fourier_stars_R0to6_all6_m024": {
+   "mock_vs_pool": 1.436,
+   "truth_library_vs_pool": 0.172,
+   "truth_library_vs_mock": 1.653,
+   "N_data": 1350
+  },
+  "fourier_stars_R0to8_vR_m24_vphi_sigR_sigphi_m024": {
+   "mock_vs_pool": 1.267,
+   "truth_library_vs_pool": 0.255,
+   "truth_library_vs_mock": 1.5,
+   "N_data": 1007
+  },
+  "field_<v_R>_m024": {
+   "mock_vs_pool": 0.941,
+   "truth_library_vs_pool": 0.094,
+   "truth_library_vs_mock": 1.059,
+   "N_data": 225
+  },
+  "field_<v_R>_m0": {
+   "mock_vs_pool": 1.152,
+   "truth_library_vs_pool": 0.095,
+   "truth_library_vs_mock": 1.344,
+   "N_data": 45
+  },
+  "field_<v_R>_m24": {
+   "mock_vs_pool": 0.886,
+   "truth_library_vs_pool": 0.091,
+   "truth_library_vs_mock": 0.973,
+   "N_data": 180
+  },
+  "field_<v_phi>_m024": {
+   "mock_vs_pool": 1.1,
+   "truth_library_vs_pool": 0.197,
+   "truth_library_vs_mock": 1.177,
+   "N_data": 225
+  },
+  "field_<v_phi>_m0": {
+   "mock_vs_pool": 1.161,
+   "truth_library_vs_pool": 0.4,
+   "truth_library_vs_mock": 1.029,
+   "N_data": 45
+  },
+  "field_<v_phi>_m24": {
+   "mock_vs_pool": 1.008,
+   "truth_library_vs_pool": 0.134,
+   "truth_library_vs_mock": 1.12,
+   "N_data": 180
+  },
+  "field_<v_z>_m024": {
+   "mock_vs_pool": 1.075,
+   "truth_library_vs_pool": 0.075,
+   "truth_library_vs_mock": 1.138,
+   "N_data": 225
+  },
+  "field_<v_z>_m0": {
+   "mock_vs_pool": 1.071,
+   "truth_library_vs_pool": 0.073,
+   "truth_library_vs_mock": 1.05,
+   "N_data": 45
+  },
+  "field_<v_z>_m24": {
+   "mock_vs_pool": 1.118,
+   "truth_library_vs_pool": 0.068,
+   "truth_library_vs_mock": 1.195,
+   "N_data": 180
+  },
+  "field_sigma_R^2_m024": {
+   "mock_vs_pool": 1.031,
+   "truth_library_vs_pool": 0.179,
+   "truth_library_vs_mock": 1.25,
+   "N_data": 225
+  },
+  "field_sigma_R^2_m0": {
+   "mock_vs_pool": 0.876,
+   "truth_library_vs_pool": 0.557,
+   "truth_library_vs_mock": 1.428,
+   "N_data": 45
+  },
+  "field_sigma_R^2_m24": {
+   "mock_vs_pool": 0.92,
+   "truth_library_vs_pool": 0.076,
+   "truth_library_vs_mock": 0.988,
+   "N_data": 180
+  },
+  "field_sigma_phi^2_m024": {
+   "mock_vs_pool": 1.487,
+   "truth_library_vs_pool": 0.2,
+   "truth_library_vs_mock": 1.772,
+   "N_data": 225
+  },
+  "field_sigma_phi^2_m0": {
+   "mock_vs_pool": 1.237,
+   "truth_library_vs_pool": 0.398,
+   "truth_library_vs_mock": 1.355,
+   "N_data": 45
+  },
+  "field_sigma_phi^2_m24": {
+   "mock_vs_pool": 1.182,
+   "truth_library_vs_pool": 0.102,
+   "truth_library_vs_mock": 1.267,
+   "N_data": 180
+  },
+  "field_sigma_z^2_m024": {
+   "mock_vs_pool": 1.373,
+   "truth_library_vs_pool": 0.179,
+   "truth_library_vs_mock": 1.708,
+   "N_data": 225
+  },
+  "field_sigma_z^2_m0": {
+   "mock_vs_pool": 0.736,
+   "truth_library_vs_pool": 0.499,
+   "truth_library_vs_mock": 1.378,
+   "N_data": 45
+  },
+  "field_sigma_z^2_m24": {
+   "mock_vs_pool": 1.255,
+   "truth_library_vs_pool": 0.088,
+   "truth_library_vs_mock": 1.398,
+   "N_data": 180
+  }
+ },
+ "m0_mean_pull_mock_minus_pool": {
+  "<v_R>": [
+   -0.003,
+   0.161,
+   45
+  ],
+  "<v_phi>": [
+   -0.142,
+   0.16,
+   45
+  ],
+  "<v_z>": [
+   -0.067,
+   0.154,
+   45
+  ],
+  "sigma_R^2": [
+   0.078,
+   0.139,
+   45
+  ],
+  "sigma_phi^2": [
+   -0.264,
+   0.162,
+   45
+  ],
+  "sigma_z^2": [
+   -0.023,
+   0.128,
+   45
+  ]
+ },
+ "error_model": {
+  "n_independent_mocks": 200,
+  "layers": {
+   "absz_0to1": {
+    "n_blocks": 20,
+    "stars_per_block": [
+     674,
+     5538
+    ],
+    "variance_ratio_bootstrap_over_true": {
+     "<v_R>": 0.996,
+     "<v_phi>": 1.013,
+     "<v_z>": 1.029,
+     "sigma_R^2": 1.041,
+     "sigma_phi^2": 0.999,
+     "sigma_z^2": 0.959
+    },
+    "real_mock_chi2_per_N_bootstrap_cov": 1.087,
+    "real_mock_chi2_per_N_true_cov": 1.071,
+    "independent_mocks_chi2_per_N_bootstrap_cov": [
+     1.024,
+     0.938,
+     1.116
+    ]
+   },
+   "absz_1to2": {
+    "n_blocks": 20,
+    "stars_per_block": [
+     85,
+     513
+    ],
+    "variance_ratio_bootstrap_over_true": {
+     "<v_R>": 1.02,
+     "<v_phi>": 0.955,
+     "<v_z>": 1.034,
+     "sigma_R^2": 1.095,
+     "sigma_phi^2": 0.918,
+     "sigma_z^2": 1.057
+    },
+    "real_mock_chi2_per_N_bootstrap_cov": 1.491,
+    "real_mock_chi2_per_N_true_cov": 1.015,
+    "independent_mocks_chi2_per_N_bootstrap_cov": [
+     1.248,
+     1.122,
+     1.368
+    ]
+   },
+   "absz_2to3": {
+    "n_blocks": 5,
+    "stars_per_block": [
+     50,
+     60
+    ],
+    "variance_ratio_bootstrap_over_true": {
+     "<v_R>": 0.799,
+     "<v_phi>": 0.935,
+     "<v_z>": 0.776,
+     "sigma_R^2": 0.803,
+     "sigma_phi^2": 1.02,
+     "sigma_z^2": 0.692
+    },
+    "real_mock_chi2_per_N_bootstrap_cov": 1.516,
+    "real_mock_chi2_per_N_true_cov": 0.639,
+    "independent_mocks_chi2_per_N_bootstrap_cov": [
+     2.191,
+     1.562,
+     2.897
+    ]
+   }
+  },
+  "all_R0to6": {
+   "real_mock_chi2_per_N_bootstrap_cov": 1.314,
+   "real_mock_chi2_per_N_true_cov": 0.998,
+   "truth_library_chi2_per_N_true_cov_vs_pool": 0.159
+  }
+ },
+ "modes_outside_basis_kms": {
+  "<v_R>": {
+   "m1": [
+    2.32,
+    4.51
+   ],
+   "m3": [
+    0.9,
+    1.68
+   ],
+   "m6": [
+    1.52,
+    2.93
+   ],
+   "m8": [
+    1.08,
+    4.04
+   ]
+  },
+  "<v_phi>": {
+   "m1": [
+    2.11,
+    4.5
+   ],
+   "m3": [
+    1.22,
+    2.95
+   ],
+   "m6": [
+    1.64,
+    4.2
+   ],
+   "m8": [
+    1.08,
+    2.43
+   ]
+  },
+  "note": "[median, max] over the 20 rings; pool noise of an amplitude ~ sigma sqrt(2/n) = 0.88 km/s for sigma = 100 km/s (median 25596 particles per ring)"
+ },
+ "maps": {
+  "absz_0to1": {
+   "<v_R>": {
+    "mock": {
+     "n_pix": 3269,
+     "rms_kms": 7.122766333961382,
+     "mean_kms": 0.4408278558123602,
+     "rms_truth_noise_kms": 5.172116424607654,
+     "pull_mean": 0.05833923341563686,
+     "pull_std": 1.0666071186145856,
+     "frac_abs_pull_gt3": 0.007035790761700826
+    },
+    "pool": {
+     "n_pix": 3269,
+     "rms_kms": 5.772585943409668,
+     "mean_kms": 0.07177172717360875,
+     "rms_truth_noise_kms": 5.172116424607654
+    }
+   },
+   "<v_phi>": {
+    "mock": {
+     "n_pix": 3269,
+     "rms_kms": 6.022263249392115,
+     "mean_kms": -0.19769818555749533,
+     "rms_truth_noise_kms": 4.250554695385827,
+     "pull_mean": 0.012837212182048339,
+     "pull_std": 1.08749794669814,
+     "frac_abs_pull_gt3": 0.007647598654022637
+    },
+    "pool": {
+     "n_pix": 3269,
+     "rms_kms": 4.855498732799314,
+     "mean_kms": -0.07494031814240308,
+     "rms_truth_noise_kms": 4.250554695385827
+    }
+   },
+   "sigma_R": {
+    "mock": {
+     "n_pix": 3269,
+     "rms_kms": 4.2774375622239935,
+     "mean_kms": 0.24417164942345065,
+     "rms_truth_noise_kms": 3.6572385969263927,
+     "pull_mean": 0.06887546217339022,
+     "pull_std": 0.9348944317360641,
+     "frac_abs_pull_gt3": 0.0015295197308045274
+    },
+    "pool": {
+     "n_pix": 3269,
+     "rms_kms": 3.416606004622037,
+     "mean_kms": 0.23308409709174463,
+     "rms_truth_noise_kms": 3.6572385969263927
+    }
+   },
+   "sigma_phi": {
+    "mock": {
+     "n_pix": 3269,
+     "rms_kms": 4.426550162341892,
+     "mean_kms": 0.42899716287744444,
+     "rms_truth_noise_kms": 3.005596048911638,
+     "pull_mean": 0.10822197768034812,
+     "pull_std": 1.0851998191068244,
+     "frac_abs_pull_gt3": 0.008565310492505354
+    },
+    "pool": {
+     "n_pix": 3269,
+     "rms_kms": 3.2307844855757155,
+     "mean_kms": 0.34206720032138743,
+     "rms_truth_noise_kms": 3.005596048911638
+    }
+   }
+  },
+  "absz_1to2": {
+   "<v_R>": {
+    "mock": {
+     "n_pix": 821,
+     "rms_kms": 9.107835987388764,
+     "mean_kms": 1.1595303911852108,
+     "rms_truth_noise_kms": 5.297234920683721,
+     "pull_mean": 0.1323263151702204,
+     "pull_std": 1.031561511275116,
+     "frac_abs_pull_gt3": 0.0
+    },
+    "pool": {
+     "n_pix": 821,
+     "rms_kms": 6.177952943170939,
+     "mean_kms": 0.034855417714220745,
+     "rms_truth_noise_kms": 5.297234920683721
+    }
+   },
+   "<v_phi>": {
+    "mock": {
+     "n_pix": 821,
+     "rms_kms": 7.840801224455716,
+     "mean_kms": 0.0644875751673401,
+     "rms_truth_noise_kms": 4.295155658386228,
+     "pull_mean": -0.008601031069029636,
+     "pull_std": 1.0969493426022983,
+     "frac_abs_pull_gt3": 0.0036540803897685747
+    },
+    "pool": {
+     "n_pix": 821,
+     "rms_kms": 4.568720518353303,
+     "mean_kms": -0.07188163945356302,
+     "rms_truth_noise_kms": 4.295155658386228
+    }
+   },
+   "sigma_R": {
+    "mock": {
+     "n_pix": 821,
+     "rms_kms": 5.97218912253199,
+     "mean_kms": 0.8962672832499003,
+     "rms_truth_noise_kms": 3.745710733953642,
+     "pull_mean": 0.15985510932929353,
+     "pull_std": 0.9443395361388742,
+     "frac_abs_pull_gt3": 0.001218026796589525
+    },
+    "pool": {
+     "n_pix": 821,
+     "rms_kms": 3.6811500435525453,
+     "mean_kms": 0.30999326227352997,
+     "rms_truth_noise_kms": 3.745710733953642
+    }
+   },
+   "sigma_phi": {
+    "mock": {
+     "n_pix": 821,
+     "rms_kms": 5.302762723805063,
+     "mean_kms": 0.39480027923100414,
+     "rms_truth_noise_kms": 3.037133692296672,
+     "pull_mean": 0.10885319373152581,
+     "pull_std": 1.0144793550620754,
+     "frac_abs_pull_gt3": 0.0036540803897685747
+    },
+    "pool": {
+     "n_pix": 821,
+     "rms_kms": 3.349992909076459,
+     "mean_kms": 0.2663865682558504,
+     "rms_truth_noise_kms": 3.037133692296672
+    }
+   }
+  }
+ }
+}
