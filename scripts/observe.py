@@ -25,6 +25,12 @@ def to_galactocentric(l, b, d, pml, pmb, vlos):
         np.asarray(vlos, dtype=np.float64), **FRAME)
 
 
+def scatter_distance_modulus(d, sigma_dm, rng):
+    """Gaussian errors in distance modulus (as for period-luminosity distances): d_obs = d * 10^(delta / 5),
+    delta ~ N(0, sigma_dm); a fractional distance error of ln(10) / 5 * sigma_dm for small sigma_dm."""
+    return d * 10.0 ** (0.2 * sigma_dm * rng.standard_normal(len(d)))
+
+
 def scatter_distance(d, frac_err, rng):
     """Gaussian fractional distance errors, sigma_d = frac_err * d; non-positive draws are redrawn."""
     d_obs = d + frac_err * d * rng.standard_normal(len(d))

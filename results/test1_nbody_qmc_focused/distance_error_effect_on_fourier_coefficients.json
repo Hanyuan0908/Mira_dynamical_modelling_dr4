@@ -1,0 +1,333 @@
+{
+ "sigma_DM": 0.2654035812684299,
+ "chi2_per_N_vs_truth_model": {
+  "fourier_stars_R0to6_vR_m24_vphi_sigR_sigphi_m024": {
+   "perfect": [
+    1.498,
+    855
+   ],
+   "smeared": [
+    4.613,
+    836
+   ],
+   "smeared_vs_forward_model": [
+    1.405,
+    836
+   ]
+  },
+  "fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024": {
+   "perfect": [
+    1.266,
+    765
+   ],
+   "smeared": [
+    3.727,
+    748
+   ],
+   "smeared_vs_forward_model": [
+    1.105,
+    748
+   ]
+  },
+  "fourier_stars_R0to6_all6_m024": {
+   "perfect": [
+    1.653,
+    1350
+   ],
+   "smeared": [
+    4.286,
+    1320
+   ],
+   "smeared_vs_forward_model": [
+    1.469,
+    1320
+   ]
+  },
+  "fourier_stars_R0to8_vR_m24_vphi_sigR_sigphi_m024": {
+   "perfect": [
+    1.5,
+    1007
+   ],
+   "smeared": [
+    4.284,
+    988
+   ],
+   "smeared_vs_forward_model": [
+    1.443,
+    988
+   ]
+  },
+  "field_<v_R>_m024": {
+   "perfect": [
+    1.059,
+    225
+   ],
+   "smeared": [
+    1.857,
+    220
+   ],
+   "smeared_vs_forward_model": [
+    1.014,
+    220
+   ]
+  },
+  "field_<v_R>_m0": {
+   "perfect": [
+    1.344,
+    45
+   ],
+   "smeared": [
+    1.019,
+    44
+   ],
+   "smeared_vs_forward_model": [
+    1.083,
+    44
+   ]
+  },
+  "field_<v_R>_m24": {
+   "perfect": [
+    0.973,
+    180
+   ],
+   "smeared": [
+    2.009,
+    176
+   ],
+   "smeared_vs_forward_model": [
+    0.979,
+    176
+   ]
+  },
+  "field_<v_phi>_m024": {
+   "perfect": [
+    1.177,
+    225
+   ],
+   "smeared": [
+    3.114,
+    220
+   ],
+   "smeared_vs_forward_model": [
+    1.107,
+    220
+   ]
+  },
+  "field_<v_phi>_m0": {
+   "perfect": [
+    1.029,
+    45
+   ],
+   "smeared": [
+    7.424,
+    44
+   ],
+   "smeared_vs_forward_model": [
+    1.064,
+    44
+   ]
+  },
+  "field_<v_phi>_m24": {
+   "perfect": [
+    1.12,
+    180
+   ],
+   "smeared": [
+    1.697,
+    176
+   ],
+   "smeared_vs_forward_model": [
+    1.088,
+    176
+   ]
+  },
+  "field_<v_z>_m024": {
+   "perfect": [
+    1.138,
+    225
+   ],
+   "smeared": [
+    1.217,
+    220
+   ],
+   "smeared_vs_forward_model": [
+    1.179,
+    220
+   ]
+  },
+  "field_<v_z>_m0": {
+   "perfect": [
+    1.05,
+    45
+   ],
+   "smeared": [
+    1.199,
+    44
+   ],
+   "smeared_vs_forward_model": [
+    1.193,
+    44
+   ]
+  },
+  "field_<v_z>_m24": {
+   "perfect": [
+    1.195,
+    180
+   ],
+   "smeared": [
+    1.204,
+    176
+   ],
+   "smeared_vs_forward_model": [
+    1.172,
+    176
+   ]
+  },
+  "field_sigma_R^2_m024": {
+   "perfect": [
+    1.25,
+    225
+   ],
+   "smeared": [
+    5.228,
+    220
+   ],
+   "smeared_vs_forward_model": [
+    1.463,
+    220
+   ]
+  },
+  "field_sigma_R^2_m0": {
+   "perfect": [
+    1.428,
+    45
+   ],
+   "smeared": [
+    10.604,
+    44
+   ],
+   "smeared_vs_forward_model": [
+    1.445,
+    44
+   ]
+  },
+  "field_sigma_R^2_m24": {
+   "perfect": [
+    0.988,
+    180
+   ],
+   "smeared": [
+    4.452,
+    176
+   ],
+   "smeared_vs_forward_model": [
+    0.959,
+    176
+   ]
+  },
+  "field_sigma_phi^2_m024": {
+   "perfect": [
+    1.772,
+    225
+   ],
+   "smeared": [
+    7.489,
+    220
+   ],
+   "smeared_vs_forward_model": [
+    1.529,
+    220
+   ]
+  },
+  "field_sigma_phi^2_m0": {
+   "perfect": [
+    1.355,
+    45
+   ],
+   "smeared": [
+    20.021,
+    44
+   ],
+   "smeared_vs_forward_model": [
+    1.744,
+    44
+   ]
+  },
+  "field_sigma_phi^2_m24": {
+   "perfect": [
+    1.267,
+    180
+   ],
+   "smeared": [
+    5.084,
+    176
+   ],
+   "smeared_vs_forward_model": [
+    1.033,
+    176
+   ]
+  },
+  "field_sigma_z^2_m024": {
+   "perfect": [
+    1.708,
+    225
+   ],
+   "smeared": [
+    7.005,
+    220
+   ],
+   "smeared_vs_forward_model": [
+    1.372,
+    220
+   ]
+  },
+  "field_sigma_z^2_m0": {
+   "perfect": [
+    1.378,
+    45
+   ],
+   "smeared": [
+    17.377,
+    44
+   ],
+   "smeared_vs_forward_model": [
+    1.623,
+    44
+   ]
+  },
+  "field_sigma_z^2_m24": {
+   "perfect": [
+    1.398,
+    180
+   ],
+   "smeared": [
+    6.551,
+    176
+   ],
+   "smeared_vs_forward_model": [
+    1.066,
+    176
+   ]
+  }
+ },
+ "stars_per_layer": {
+  "perfect": [
+   42249,
+   6881,
+   820
+  ],
+  "smeared": [
+   41063,
+   6637,
+   845
+  ]
+ },
+ "error_ratio_smeared_over_perfect_median": {
+  "<v_R>": 1.053,
+  "<v_phi>": 1.174,
+  "<v_z>": 1.107,
+  "sigma_R^2": 1.21,
+  "sigma_phi^2": 1.473,
+  "sigma_z^2": 1.553
+ }
+}

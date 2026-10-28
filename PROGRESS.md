@@ -1480,6 +1480,54 @@ Truth: 26.02, 27°, 1, 1. All truth offsets are within 0.54σ. (*LOO on the old 
 - The data are plotted at 27°. The models' own angles move the data coefficients by ≤ 0.29σ (#235, #15) and 0.49σ
   (#17), and the per-panel χ² uses each model's own data.
 
+## 2026-10-28 — Test 2b: Mira-like distance errors (mock and first look)
+
+**Error level from the DR3 Mira catalogue** (`data/gaia_dr3_lpv_mira.csv`, column `DM_err`).
+- With the usual cut σ_DM < 0.4: 54,573 of 55,074 stars (99.1%).
+- **Median σ_DM = 0.2654 mag** (16–84%: 0.233–0.292). That is a fractional distance error of
+  ln(10)/5 × 0.2654 = **12.2%**.
+- The catalogue's median `luminosity_distance_err / luminosity_distance` is also 0.1222.
+- R < 8 kpc subset: 0.2645 mag (12.2%). Stars with a Gaia RV: 0.2115 mag.
+
+**Mock.**
+- Script: `scripts/make_mock_distance_error.py` (new helper `observe.scatter_distance_modulus`).
+- File: `mock/nbody_mock_distance_error_sigmaDM0.265_R8_N50k.hdf5`.
+- Same 50k stars as the perfect mock (selected on true R < 8 kpc).
+- Error model: DM_obs = DM_true + 0.2654 N(0, 1) for every star (log-normal in distance); l, b, proper motions and
+  v_los are exact.
+- Observed x..vz, d are stored under the usual names, and true values as `<name>_true`. Seed 2029.
+- Converting back at the true distance reproduces the perfect mock to 6×10⁻¹³.
+- Size of the smearing:
+  - d_obs / d_true − 1: std 0.124 (16–84%: −0.114 to +0.129);
+  - 3D position shift: median 0.66 kpc (84%: 1.48);
+  - |R_obs − R_true|: median 0.37 kpc, more than one 0.3 kpc ring;
+  - observed R > 8 kpc: 2.7%.
+
+**What the errors do to the Fourier coefficients.**
+- Script: `scripts/plot_distance_error_effect_on_fourier_coefficients.py`; numbers in
+  `results/test1_nbody_qmc_focused/distance_error_effect_on_fourier_coefficients.json`.
+- Figures: `figures/test1_nbody_distance_error_fourier_coefficients_perfect_vs_smeared_absz_{0to1,1to2}.png`.
+- χ²/N against the truth model (proposed scheme, joint covariance):
+  - perfect data 1.50;
+  - **smeared data 4.61** with no correction;
+  - **1.41** when the truth library is "observed" with the same errors.
+- To observe the library: each sample with true R < 8 is rotated to the MW frame, seen from the Sun, given
+  σ_DM = 0.265 and converted back; samples landing at R > 8 drop out, as the data do.
+- Without correction, per field and term (smeared / forward-modelled):
+  - σ_φ² m = 0: 20.0 / 1.74;
+  - σ_z² m = 0: 17.4 / 1.62;
+  - σ_R² m = 0: 10.6 / 1.45;
+  - ⟨v_φ⟩ m = 0: 7.4 / 1.06 (rotation curve ~10 km/s low at R 1–4).
+- The smearing also creates terms that the bar's symmetry forbids, because it runs along lines of sight from the Sun,
+  27° from the bar axis:
+  - ⟨v_R⟩ cos 2φ down to −20 km/s at R 1–2;
+  - σ_R and σ_φ sin 2φ and sin 4φ of +10 to +25 km/s.
+  - The forward-modelled truth reproduces all of them.
+- Data errors grow by 5% (⟨v_R⟩) to 47–55% (σ_φ², σ_z²).
+- **Caveat.** This forward model starts from the true positions (the truth library). Real data give only smeared
+  initial conditions, so the orbits themselves start from a smeared, non-equilibrium distribution. That part is not
+  yet tested.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 All in `figures/`.
@@ -1510,6 +1558,7 @@ All in `figures/`.
 | `test1_nbody_fourier_star_fit_vs_true_maps_absz_{0to1,1to2}.png` | per-star Fourier fit (m ≤ 4) from the 50k mock vs the true N-body maps (1.49 M particles): truth, reconstruction, difference, pulls, truncation |
 | `test1_nbody_qmc_focused_bar_length_strength_degeneracy_<column>.png` | why S and bar_frac are weakly constrained: (S, bar_frac) posterior with curves of fixed bar potential; fractional width of the bar m = 2 potential vs R against S, bar_frac, Ω_b; Q_T(R) posterior vs truth |
 | `test1_nbody_qmc_focused_fourier_coefficients_data_vs_models_absz_{0to1,1to2}.png` | Fourier coefficients (m = 0, cos/sin 2φ, cos/sin 4φ) of ⟨v_R⟩, ⟨v_φ⟩, σ_R, σ_φ vs R: data with errors against the truth model, two ridge models, a rejected Ω_b model and the all-particle N-body |
+| `test1_nbody_distance_error_fourier_coefficients_perfect_vs_smeared_absz_{0to1,1to2}.png` | Test 2b: Fourier coefficients of the perfect and the distance-smeared (σ_DM = 0.265) mock against the truth model and the truth model observed with the same errors |
 | `test1_nbody_density_stationarity.png` | density change of the libraries; counts statistic retracted (needs the selection function) |
 
 ## Next steps
