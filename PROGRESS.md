@@ -1447,6 +1447,39 @@ Truth: 26.02, 27°, 1, 1. All truth offsets are within 0.54σ. (*LOO on the old 
   parameters, estimated from the Sobol points near the truth, and show which fields, terms and radii carry the
   information on each parameter.
 
+## 2026-10-28 — Data vs model Fourier coefficients (do the models fit?)
+
+- Script: `scripts/plot_fourier_coefficients_data_vs_models.py`; numbers in
+  `results/test1_nbody_qmc_focused/fourier_coefficients_data_vs_models.json`.
+- Figures: `figures/test1_nbody_qmc_focused_fourier_coefficients_data_vs_models_absz_0to1.png` and `..._absz_1to2.png`.
+  - Rows: ⟨v_R⟩, ⟨v_φ⟩, σ_R, σ_φ. Columns: m = 0, cos 2φ, sin 2φ, cos 4φ, sin 4φ, per 0.3 kpc ring.
+  - Data: the 50k mock with bootstrap errors.
+  - Models:
+    - #0, the truth (best of 257);
+    - ridge points #235 (S 1.17, f 0.69) and #15 (S 0.82, f 1.50);
+    - #17, rejected: Ω 33.4, near truth otherwise, ΔlogL −26.
+  - Grey: the same fit to all 1.49 M N-body particles.
+  - σ terms are shown as σ₀ = √c₀ and c_m/2σ₀ in km/s.
+- **The truth model fits.** Mean per-panel χ²/N (diagonal errors, R < 6, the 19 panels in the likelihood): 1.11 at
+  |z| < 1 and 1.08 at |z| 1–2. It tracks both the data and the N-body line in every term.
+- **The symmetry holds in the data.** ⟨v_R⟩ cos terms and the ⟨v_φ⟩/σ sin terms scatter around zero. The bar signal
+  is in ⟨v_R⟩ sin 2φ (peak ≈ 22 km/s at R ≈ 3.5 kpc) and in the cos 2φ / cos 4φ terms of ⟨v_φ⟩, σ_R, σ_φ.
+- **The rejected pattern speed fails visibly**: mean χ²/N 3.65 (|z| < 1) and 1.73 (|z| 1–2). Worst panels at |z| < 1:
+  - ⟨v_φ⟩ cos 2φ: 12.9 (its trough is −22 km/s, against −45 in the data);
+  - σ_R cos 2φ: 10.2 (≈ 12 against ≈ 24 km/s);
+  - σ_φ cos 2φ: 9.4;
+  - ⟨v_φ⟩ m = 0: 8.8 (rotation curve ~10 km/s too high at R 1–4);
+  - ⟨v_R⟩ sin 2φ peak: ≈ 10 against 22 km/s.
+- **The ridge models are almost indistinguishable from the truth**: mean χ²/N 1.18 and 1.18 at |z| < 1, and 1.07 and
+  1.06 at |z| 1–2.
+  - Their departures are within the error bars: ⟨v_R⟩ sin 2φ peak ≈ 18–20 against 22, and ⟨v_φ⟩ cos 2φ / cos 4φ near
+    R ≈ 1–2 and 4 kpc.
+  - In the σ ring averages they do *better* than the truth: σ_R m = 0 1.51 (#15) vs 1.87; σ_φ m = 0 0.84 (#235)
+    vs 1.18. That is the hot-library effect.
+  - This is the S–bar_frac degeneracy seen directly in the data space.
+- The data are plotted at 27°. The models' own angles move the data coefficients by ≤ 0.29σ (#235, #15) and 0.49σ
+  (#17), and the per-panel χ² uses each model's own data.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 All in `figures/`.
@@ -1476,6 +1509,7 @@ All in `figures/`.
 | `test1_nbody_qmc_focused_emulator_{slices,loo}_<column>.png` | focused run: 1D emulator slices through truth and maximum; leave-one-out check |
 | `test1_nbody_fourier_star_fit_vs_true_maps_absz_{0to1,1to2}.png` | per-star Fourier fit (m ≤ 4) from the 50k mock vs the true N-body maps (1.49 M particles): truth, reconstruction, difference, pulls, truncation |
 | `test1_nbody_qmc_focused_bar_length_strength_degeneracy_<column>.png` | why S and bar_frac are weakly constrained: (S, bar_frac) posterior with curves of fixed bar potential; fractional width of the bar m = 2 potential vs R against S, bar_frac, Ω_b; Q_T(R) posterior vs truth |
+| `test1_nbody_qmc_focused_fourier_coefficients_data_vs_models_absz_{0to1,1to2}.png` | Fourier coefficients (m = 0, cos/sin 2φ, cos/sin 4φ) of ⟨v_R⟩, ⟨v_φ⟩, σ_R, σ_φ vs R: data with errors against the truth model, two ridge models, a rejected Ω_b model and the all-particle N-body |
 | `test1_nbody_density_stationarity.png` | density change of the libraries; counts statistic retracted (needs the selection function) |
 
 ## Next steps
