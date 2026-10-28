@@ -1599,6 +1599,52 @@ Truth: 26.02, 27°, 1, 1. All truth offsets are within 0.54σ. (*LOO on the old 
 - **Conclusion.** De-smearing the initial conditions star by star needs an accurate 6D DF prior, which is the thing we
   are modelling. Even with the true N-body it leaves χ²/N ≈ 4. As the user expected, this does not solve the problem.
 
+## 2026-10-28 — Test 2b: choosing among candidate distances by fitting the kinematic field (no discrimination)
+
+- Script: `scripts/test2b_distance_draw_selection.py`; numbers in `results/test2b/distance_draw_selection.json`; log
+  `~/mira_dr4_runs/test2b/draws_K10_fit.log`.
+- **Idea (user):** integrate several candidate distances per smeared star and choose among them so that the observed
+  model reproduces the observed field.
+- **Set-up.**
+  - Candidates: K = 10 per star at fixed quantiles of the DM error (z = ±0.13 … ±1.64σ). 500k orbits per trial
+    potential, 650–750 s each. Potentials: #0 (truth), #17 (|Ω_b| 33.4; perfect data reject it at ΔlogL −26) and #15
+    (S 0.82, f 1.50; ridge).
+  - Library: every sample (t ≥ 0.25 Gyr, true R < 8, 1/τ) is observed with the distance errors.
+  - Stored per (orbit, block): the 35 sums of G and of H for ⟨v_R⟩, ⟨v_φ⟩, ⟨v_R²⟩, ⟨v_φ²⟩.
+  - χ²: our likelihood on c = G⁻¹H (19 terms per block, joint bootstrap covariance with Hartlap). 44 blocks,
+    N = 836.
+- **Fits (no regularisation).**
+  - pick1 (user's proposal): one candidate per star; greedy coordinate descent from a random start with exact local
+    χ² updates.
+  - simplex: weights summing to 1 per star; softmax + L-BFGS with the analytic gradient.
+  - free: positive weights (Schwarzschild-like).
+- **Checks before the run:**
+  - ⟨v⟩ coefficients equal the likelihood code's (difference 0);
+  - analytic gradient matches finite differences (relative ≤ 2×10⁻⁶);
+  - greedy running χ² equals a full recomputation.
+
+| χ²/N | #0 truth | #17 wrong Ω_b | #15 ridge |
+|---|---|---|---|
+| uniform weights (all 10 candidates) | 32.4 | 31.3 | 30.7 |
+| pick1: random start → final | 35.6 → **0.0002** (22 sweeps) | 31.4 → **0.0002** (16) | 31.9 → **0.0001** (9) |
+| simplex | **0.0000** (159 iterations) | **0.0000** (126) | **0.0000** (100) |
+| free | **0.0001** (300) | **0.0004** (300) | **0.0000** (300) |
+| reference: truth library from true positions | 1.62 | — | — |
+
+- **Every method fits every potential to χ²/N ~ 10⁻⁴**, including a pattern speed that perfect data reject at
+  ΔlogL −26. So there is no discriminating power. This confirms the capacity argument: 50k choices against 836 numbers.
+  Without fitting, the uniform-weight library does not separate them either (truth 32.4 vs 31.3 and 30.7).
+- **The chosen distances are not the true ones.**
+  - pick1: median |d/d_true − 1| = 9.5% (#0), 9.4% (#17), 9.4% (#15). That is worse than the observed 8.2%, although
+    the nearest candidate is within 1.1% of the truth (median).
+  - pick1 slightly prefers the nearest candidate (−1.64σ: 6,247 stars at #0, against 4,600–5,500 for the others).
+  - simplex: weighted-mean errors of 7.1%, 7.7% and 7.2%; 4.6, 2.5 and 4.4 effective candidates per star.
+- **Conclusion.** Free per-star choices among candidate distances have far more freedom than the moment data constrain.
+  Any useful version needs far fewer free parameters than data terms (e.g. weights as a smooth function of orbit
+  properties), or many more constraints.
+- The per-orbit sums are saved (`~/mira_dr4_runs/test2b/draws_K10_features_NNN.npz`; trajectories
+  `draws_K10_traj_NNN.npy`), so other weighting schemes on these libraries need no new integrations.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 All in `figures/`.

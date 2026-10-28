@@ -1,0 +1,220 @@
+{
+ "K": 10,
+ "z_nodes": [
+  -1.6449,
+  -1.0364,
+  -0.6745,
+  -0.3853,
+  -0.1257,
+  0.1257,
+  0.3853,
+  0.6745,
+  1.0364,
+  1.6449
+ ],
+ "points": {
+  "0": {
+   "params": {
+    "Omega_abs": 26.02,
+    "phi_b_deg": 27.0,
+    "S": 1.0,
+    "bar_frac": 1.0
+   },
+   "N_data": 836,
+   "uniform_weights": 32.376,
+   "true_initial_conditions": 1.6237,
+   "pick1": {
+    "start": 35.5991,
+    "final": 0.0002,
+    "sweeps": 22,
+    "seconds": 317,
+    "history": [
+     35.5991,
+     0.0984,
+     0.0007,
+     0.0004,
+     0.0003,
+     0.0003,
+     0.0003,
+     0.0003,
+     0.0003,
+     0.0003,
+     0.0003,
+     0.0003,
+     0.0003,
+     0.0003,
+     0.0003,
+     0.0003,
+     0.0003,
+     0.0003,
+     0.0003,
+     0.0003,
+     0.0002,
+     0.0002,
+     0.0002
+    ],
+    "chosen_frac_error_median": 0.0945,
+    "chosen_node_histogram": [
+     6247,
+     5530,
+     5106,
+     4837,
+     4788,
+     4679,
+     4612,
+     4671,
+     4716,
+     4814
+    ]
+   },
+   "simplex": {
+    "final": 0.0,
+    "iterations": 159,
+    "seconds": 266,
+    "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+    "weighted_mean_frac_error_median": 0.071,
+    "effective_candidates_per_star_median": 4.637
+   },
+   "free": {
+    "final": 0.0001,
+    "iterations": 300,
+    "seconds": 498,
+    "message": "STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT",
+    "weight_spread_16_50_84": [
+     0.3024,
+     0.5849,
+     1.0813
+    ]
+   }
+  },
+  "17": {
+   "params": {
+    "Omega_abs": 33.43157959356904,
+    "phi_b_deg": 28.192268513143063,
+    "S": 0.9832065584388746,
+    "bar_frac": 0.9548157591759528
+   },
+   "N_data": 836,
+   "uniform_weights": 31.2605,
+   "pick1": {
+    "start": 31.3557,
+    "final": 0.0002,
+    "sweeps": 16,
+    "seconds": 257,
+    "history": [
+     31.3557,
+     0.1671,
+     0.0013,
+     0.0004,
+     0.0003,
+     0.0003,
+     0.0003,
+     0.0003,
+     0.0003,
+     0.0003,
+     0.0003,
+     0.0003,
+     0.0003,
+     0.0003,
+     0.0003,
+     0.0002,
+     0.0002
+    ],
+    "chosen_frac_error_median": 0.0937,
+    "chosen_node_histogram": [
+     6190,
+     5499,
+     5132,
+     5013,
+     4875,
+     4702,
+     4638,
+     4548,
+     4640,
+     4763
+    ]
+   },
+   "simplex": {
+    "final": 0.0,
+    "iterations": 126,
+    "seconds": 185,
+    "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+    "weighted_mean_frac_error_median": 0.0769,
+    "effective_candidates_per_star_median": 2.506
+   },
+   "free": {
+    "final": 0.0004,
+    "iterations": 300,
+    "seconds": 457,
+    "message": "STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT",
+    "weight_spread_16_50_84": [
+     0.2662,
+     0.5322,
+     1.005
+    ]
+   }
+  },
+  "15": {
+   "params": {
+    "Omega_abs": 26.76787628978491,
+    "phi_b_deg": 27.58553847298026,
+    "S": 0.8185365717173797,
+    "bar_frac": 1.5022614383537716
+   },
+   "N_data": 836,
+   "uniform_weights": 30.6554,
+   "pick1": {
+    "start": 31.8715,
+    "final": 0.0001,
+    "sweeps": 9,
+    "seconds": 143,
+    "history": [
+     31.8715,
+     0.0838,
+     0.0004,
+     0.0001,
+     0.0001,
+     0.0001,
+     0.0001,
+     0.0001,
+     0.0001,
+     0.0001
+    ],
+    "chosen_frac_error_median": 0.0943,
+    "chosen_node_histogram": [
+     6302,
+     5581,
+     5039,
+     4811,
+     4845,
+     4721,
+     4625,
+     4691,
+     4670,
+     4715
+    ]
+   },
+   "simplex": {
+    "final": 0.0,
+    "iterations": 100,
+    "seconds": 191,
+    "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+    "weighted_mean_frac_error_median": 0.0718,
+    "effective_candidates_per_star_median": 4.425
+   },
+   "free": {
+    "final": 0.0,
+    "iterations": 300,
+    "seconds": 486,
+    "message": "STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT",
+    "weight_spread_16_50_84": [
+     0.2825,
+     0.5964,
+     1.15
+    ]
+   }
+  }
+ },
+ "observed_frac_error_median": 0.0823,
+ "nearest_candidate_frac_error_median": 0.0107
+}
