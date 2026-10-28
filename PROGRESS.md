@@ -1528,6 +1528,46 @@ Truth: 26.02, 27°, 1, 1. All truth offsets are within 0.54σ. (*LOO on the old 
   initial conditions, so the orbits themselves start from a smeared, non-equilibrium distribution. That part is not
   yet tested.
 
+## 2026-10-28 — Test 2b: orbits from distance-smeared stars (one orbit per star fails)
+
+- Script: `scripts/test2b_smeared_initial_conditions.py`; numbers in `results/test2b/smeared_initial_conditions.json`.
+- Figures: `figures/test2b_smeared_initial_conditions_fourier_coefficients_absz_{0to1,1to2}.png`.
+- Set-up:
+  - The smeared mock (σ_DM = 0.265) was integrated in the true potential at the true Ω_b and φ_b: one orbit per star,
+    accuracy 10⁻⁵, 1 Gyr, 65 s.
+  - Trajectory: `~/mira_dr4_runs/test2b/traj_smeared_ics_true_potential.npy`.
+  - Everything is compared with the smeared data (per-star Fourier fit, 300 bootstraps).
+
+| library (true potential) | χ²/N, proposed scheme | σ_R² m = 0 | σ_φ² m = 0 | σ_R² m = 2, 4 | ⟨v_φ⟩ m = 0 |
+|---|---|---|---|---|---|
+| (a) smeared initial conditions, as is | **11.99** | 43.1 | 20.0 | 8.4 | 7.0 |
+| (b) smeared initial conditions, observed again | **13.43** | 58.5 | 47.3 | 3.4 | 10.0 |
+| (c) true initial conditions, observed (target) | **1.41** | 1.4 | 1.7 | 0.96 | 1.06 |
+| (d) true initial conditions, as is (no correction) | 4.61 | 10.6 | 20.0 | 4.5 | 7.4 |
+
+- **(a) is worse than doing nothing (d).** Started from the smeared stars, the library phase-mixes in the bar potential
+  into a bar-symmetric state.
+  - The terms the symmetry forbids, which the data keep, vanish: σ_R and σ_φ sin 2φ ≈ 0 against +15 to +25 km/s, and
+    ⟨v_R⟩ cos 2φ.
+  - The bar response weakens: σ_R cos 2φ peaks at ≈ 13 against ≈ 25 km/s, and ⟨v_R⟩ sin 2φ at ≈ 12 against ≈ 20.
+  - It is hotter than the data in σ_R at R > 2.5 kpc (by 5–10 km/s).
+- **(b) puts the forbidden terms back but applies the errors twice.** The ring-averaged dispersions are far too hot.
+- **The drift is fast.** Proposed-scheme χ²/N of (a) by time window:
+  - 8.2 in 0–0.1 Gyr;
+  - 11.7 in 0.25–0.5 Gyr;
+  - 13.2 in 0.5–0.75 Gyr;
+  - 13.4 in 0.75–1 Gyr.
+  - For (b): 15.8, 13.2, 15.2, 15.7.
+  - At t = 0, (a) is the data themselves, so the smeared stars leave their starting distribution within tens of Myr.
+- **Conclusion.** One orbit per smeared star does not work: the smeared distribution is far from a steady state of the
+  true potential. The orbits need initial conditions whose distribution matches the true one; then (c) shows that
+  observing the library with the errors fixes the comparison.
+- Candidates, not yet run:
+  - several orbits per star, with distances drawn from each star's distance posterior (a prior along the line of
+    sight is needed);
+  - iterating with the library's own density as that prior;
+  - a library that does not start from the data stars.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 All in `figures/`.
@@ -1559,6 +1599,7 @@ All in `figures/`.
 | `test1_nbody_qmc_focused_bar_length_strength_degeneracy_<column>.png` | why S and bar_frac are weakly constrained: (S, bar_frac) posterior with curves of fixed bar potential; fractional width of the bar m = 2 potential vs R against S, bar_frac, Ω_b; Q_T(R) posterior vs truth |
 | `test1_nbody_qmc_focused_fourier_coefficients_data_vs_models_absz_{0to1,1to2}.png` | Fourier coefficients (m = 0, cos/sin 2φ, cos/sin 4φ) of ⟨v_R⟩, ⟨v_φ⟩, σ_R, σ_φ vs R: data with errors against the truth model, two ridge models, a rejected Ω_b model and the all-particle N-body |
 | `test1_nbody_distance_error_fourier_coefficients_perfect_vs_smeared_absz_{0to1,1to2}.png` | Test 2b: Fourier coefficients of the perfect and the distance-smeared (σ_DM = 0.265) mock against the truth model and the truth model observed with the same errors |
+| `test2b_smeared_initial_conditions_fourier_coefficients_absz_{0to1,1to2}.png` | Test 2b: smeared data against libraries in the true potential from smeared initial conditions (as is; observed again) and from true initial conditions (observed) |
 | `test1_nbody_density_stationarity.png` | density change of the libraries; counts statistic retracted (needs the selection function) |
 
 ## Next steps

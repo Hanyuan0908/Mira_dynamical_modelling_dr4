@@ -37,16 +37,23 @@ def stars(path):
         return np.column_stack([f[k][:].astype(np.float64) for k in ("x", "y", "z", "vx", "vy", "vz")])
 
 
-def forward_smeared_library_fit(traj, times, ok, sigma_dm, phi_deg, seed=1):
-    """Per-star Fourier fit of the library after observing every sample (true R < 8 kpc) with distance errors."""
-    w, wt, _ = library_samples(times, traj)
+def observe_library_samples(w, wt, sigma_dm, phi_deg, seed=1):
+    """Bar-frame library samples with true R < 8 kpc (the mock's selection), observed from the Sun with distance-modulus
+    errors and returned in the bar frame, with their weights."""
     sel = np.hypot(w[:, 0], w[:, 1]) < ssl.R_SEL
     w, wt = w[sel], wt[sel]
     mw = ssl.rotate_z(w, -np.radians(phi_deg))
     g = observe.to_galactic(*mw.T)
     d_obs = observe.scatter_distance_modulus(g["d"], sigma_dm, np.random.default_rng(seed))
     obs = np.column_stack(observe.to_galactocentric(g["l"], g["b"], d_obs, g["pml"], g["pmb"], g["vlos"]))
-    b, X, v, m = fs.prepare(ssl.rotate_z(obs, np.radians(phi_deg)))
+    return ssl.rotate_z(obs, np.radians(phi_deg)), wt
+
+
+def forward_smeared_library_fit(traj, times, ok, sigma_dm, phi_deg, seed=1):
+    """Per-star Fourier fit of the library after observing every sample (true R < 8 kpc) with distance errors."""
+    w, wt, _ = library_samples(times, traj)
+    w, wt = observe_library_samples(w, wt, sigma_dm, phi_deg, seed)
+    b, X, v, m = fs.prepare(w)
     return fs.fit(b, X, v, wt[m], ok, leverage=False)
 
 
