@@ -1715,6 +1715,27 @@ Truth: 26.02, 27°, 1, 1. All truth offsets are within 0.54σ. (*LOO on the old 
   - A Monte Carlo is the right tool only for errors the bootstrap cannot see: errors correlated between stars, e.g. the
     zero point of the period–luminosity relation (one shift for all stars per draw).
 
+## 2026-10-28 — Test 2b: truth χ²/N at 7.5% with the co-added Fourier error (user's recipe)
+
+- Script: `scripts/test2b_coadded_errors_truth_chi2.py`; numbers in `results/test2b/coadded_errors_truth_chi2.json`.
+- Error (user's recipe for a real observation): C_MC + C_boot.
+  - C_MC: 300 re-draws of every observed star's distance (DM_obs + σ_DM N(0, 1)) propagated to the Fourier
+    coefficients.
+  - C_boot: the 300-bootstrap covariance of the unsmeared data, as in Test 1.
+  - Hartlap factor with 300 samples.
+- Proposed scheme, true potential, library from the observed stars; 817 terms (blocks usable in both data sets).
+
+| error | library observed again | library as is |
+|---|---|---|
+| **C_MC + C_boot(unsmeared data)** | **2.18** | **2.20** |
+| C_MC + C_boot(observed data) | 2.09 | 2.05 |
+| C_boot(observed data) only | 5.40 | 5.07 |
+
+- The perfect-data reference is 1.50 (bootstrap). The mock check above found this co-added covariance about 2× the
+  true scatter in variance.
+- The running 7.5% global search uses the bootstrap-only error. To rescore it with the co-added error needs C_MC at
+  each trial angle (~20 s per point; no integrations).
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 All in `figures/`.

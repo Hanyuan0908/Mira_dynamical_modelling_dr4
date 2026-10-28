@@ -1,0 +1,36 @@
+{
+ "N_MC": 300,
+ "sigma_DM": 0.16286043071371942,
+ "chi2_per_N_truth": {
+  "C_MC + C_boot(unsmeared data)": {
+   "observed": {
+    "chi2_per_N": 2.176,
+    "N_data": 817
+   },
+   "asis": {
+    "chi2_per_N": 2.203,
+    "N_data": 817
+   }
+  },
+  "C_MC + C_boot(observed data)": {
+   "observed": {
+    "chi2_per_N": 2.086,
+    "N_data": 817
+   },
+   "asis": {
+    "chi2_per_N": 2.054,
+    "N_data": 817
+   }
+  },
+  "C_boot(observed data) only": {
+   "observed": {
+    "chi2_per_N": 5.399,
+    "N_data": 817
+   },
+   "asis": {
+    "chi2_per_N": 5.069,
+    "N_data": 817
+   }
+  }
+ }
+}
