@@ -15,7 +15,13 @@ at random), in the bar frame at the true angle (27 deg), number-weighted like th
      field, and chi2 / N of the real mock (and of the independent mocks) against the pool with either covariance.
   5. What m <= 4 leaves out of the true maps: amplitudes of m = 1, 3, 6, 8 per ring (|z| < 1, R < 6) fitted to the pool
      together with the even m <= 4 terms.
-Maps: face-on square pixels, bar frame, one |z| layer. A pixel's reconstruction is evaluated at the pool particles in that
+  6. Signal to noise per ring of the terms that carry the bar pattern: the true amplitude (all particles) of the m = 2
+     term of <v_R>, <v_phi>, sigma_R^2, sigma_phi^2 (and the m = 0 term of sigma_R^2) over the mock's 1-sigma error
+     (bootstrap covariance; sqrt of the mean of the cos and sin variances).
+Maps: face-on square pixels, bar frame, one |z| layer. Columns: true map; the 50k mock binned directly in the same pixels
+(the raw data; grey below MOCK_PIX_MIN stars); m <= 4 reconstruction from the 50k mock (what the likelihood uses); m <= 4
+reconstruction from all particles; (mock reconstruction - true) / error; (all-particle reconstruction - true).
+A pixel's reconstruction is evaluated at the pool particles in that
 pixel (mean of <v>(phi_i) of each particle's ring; sigma^2 = mean of sigma^2(phi_i) + the scatter of <v>(phi_i)), so it
 is compared like for like with the binned truth. Pixel errors: reconstruction from the joint bootstrap covariance; truth
 s / sqrt(N) and s / sqrt(2N).
@@ -39,6 +45,7 @@ from test1_nbody_qmc import TRUTH, MOCK
 
 POOL = MOCK_DIR / "nbody_stars_mwframe.hdf5"
 N_PIX_MIN = 20
+MOCK_PIX_MIN = 5
 FIELDS = [("<v_R>", 0, "mean"), ("<v_phi>", 1, "mean"), ("sigma_R", 0, "disp"), ("sigma_phi", 1, "disp")]
 LAYERS = [(0, 0.25, "absz_0to1", "|z| < 1 kpc"), (1, 0.5, "absz_1to2", "1 < |z| < 2 kpc")]
 OUT_JSON = ROOT / "results" / "test1_nbody_qmc_focused" / "fourier_star_fit_vs_true_maps.json"
@@ -168,6 +175,37 @@ def pixel_maps(pos, b, X, v, edges, coefs, cov):
     return out
 
 
+def binned_maps(pos, v, edges, n_min):
+    """Directly binned mean and unbiased dispersion maps of v_R, v_phi (grey below n_min stars)."""
+    out = {}
+    N = np.histogram2d(pos[:, 1], pos[:, 0], bins=[edges, edges])[0]
+    with np.errstate(invalid="ignore", divide="ignore"):
+        for name, a, kind in FIELDS:
+            s1 = np.histogram2d(pos[:, 1], pos[:, 0], bins=[edges, edges], weights=v[:, a])[0]
+            s2 = np.histogram2d(pos[:, 1], pos[:, 0], bins=[edges, edges], weights=v[:, a]**2)[0]
+            m = s1 / N
+            img = m if kind == "mean" else np.sqrt(np.maximum((s2 / N - m**2) * N / (N - 1), 0))
+            out[name] = np.where(N < n_min, np.nan, img)
+    return out, N
+
+
+def signal_to_noise(c_pool, cov, valid):
+    """Check 6: per layer, [median, min, max] over rings (R < 6) of true amplitude / mock 1-sigma error."""
+    terms = {"<v_R> m2": (0, (1, 2)), "<v_phi> m2": (1, (1, 2)), "sigma_R^2 m0": (3, (0,)),
+             "sigma_R^2 m2": (3, (1, 2)), "sigma_phi^2 m2": (4, (1, 2))}
+    out = {}
+    ring, layer = np.divmod(np.arange(fs.NB), fs.NL)
+    for z, lab in enumerate(["absz_0to1", "absz_1to2", "absz_2to3"]):
+        blocks = np.flatnonzero(valid & (ring < fs.N_RING_DEFAULT) & (layer == z))
+        out[lab] = {}
+        for name, (f, ks) in terms.items():
+            amp = np.sqrt(np.sum(c_pool[blocks, f][:, list(ks)]**2, axis=1))
+            err = np.sqrt(np.mean([cov[blocks, f * NK + k, f * NK + k] for k in ks], axis=0))
+            snr = amp / err
+            out[lab][name] = [round(float(np.median(snr)), 2), round(float(snr.min()), 2), round(float(snr.max()), 2)]
+    return out
+
+
 def panel_stats(t, te, rec, re=None):
     ok = np.isfinite(t) & np.isfinite(rec)
     d = (rec - t)[ok]
@@ -180,24 +218,25 @@ def panel_stats(t, te, rec, re=None):
     return s
 
 
-def figure(maps, edges, label, tag, stats):
-    cols = ["true map (all 1.49 M particles)", "Fourier m ≤ 4 from the 50k mock",
-            "mock Fourier − true [km/s]", "(mock Fourier − true) / error",
-            "Fourier m ≤ 4 from all particles − true [km/s]"]
-    fig, axes = plt.subplots(len(FIELDS), len(cols), figsize=(3.3 * len(cols), 3.0 * len(FIELDS)),
+def figure(maps, mock_binned, n_mock, edges, label, tag, stats):
+    cols = ["true map (all 1.49 M particles)", "50k mock, binned directly", "Fourier m ≤ 4 from the 50k mock",
+            "Fourier m ≤ 4 from all 1.49 M particles", "(mock Fourier − true) / error",
+            "all-particle Fourier − true [km/s]"]
+    fig, axes = plt.subplots(len(FIELDS), len(cols), figsize=(3.2 * len(cols), 3.0 * len(FIELDS)),
                              gridspec_kw=dict(hspace=0.32, wspace=0.42))
     th = np.linspace(0, 2 * np.pi, 200)
     for r, (name, _, kind) in enumerate(FIELDS):
         m = maps[name]
         cmap, lo, hi = VALUE_LIMS[name]
         dlim = 6.0 if kind == "mean" else 4.0
-        panels = [(m["truth"], cmap, lo, hi), (m["mock"], cmap, lo, hi),
-                  (m["mock"] - m["truth"], CMAP_DIV, -3 * dlim, 3 * dlim),
+        panels = [(m["truth"], cmap, lo, hi), (mock_binned[name], cmap, lo, hi), (m["mock"], cmap, lo, hi),
+                  (m["pool"], cmap, lo, hi),
                   ((m["mock"] - m["truth"]) / np.sqrt(m["mock_err"]**2 + m["truth_err"]**2), CMAP_DIV, -3, 3),
                   (m["pool"] - m["truth"], CMAP_DIV, -dlim, dlim)]
         st = stats[name]
-        notes = [None, None,
-                 f"rms {st['mock']['rms_kms']:.1f} km/s",
+        nmed = np.median(n_mock[n_mock > 0])
+        notes = [None, f"median {nmed:.0f} stars / pixel", f"rms vs true {st['mock']['rms_kms']:.1f} km/s",
+                 f"rms vs true {st['pool']['rms_kms']:.1f} km/s",
                  f"pulls: mean {st['mock']['pull_mean']:+.2f}, std {st['mock']['pull_std']:.2f}",
                  f"rms {st['pool']['rms_kms']:.1f} (truth-pixel noise {st['pool']['rms_truth_noise_kms']:.1f})"]
         for c, ((img, cm, vlo, vhi), note) in enumerate(zip(panels, notes)):
@@ -221,7 +260,7 @@ def figure(maps, edges, label, tag, stats):
             cb.ax.tick_params(labelsize=6.5)
     fig.suptitle(f"Per-star Fourier fit (m ≤ 4 per 0.3 kpc ring) vs the true N-body maps, bar frame, {label}, "
                  f"{edges[1] - edges[0]:g} kpc pixels; dashed: R = 6 kpc (edge of the proposed scheme); grey: < "
-                 f"{N_PIX_MIN} particles or no fit", fontsize=10, y=0.995)
+                 f"{N_PIX_MIN} particles (mock binned: < {MOCK_PIX_MIN} stars) or no fit", fontsize=10, y=0.995)
     savefig(fig, f"test1_nbody_fourier_star_fit_vs_true_maps_{tag}")
 
 
@@ -279,6 +318,9 @@ def main():
     res["error_model"] = error_model_check(pool, bp, Xp, vp, mp, ok, v_all, s["n_stars"].reshape(fs.NB), c_mock,
                                             c_lib, c_pool, cov)
     res["modes_outside_basis_kms"] = missing_modes(pool, bp, Xp, vp, mp)
+    res["signal_to_noise_per_ring"] = signal_to_noise(c_pool, cov, v_all)
+    mock_pos = load(MOCK)
+    mock_pos = mock_pos[fs.prepare(mock_pos)[3]]
 
     # 1, 2. maps
     pos = pool[mp]
@@ -293,7 +335,9 @@ def main():
             stats[name] = dict(mock=panel_stats(m["truth"], m["truth_err"], m["mock"], m["mock_err"]),
                                pool=panel_stats(m["truth"], m["truth_err"], m["pool"]))
         res["maps"][tag] = stats
-        figure(maps, edges, label, tag, stats)
+        in_layer = ((bm % fs.NL) == layer) & valid[bm]
+        mock_binned, n_mock = binned_maps(mock_pos[in_layer], vm[in_layer], edges, MOCK_PIX_MIN)
+        figure(maps, mock_binned, n_mock, edges, label, tag, stats)
     OUT_JSON.parent.mkdir(parents=True, exist_ok=True)
     with open(OUT_JSON, "w") as fh:
         json.dump(res, fh, indent=1)

@@ -284,6 +284,89 @@
   },
   "note": "[median, max] over the 20 rings; pool noise of an amplitude ~ sigma sqrt(2/n) = 0.88 km/s for sigma = 100 km/s (median 25596 particles per ring)"
  },
+ "signal_to_noise_per_ring": {
+  "absz_0to1": {
+   "<v_R> m2": [
+    3.92,
+    0.57,
+    4.76
+   ],
+   "<v_phi> m2": [
+    3.83,
+    0.4,
+    11.14
+   ],
+   "sigma_R^2 m0": [
+    23.26,
+    17.34,
+    60.14
+   ],
+   "sigma_R^2 m2": [
+    6.49,
+    1.08,
+    8.65
+   ],
+   "sigma_phi^2 m2": [
+    3.72,
+    0.43,
+    10.7
+   ]
+  },
+  "absz_1to2": {
+   "<v_R> m2": [
+    1.06,
+    0.18,
+    1.68
+   ],
+   "<v_phi> m2": [
+    1.53,
+    0.18,
+    7.01
+   ],
+   "sigma_R^2 m0": [
+    10.39,
+    5.9,
+    18.48
+   ],
+   "sigma_R^2 m2": [
+    0.96,
+    0.14,
+    3.95
+   ],
+   "sigma_phi^2 m2": [
+    1.94,
+    0.29,
+    3.1
+   ]
+  },
+  "absz_2to3": {
+   "<v_R> m2": [
+    0.33,
+    0.13,
+    0.4
+   ],
+   "<v_phi> m2": [
+    0.21,
+    0.05,
+    0.71
+   ],
+   "sigma_R^2 m0": [
+    3.7,
+    2.65,
+    4.9
+   ],
+   "sigma_R^2 m2": [
+    0.4,
+    0.23,
+    0.55
+   ],
+   "sigma_phi^2 m2": [
+    0.64,
+    0.34,
+    1.4
+   ]
+  }
+ },
  "maps": {
   "absz_0to1": {
    "<v_R>": {

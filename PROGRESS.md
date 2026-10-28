@@ -1349,8 +1349,30 @@ Truth: 26.02, 27°, 1, 1. All truth offsets are within 0.54σ. (*LOO on the old 
   - With the true covariance: mock vs true 1.00, truth library vs true 0.16.
   - The library's misfit is concentrated in the m = 0 dispersion terms (σ_R² 0.56, σ_z² 0.50, σ_φ² 0.40 per term,
     against 0.07–0.13 for m = 2, 4). That is the "hot library".
+**Why the |z| 1–2 ⟨v_R⟩ reconstruction from the mock looks broken (2026-10-28, user question).**
+- Two map columns were added to the figures:
+  - the 50k mock binned directly in the same pixels: median 4 stars per 0.5 kpc pixel at |z| 1–2, and 5 per
+    0.25 kpc pixel at |z| < 1;
+  - the m ≤ 4 reconstruction from all 1.49 M particles.
+- From all particles the quadrupole comes out cleanly at both layers. So the method and the phases are right; the
+  mock is noise-limited.
+- Signal-to-noise per ring (R < 6; true amplitude / mock 1σ error; median, range):
+
+  | term | \|z\| 0–1 | \|z\| 1–2 | \|z\| 2–3 |
+  |---|---|---|---|
+  | ⟨v_R⟩ m = 2 | 3.9 (0.6–4.8) | **1.1 (0.2–1.7)** | 0.3 |
+  | ⟨v_φ⟩ m = 2 | 3.8 (0.4–11) | 1.5 (0.2–7.0) | 0.2 |
+  | σ_R² m = 0 | 23 (17–60) | 10 (5.9–18) | 3.7 |
+  | σ_R² m = 2 | 6.5 (1.1–8.7) | 1.0 (0.1–4.0) | 0.4 |
+  | σ_φ² m = 2 | 3.7 (0.4–11) | 1.9 (0.3–3.1) | 0.6 |
+
+- At |z| 1–2 each 0.3 kpc ring's ⟨v_R⟩ quadrupole is measured at about 1σ, so the per-ring reconstruction is mostly
+  noise. Because each ring is fitted independently, that noise shows up as arcs.
+- The dispersion maps look good because their contrast is the m = 0 radial profile, measured at S/N 10–23 per ring.
+  Their m = 2 parts are as noisy as ⟨v_R⟩.
+- The pulls (std 0.94–1.10) confirm these are noise of the stated size, not a bug.
 - Options, not yet done:
-  - bigger blocks at |z| ≥ 1 (e.g. 0.6 kpc rings at |z| 1–2, drop |z| 2–3);
+  - bigger blocks at |z| ≥ 1 (e.g. ~1 kpc rings at |z| 1–2 for ≳ 700 stars per block, drop |z| 2–3);
   - a model-based covariance (mock-sized draws from a reference library, one random snapshot per orbit);
   - shrinking the joint covariance towards per-field.
 
