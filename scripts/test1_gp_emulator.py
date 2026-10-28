@@ -186,7 +186,12 @@ def main():
             ax.plot(xv, m - y.max(), color=BLUE_RAMP[4], lw=1.8)
             ax.axvline(tv[j], color=ACCENT, lw=1.2, ls="--")
             ax.axvline(p_best[j], color=INK, lw=0.8, ls=":")
-            ax.set_ylim(-3000, 300)
+            if args.column.startswith("logLs_"):      # tempered: the 1-3 sigma steps are 0.5, 2, 4.5
+                for lev in (-0.5, -2, -4.5):
+                    ax.axhline(lev, color=INK_MUTED, lw=0.6, ls=":")
+                ax.set_ylim(-30, 5)
+            else:
+                ax.set_ylim(-3000, 300)
             ax.set_xlabel(NAMES[j])
             if j == 0:
                 ax.set_ylabel(r"$\log L - \max_{\rm design}$" + f"\n({lab})")
@@ -206,11 +211,16 @@ def main():
     # figure 3: leave-one-out
     fig, ax = plt.subplots(figsize=(4.6, 4.4))
     ax.plot(y - y.max(), loo - y.max(), "o", color=BLUE_RAMP[4], ms=4)
-    lim = [min(y.min(), np.nanmin(loo)) - y.max(), 200]
+    shown = np.isfinite(loo)                     # only the points that were left out (all, or the --loo-top best)
+    lo = min(y[shown].min(), loo[shown].min()) - y.max()
+    pad = 0.05 * max(-lo, 1.0)
+    lim = [lo - pad, max(0.0, np.nanmax(loo[shown]) - y.max()) + pad]
+    ax.set_xlim(lim)
+    ax.set_ylim(lim)
     ax.plot(lim, lim, color=INK_MUTED, lw=0.8)
     ax.set_xlabel(r"evaluated $\log L$ − max")
     ax.set_ylabel(r"leave-one-out emulator $\log L$ − max")
-    ax.set_title(f"LOO rms {res['loo_rms']:.0f} (within 2000 of max: {res['loo_rms_within_2000_of_max']:.0f})",
+    ax.set_title(f"LOO rms {res['loo_rms']:.2f} (within 2000 of max: {res['loo_rms_within_2000_of_max']:.2f})",
                  color=INK_2, fontsize=9.5)
     savefig(fig, f"{pre}_emulator_loo{tag}")
 

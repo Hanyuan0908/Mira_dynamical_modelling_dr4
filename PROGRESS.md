@@ -1090,7 +1090,7 @@ Tempered ΔlogL of the S/f models:
   - Data − library rms at the wrong angle vs the true angle: 11.0 vs 11.0 (⟨v_R⟩), 10.4 vs 9.1 (⟨v_φ⟩),
     6.9 vs 6.5 (σ_R), 7.1 vs 6.8 (σ_φ) km/s. A coherent quadrupole residual is visible in ⟨v_φ⟩ at |y| ≈ 2–3 kpc.
 
-## 2026-10-27 (overnight) — Focused global search with the Fourier R–|z| grid (running)
+## 2026-10-27 (overnight) — Focused global search with the Fourier R–|z| grid (set-up; results in the next entry)
 
 **Integrations.**
 - Script: `scripts/test1_nbody_qmc_focused_run.py`; log in `~/mira_dr4_runs/test1_nbody_qmc_focused/run.log`.
@@ -1172,6 +1172,97 @@ Tempered ΔlogL of the S/f models:
 - Figures: `figures/test1_nbody_qmc_focused_emulator_corner_<column>.png` and
   `figures/test1_nbody_qmc_focused_logl_corner_<column>.png`.
 
+## 2026-10-28 — Focused global search: results on the first 173 points (partial)
+
+**Status at 09:15.**
+- 196 of 257 integrations are done (the truth, the 64 old points and 131 new ones).
+- The post-processing below used the 173 points finished at 05:12. A final pass runs automatically when the
+  integrations end (log `~/mira_dr4_runs/test1_nbody_qmc_focused/postprocess_final.log`).
+- **Why the run was late: the Mac went to sleep** (`pmset -g log`).
+  - 23:35–00:18: ~300 s per point while `validate_kernel.py` (another session) shared the CPUs.
+  - Then 150–175 s per point (01:14–01:41) and 83–107 s (03:08–03:24).
+  - 03:25: "Entering Sleep state due to 'Idle Sleep'". After that, only dark wakes of 4–63 s every 5–18 min
+    (several ended with "Dark Wake Thermal Emergency"), until a user wake at 08:58.
+  - So points 171–187 show 324–2805 s "integration" times. The partial post-processing (started 05:12 in a dark wake)
+    took until 08:57.
+  - From 08:58: 81–101 s per point again.
+  - I did not keep the machine awake. That is fixed now: `caffeinate -i -s -t 14400` started at 09:20.
+  - (I first blamed CPU contention with the post-processing; the timings and the power log show that was wrong.)
+- **Fix for the final pass.**
+  - `test1_nbody_qmc_focused_fourier.py` and `..._fourier_stars.py` now re-use the points already analysed
+    (`fourier_NNN.npz`, `fourier_stars_NNN.npz`, previous `evals.csv` rows); the final pass only does new points.
+  - Check on a scratch copy: all 28 χ²/logL columns of the 173 points reproduced to 1.4×10⁻¹⁴ in 6 s.
+  - `scripts/run_test1_nbody_qmc_focused_postprocess.sh` now also runs the control below.
+- Slice and leave-one-out plots in `scripts/test1_gp_emulator.py` were fixed: y range −30…+5 for tempered
+  likelihoods (was −3000…+300), LOO axes limited to the left-out points, LOO rms printed to 0.01.
+
+**Evaluated points (172 Sobol + truth; tempered logL; ΔlogL relative to the truth).**
+
+| likelihood (column `logLs_…`) | N_data | truth χ²/N | truth rank | best other (idx) | n within −2 / −4.5 |
+|---|---|---|---|---|---|
+| `fourier_stars_R0to6_vR_m24_vphi_sigR_sigphi_m024` (proposed, per-star, joint cov.) | 855 | 1.50 | 1 | −0.79 (#15) | 5 / 14 |
+| `fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024` (no σ m = 0) | 765 | 1.27 | 1 | −0.56 (#15) | 10 / 21 |
+| `fourier_stars_R0to6_all6_m024` | 1350 | 1.65 | 1 | −0.33 (#85) | 7 / 22 |
+| `fourier_stars_R0to8_vR_m24_vphi_sigR_sigphi_m024` | 1007 | 1.50 | 1 | −0.66 (#15) | 5 / 14 |
+| `fourier_R0to6_vR_m24_vphi_sigR_sigphi_m024` (proposed, sector GLS fit) | 669 | 1.45 | 1 | −0.54 (#15) | 6 / 13 |
+| `sectors_meansdisp` (current polar-cell likelihood) | 3090 | 1.25 | 1 | −0.92 (#15) | 5 / 30 |
+
+- #15 is the ridge point (Ω 26.77, φ 27.6°, S 0.82, f 1.50); #85 is (26.40, 29.5°, 0.78, 1.29).
+- Block-diagonal versions of the per-star χ² give the same ranking (truth first, #15 second in all four).
+- Proposed scheme, best evaluated point in bins of bar_frac (ΔlogL):
+  - f 0.45–0.6: −4.84;
+  - f 0.6–0.75: −1.08;
+  - f 0.75–1.33: −1.20;
+  - f 1.33–1.6: −0.79;
+  - f 1.6–2.0: −6.09.
+  - Without σ m = 0, the f 0.45–0.6 bin reaches −2.80, so that posterior is not closed at the low-f edge of the box.
+
+**GP-emulator posteriors** (172 Sobol points; LOO on the 32 best; seeded emcee; reruns reproduce them exactly).
+
+| likelihood | |Ω_b| | φ_b [°] | S | bar_frac | LOO rms | GP noise σ |
+|---|---|---|---|---|---|---|
+| per-star, proposed | 26.02 +0.93/−0.80 | 27.3 +2.9/−3.1 | 1.04 +0.22/−0.16 | 0.88 +0.33/−0.24 | 0.86 | 1.17 |
+| per-star, no σ m = 0 | 25.67 +1.15/−0.96 | 27.5 +3.2/−3.3 | 1.03 +0.23/−0.18 | 0.95 +0.38/−0.30 | 0.33 | 0.72 |
+| sector GLS, proposed (control) | 26.19 +0.81/−0.73 | 27.8 +2.8/−2.8 | 1.11 +0.21/−0.20 | 0.85 +0.33/−0.21 | 0.61 | 1.71 |
+| current sector likelihood (means + disp) | 26.07 +1.30/−1.09 | 27.2 +4.3/−4.4 | 0.96 +0.21/−0.15 | 0.93 +0.41/−0.31 | 0.43 | 0.45 |
+| *old run (65 points), sector GLS, proposed* | 26.26 +1.11/−0.96 | 27.6 ± 3.4 | 0.93 +0.31/−0.15 | 1.03 +0.43/−0.32 | 10.8* | — |
+
+Truth: 26.02, 27°, 1, 1. All truth offsets are within 0.54σ. (*LOO on the old run was over all points, not the 32 best.)
+"GP noise σ" is the square root of the fitted white-noise level, in logL units.
+
+**What this shows.**
+- **The surface is well behaved.**
+  - In every scheme the truth is the best of the 173 evaluated points.
+  - The per-star emulator maximum is at (26.20, 27.6°, 1.006, 0.985), within 0.2 km/s/kpc, 0.6°, 0.6% and 1.5% of the
+    truth.
+  - The slices through the truth peak at the truth in all four parameters
+    (`figures/test1_nbody_qmc_focused_emulator_slices_logLs_fourier_stars_R0to6_vR_m24_vphi_sigR_sigphi_m024.png`).
+- **Tighter than the old run.** Same scheme, old 65-point run → this run: σ(Ω) 1.04 → 0.87 (sector GLS 0.77),
+  σ(S) 0.23 → 0.19, σ(f) 0.38 → 0.28.
+- **The per-star fit is not what tightened it.** On the same 172 points, the sector GLS version of the scheme gives the
+  same widths within ~10% (Ω 0.77 vs 0.87, φ 2.8 vs 3.0, S 0.20 vs 0.19, f 0.27 vs 0.28). The gain comes from the
+  denser, focused design. The per-star fit's benefits are that it needs no sectors (all |z| 0–2 blocks and 5 at
+  |z| 2–3 are usable) and that it does not depend on the azimuthal density (fake-selection test, previous entry).
+  Its information content is the same.
+- **Proposed vs current sector likelihood.** σ(Ω) 0.87 vs 1.20 and σ(φ_b) 3.0° vs 4.4°; S and f are about the same
+  (0.19 vs 0.18 and 0.28 vs 0.36).
+- **The S–bar_frac degeneracy is still there.** Shorter and stronger, or longer and weaker; see the S–bar_frac panels
+  of both corners. The ridge point #15 (S 0.82, f 1.50) is still second best in five of the six likelihoods.
+
+**Caveats.**
+- Only 5 evaluated points lie within ΔlogL −2 of the truth (proposed scheme), so the inner contours depend on the
+  emulator.
+- The fitted GP noise (σ 1.17 in logL for the proposed scheme) is larger than the 1σ step (0.5).
+  - The individual evaluations scatter around the smooth surface by about one 1σ step.
+  - Library sampling noise is a likely contributor; this has not been tested.
+- One LOO outlier: evaluated −5.2, predicted −1.0.
+
+**Figures** (`figures/`, `<column>` as in the table):
+- `test1_nbody_qmc_focused_emulator_corner_<column>.png` — posterior corner;
+- `test1_nbody_qmc_focused_logl_corner_<column>.png` — evaluated points (upper) and GP profile (lower);
+- `test1_nbody_qmc_focused_emulator_slices_<column>.png` — 1D slices through the truth and the emulator maximum;
+- `test1_nbody_qmc_focused_emulator_loo_<column>.png` — leave-one-out check.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 All in `figures/`.
@@ -1193,6 +1284,12 @@ All in `figures/`.
 | `test1_nbody_emulator_corner_logLs_fourier_{mmax4,m2to4}_meansdisp.png` | posterior: all six moments, m ≤ 4 or m = 2–4 |
 | `test1_nbody_emulator_corner_logLs_fourier_symm_vR_sin24_vphi_sigR_sigphi_cos024.png` | posterior: proposed scheme with symmetry-allowed terms only (no sin for ⟨v_φ⟩/σ, no cos for ⟨v_R⟩) |
 | `test1_nbody_logl_corner_logLs_*.png` | log L of the 65 evaluated points (no emulator) |
+| `test1_nbody_qmc_focused_emulator_corner_logLs_fourier_stars_R0to6_vR_m24_vphi_sigR_sigphi_m024.png` | focused run (172 points), posterior: proposed scheme, Fourier terms fitted to the stars, joint covariance |
+| `test1_nbody_qmc_focused_emulator_corner_logLs_fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024.png` | focused run, posterior: the same without the σ ring averages |
+| `test1_nbody_qmc_focused_emulator_corner_logLs_fourier_R0to6_vR_m24_vphi_sigR_sigphi_m024.png` | focused run, posterior: proposed scheme from the sector fit (control for the fitting method) |
+| `test1_nbody_qmc_focused_emulator_corner_logLs_sectors_meansdisp.png` | focused run, posterior: current polar-cell likelihood, means + dispersions |
+| `test1_nbody_qmc_focused_logl_corner_<column>.png` | focused run: evaluated log L (upper) and GP profile (lower) for the columns above and `logLs_fourier_stars_R0to8_…` |
+| `test1_nbody_qmc_focused_emulator_{slices,loo}_<column>.png` | focused run: 1D emulator slices through truth and maximum; leave-one-out check |
 | `test1_nbody_density_stationarity.png` | density change of the libraries; counts statistic retracted (needs the selection function) |
 
 ## Next steps

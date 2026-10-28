@@ -207,8 +207,17 @@ def main():
     nsec = choose_sectors(data_with_errors(stars, TRUTH["phi_b_deg"], boot_w[:2]))
     print("sectors per (ring, layer) [rows: |z| 0-1, 1-2, 2-3]:\n", nsec.T)
     cache = {}
+    out_csv = DESIGN_CSV.parent / "evals.csv"
+    prev = pd.read_csv(out_csv).set_index("idx") if out_csv.exists() else None
     for _, p in design.iterrows():
         i = int(p.idx)
+        cols = [f"{a}_{n}" for n in list(SCHEMES) + ["sectors_means", "sectors_meansdisp"] for a in ("chi2", "ndata")]
+        if prev is not None and i in prev.index and (OUT_DIR / f"fourier_{i:03d}.npz").exists() \
+                and all(c in prev.columns for c in cols) and prev.loc[i, cols].notna().all():
+            # re-use: the design is fixed by its seed and the evaluation is deterministic (seeded bootstraps)
+            rows.append({**{k: p[k] for k in ("idx", "kind", "batch", "Omega_abs", "phi_b_deg", "S", "bar_frac")},
+                         **prev.loc[i, cols].to_dict()})
+            continue
         lib = np.load(OUT_DIR / f"lib_{i:03d}.npz")
         phi = round(float(p.phi_b_deg), 6)
         if phi not in cache:
@@ -239,7 +248,6 @@ def main():
         summary[name] = dict(N_data=nd, sqrt_2N=float(np.sqrt(2 * nd)), truth_chi2_per_N=float(df.loc[t, f"chi2_{name}"].iloc[0] / nd),
                              truth_rank=int((dl > 0).sum()) + 1, best_other=float(dl.max()), best_other_idx=int(df.idx[dl.idxmax()]),
                              n_within_2=int((dl > -2).sum()), n_within_4p5=int((dl > -4.5).sum()))
-    out_csv = DESIGN_CSV.parent / "evals.csv"
     df.to_csv(out_csv, index=False)
     with open(DESIGN_CSV.parent / "summary.json", "w") as fh:
         json.dump(summary, fh, indent=1)

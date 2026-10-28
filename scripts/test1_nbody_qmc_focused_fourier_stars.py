@@ -145,15 +145,21 @@ def main():
     for _, p in design.iterrows():
         i = int(p.idx)
         phi = round(float(p.phi_b_deg), 6)
-        if phi not in cache:
-            cache = {phi: data_fit(stars, phi, boot_w)}
-        cd, cov, n, ok = cache[phi]
-        cl = library_fit(np.load(p.traj_file), times, ok)
-        valid = ok & np.all(np.isfinite(cd), axis=(1, 2)) & np.all(np.isfinite(cl), axis=(1, 2))
-        np.savez(OUT_DIR / f"fourier_stars_{i:03d}.npz", ring_edges=RING_EDGES, layer_edges=LAYER_EDGES,
-                 terms=TERMS, fields=FIELD_NAMES, coef_data=cd.reshape(NR, NL, 6, NK), coef_lib=cl.reshape(NR, NL, 6, NK),
-                 cov_data_joint=cov.reshape(NR, NL, 6 * NK, 6 * NK), valid=valid.reshape(NR, NL),
-                 n_stars=n.reshape(NR, NL), n_boot=N_BOOT)
+        saved = OUT_DIR / f"fourier_stars_{i:03d}.npz"
+        if saved.exists() and int(np.load(saved)["n_boot"]) == N_BOOT:    # re-use (the design is fixed by its seed)
+            s = np.load(saved)
+            cd, cl = s["coef_data"].reshape(NB, 6, NK), s["coef_lib"].reshape(NB, 6, NK)
+            cov, valid = s["cov_data_joint"].reshape(NB, 6 * NK, 6 * NK), s["valid"].reshape(NB)
+        else:
+            if phi not in cache:
+                cache = {phi: data_fit(stars, phi, boot_w)}
+            cd, cov, n, ok = cache[phi]
+            cl = library_fit(np.load(p.traj_file), times, ok)
+            valid = ok & np.all(np.isfinite(cd), axis=(1, 2)) & np.all(np.isfinite(cl), axis=(1, 2))
+            np.savez(saved, ring_edges=RING_EDGES, layer_edges=LAYER_EDGES, terms=TERMS, fields=FIELD_NAMES,
+                     coef_data=cd.reshape(NR, NL, 6, NK), coef_lib=cl.reshape(NR, NL, 6, NK),
+                     cov_data_joint=cov.reshape(NR, NL, 6 * NK, 6 * NK), valid=valid.reshape(NR, NL),
+                     n_stars=n.reshape(NR, NL), n_boot=N_BOOT)
         row = dict(idx=i)
         for name, sc in SCHEMES.items():
             row[f"chi2_{name}"], row[f"ndata_{name}"] = scheme_chi2(cd, cl, cov, valid, sc)
