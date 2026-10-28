@@ -1733,8 +1733,15 @@ Truth: 26.02, 27°, 1, 1. All truth offsets are within 0.54σ. (*LOO on the old 
 
 - The perfect-data reference is 1.50 (bootstrap). The mock check above found this co-added covariance about 2× the
   true scatter in variance.
-- The running 7.5% global search uses the bootstrap-only error. To rescore it with the co-added error needs C_MC at
-  each trial angle (~20 s per point; no integrations).
+- The co-added error needs computing only once. At another trial angle, each mode's (cos, sin) pair rotates by
+  m Δφ_b, and rings, layers, v_R and v_φ are unchanged. So c' = T c and C' = T C Tᵀ exactly; checked against the data
+  fits saved at each angle (max difference 1.3×10⁻¹⁰). Rescoring: `scripts/test2b_qmc_7p5_rescore_coadded.py` →
+  `results/test2b_qmc_7p5/evals_coadded.csv`.
+- **First 10 points (truth + 9 old Sobol) with the co-added error:** one point beats the truth.
+  - #5 (Ω 29.48, φ 25.8°, S 1.06, f 1.28): χ²/N 2.105 vs 2.176 for the truth, ΔlogL **+0.71** (observed-again
+    library); +0.07 with the library as is.
+  - On perfect data, #5 was ΔlogL −5.3.
+  - The other 8 points are worse than the truth: −3.8 to −26.5.
 
 ## Figure index (Test 1b, N-body, perfect mock)
 
