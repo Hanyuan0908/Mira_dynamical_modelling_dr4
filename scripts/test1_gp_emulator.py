@@ -39,6 +39,9 @@ RUNS = {
                       "logp_gauss" if col == "logL_gauss" else "logp_kde"]),
     "nbody_qmc_focused": dict(csv=_nf.DESIGN_CSV.parent / "evals.csv", box=_nf.BOX, truth=_nf.TRUTH,
                               out=_nf.DESIGN_CSV.parent, mock=_nq.MOCK, prefix="test1_nbody_qmc_focused", perstar=None),
+    "test2b_qmc_7p5": dict(csv=_nf.ROOT / "results" / "test2b_qmc_7p5" / "evals.csv", box=_nf.BOX, truth=_nf.TRUTH,
+                           out=_nf.ROOT / "results" / "test2b_qmc_7p5", mock=_nq.MOCK,
+                           prefix="test2b_qmc_distance_error_7p5", perstar=None),
 }
 RUN = RUNS["au18"]
 LO = np.array([v[0] for v in BOX.values()])

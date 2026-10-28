@@ -1673,6 +1673,31 @@ Truth: 26.02, 27°, 1, 1. All truth offsets are within 0.54σ. (*LOO on the old 
 - **Conclusion.** With one orbit per observed star, the method needs distances to about 2% (≈ 0.04 mag). DR3 Mira
   distances (12.2%) are about 6× too uncertain.
 
+## 2026-10-28 — Test 2b: are the bootstrap errors still right with distance errors? (7.5%)
+
+- Script: `scripts/check_bootstrap_errors_with_distance_errors.py`; numbers in
+  `results/test2b/bootstrap_errors_with_distance_errors.json`.
+- Method:
+  - Truth: 200 independent 50k mocks drawn from the 1.49 M N-body particles, each with its own σ_DM = 0.163 mag
+    errors, fitted like the data at 27°.
+  - Population value: all particles, smeared once.
+  - Compared with the 300-bootstrap covariance of the 7.5% mock.
+- Why the bootstrap should work: each smeared star is an independent draw from the population convolved with the
+  error law, so resampling the smeared stars measures sampling noise and distance-error noise together.
+- Variance ratio bootstrap/true (median per field):
+  - |z| < 1: 0.99–1.04;
+  - |z| 1–2: 0.99–1.07;
+  - |z| 2–3 (4 blocks, 50–60 stars): 0.58–0.93.
+- χ²/N of the mock against the population (proposed scheme):
+  - bootstrap covariance: 1.19 / 1.29 / 1.61 for the three layers, 1.28 overall;
+  - true covariance: 1.16 / 1.05 / 0.66, 1.06 overall.
+  - This is the same sparse-block correlation problem as on perfect data; the distance errors don't cause it.
+- Distance errors inflate the coefficient errors (|z| < 1, relative to the perfect mock) by:
+  - ⟨v_R⟩ 1.00×, ⟨v_φ⟩ 1.06×, σ_R² 1.08×, σ_φ² 1.20×, σ_z² 1.19×.
+- So the data errors include the distance errors correctly. The truth's χ²/N of 5.3 at 7.5% is model misfit (orbits
+  from the observed stars), not underestimated errors. These errors cover the data only, not the library's dependence
+  on the noisy initial conditions.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 All in `figures/`.

@@ -1,0 +1,73 @@
+{
+ "sigma_DM": 0.16286043071371942,
+ "n_independent_mocks": 200,
+ "layers": {
+  "absz_0to1": {
+   "n_blocks": 20,
+   "variance_ratio_bootstrap_over_true": {
+    "<v_R>": 1.033,
+    "<v_phi>": 1.044,
+    "<v_z>": 1.028,
+    "sigma_R^2": 1.019,
+    "sigma_phi^2": 1.0,
+    "sigma_z^2": 0.992
+   },
+   "error_inflation_vs_perfect_data": {
+    "<v_R>": 0.999,
+    "<v_phi>": 1.059,
+    "<v_z>": 1.036,
+    "sigma_R^2": 1.077,
+    "sigma_phi^2": 1.203,
+    "sigma_z^2": 1.193
+   },
+   "chi2_per_N_mock_vs_population_bootstrap_cov": 1.192,
+   "chi2_per_N_mock_vs_population_true_cov": 1.164
+  },
+  "absz_1to2": {
+   "n_blocks": 20,
+   "variance_ratio_bootstrap_over_true": {
+    "<v_R>": 1.059,
+    "<v_phi>": 1.017,
+    "<v_z>": 1.055,
+    "sigma_R^2": 1.035,
+    "sigma_phi^2": 0.986,
+    "sigma_z^2": 1.067
+   },
+   "error_inflation_vs_perfect_data": {
+    "<v_R>": 1.029,
+    "<v_phi>": 1.078,
+    "<v_z>": 1.021,
+    "sigma_R^2": 1.079,
+    "sigma_phi^2": 1.174,
+    "sigma_z^2": 1.168
+   },
+   "chi2_per_N_mock_vs_population_bootstrap_cov": 1.291,
+   "chi2_per_N_mock_vs_population_true_cov": 1.045
+  },
+  "absz_2to3": {
+   "n_blocks": 4,
+   "variance_ratio_bootstrap_over_true": {
+    "<v_R>": 0.933,
+    "<v_phi>": 0.79,
+    "<v_z>": 0.698,
+    "sigma_R^2": 0.852,
+    "sigma_phi^2": 0.611,
+    "sigma_z^2": 0.578
+   },
+   "error_inflation_vs_perfect_data": {
+    "<v_R>": NaN,
+    "<v_phi>": NaN,
+    "<v_z>": NaN,
+    "sigma_R^2": NaN,
+    "sigma_phi^2": NaN,
+    "sigma_z^2": NaN
+   },
+   "chi2_per_N_mock_vs_population_bootstrap_cov": 1.607,
+   "chi2_per_N_mock_vs_population_true_cov": 0.663
+  }
+ },
+ "all_R0to6": {
+  "chi2_per_N_mock_vs_population_bootstrap_cov": 1.275,
+  "chi2_per_N_mock_vs_population_true_cov": 1.064
+ }
+}
