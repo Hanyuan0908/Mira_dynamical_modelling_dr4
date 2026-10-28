@@ -21,7 +21,24 @@
     "sigma_z^2": 1.193
    },
    "chi2_per_N_mock_vs_population_bootstrap_cov": 1.192,
-   "chi2_per_N_mock_vs_population_true_cov": 1.164
+   "chi2_per_N_mock_vs_population_true_cov": 1.164,
+   "variance_ratio_MC_distance_only_over_true": {
+    "<v_R>": 0.807,
+    "<v_phi>": 0.877,
+    "<v_z>": 0.829,
+    "sigma_R^2": 1.003,
+    "sigma_phi^2": 1.23,
+    "sigma_z^2": 1.336
+   },
+   "variance_ratio_coadded_over_true": {
+    "<v_R>": 1.848,
+    "<v_phi>": 1.96,
+    "<v_z>": 1.85,
+    "sigma_R^2": 2.048,
+    "sigma_phi^2": 2.224,
+    "sigma_z^2": 2.332
+   },
+   "chi2_per_N_mock_vs_population_coadded_cov": 0.545
   },
   "absz_1to2": {
    "n_blocks": 20,
@@ -42,7 +59,24 @@
     "sigma_z^2": 1.168
    },
    "chi2_per_N_mock_vs_population_bootstrap_cov": 1.291,
-   "chi2_per_N_mock_vs_population_true_cov": 1.045
+   "chi2_per_N_mock_vs_population_true_cov": 1.045,
+   "variance_ratio_MC_distance_only_over_true": {
+    "<v_R>": 0.829,
+    "<v_phi>": 0.861,
+    "<v_z>": 0.919,
+    "sigma_R^2": 0.965,
+    "sigma_phi^2": 1.107,
+    "sigma_z^2": 1.376
+   },
+   "variance_ratio_coadded_over_true": {
+    "<v_R>": 1.903,
+    "<v_phi>": 1.879,
+    "<v_z>": 1.946,
+    "sigma_R^2": 1.985,
+    "sigma_phi^2": 2.114,
+    "sigma_z^2": 2.539
+   },
+   "chi2_per_N_mock_vs_population_coadded_cov": 0.527
   },
   "absz_2to3": {
    "n_blocks": 4,
@@ -63,11 +97,29 @@
     "sigma_z^2": NaN
    },
    "chi2_per_N_mock_vs_population_bootstrap_cov": 1.607,
-   "chi2_per_N_mock_vs_population_true_cov": 0.663
+   "chi2_per_N_mock_vs_population_true_cov": 0.663,
+   "variance_ratio_MC_distance_only_over_true": {
+    "<v_R>": 0.72,
+    "<v_phi>": 0.804,
+    "<v_z>": 0.837,
+    "sigma_R^2": 0.822,
+    "sigma_phi^2": 0.845,
+    "sigma_z^2": 1.312
+   },
+   "variance_ratio_coadded_over_true": {
+    "<v_R>": 1.603,
+    "<v_phi>": 1.614,
+    "<v_z>": 1.546,
+    "sigma_R^2": 1.757,
+    "sigma_phi^2": 1.501,
+    "sigma_z^2": 1.808
+   },
+   "chi2_per_N_mock_vs_population_coadded_cov": 0.421
   }
  },
  "all_R0to6": {
   "chi2_per_N_mock_vs_population_bootstrap_cov": 1.275,
-  "chi2_per_N_mock_vs_population_true_cov": 1.064
+  "chi2_per_N_mock_vs_population_true_cov": 1.064,
+  "chi2_per_N_mock_vs_population_coadded_cov": 0.526
  }
 }

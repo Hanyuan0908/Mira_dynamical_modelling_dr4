@@ -1697,6 +1697,23 @@ Truth: 26.02, 27°, 1, 1. All truth offsets are within 0.54σ. (*LOO on the old 
 - So the data errors include the distance errors correctly. The truth's χ²/N of 5.3 at 7.5% is model misfit (orbits
   from the observed stars), not underestimated errors. These errors cover the data only, not the library's dependence
   on the noisy initial conditions.
+- **The "real observation" recipe double-counts** (user's proposal: a Monte Carlo over each star's distance error,
+  300 re-draws of DM_obs + σ_DM N(0, 1), co-added to the bootstrap). Variance ratio against the true scatter
+  (|z| < 1; |z| 1–2 is similar):
+
+  | field | Monte Carlo alone | bootstrap alone | co-added |
+  |---|---|---|---|
+  | ⟨v_R⟩ | 0.81 | 1.03 | 1.85 |
+  | ⟨v_φ⟩ | 0.88 | 1.04 | 1.96 |
+  | σ_R² | 1.00 | 1.02 | 2.05 |
+  | σ_φ² | 1.23 | 1.00 | 2.22 |
+
+  - χ²/N of the mock against the population: 0.53 with the co-added covariance, against 1.06 with the true one and
+    1.28 with the bootstrap alone.
+  - At 7.5% the distance re-draws (median shift 0.41 kpc) move most stars between 0.3 kpc rings. So the Monte Carlo on
+    its own already re-samples each ring and reproduces 81–123% of the total variance.
+  - A Monte Carlo is the right tool only for errors the bootstrap cannot see: errors correlated between stars, e.g. the
+    zero point of the period–luminosity relation (one shift for all stars per draw).
 
 ## Figure index (Test 1b, N-body, perfect mock)
 

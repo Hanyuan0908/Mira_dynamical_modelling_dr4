@@ -7,6 +7,8 @@ the same fit to all 1.49 M particles, smeared once. Compared with the bootstrap 
 test2b_qmc_distance_error_run.py at the truth, 300 bootstraps): variance ratios per |z| layer and field, and chi2 / N of
 the mock against the population with either covariance (proposed scheme; about 1 if the errors are right). Also how much
 the distance errors inflate the bootstrap errors relative to the perfect mock.
+Also the "real observation" recipe: a Monte Carlo over each star's distance error (N_MC re-draws of DM_obs + sigma_DM
+N(0, 1), no resampling of stars) co-added to the bootstrap covariance, compared with the same truth.
 Numbers: results/test2b/bootstrap_errors_with_distance_errors.json
 """
 import json
@@ -23,6 +25,7 @@ from check_fourier_star_fit_vs_true_maps import POOL, chi2_per_N
 from test2b_qmc_distance_error_run import MOCK, OUT_DIR
 
 N_INDEP = 200
+N_MC = 300
 PHI = 27.0
 RESULTS = ROOT / "results" / "test2b" / "bootstrap_errors_with_distance_errors.json"
 
@@ -56,6 +59,20 @@ def main():
     valid = ok & np.all(np.isfinite(c_mock), 1) & np.all(np.isfinite(c_pop), 1)
     use = valid & (ring < fs.N_RING_DEFAULT)
     perfect = np.load(FOCUSED_DIR / "fourier_stars_000.npz")["cov_data_joint"].reshape(fs.NB, 30, 30)
+    # Monte Carlo over each observed star's distance error (the mock's observed l, b, pm, v_los and distance)
+    with h5py.File(MOCK, "r") as f:
+        m = {k: f[k][:].astype(np.float64) for k in ("l", "b", "pml", "pmb", "vlos", "d")}
+    mc = np.empty((N_MC, fs.NB, c_mock.shape[1]))
+    for k in range(N_MC):
+        d = observe.scatter_distance_modulus(m["d"], sigma_dm, rng)
+        obs = np.column_stack(observe.to_galactocentric(m["l"], m["b"], d, m["pml"], m["pmb"], m["vlos"]))
+        b, X, v, _ = fs.prepare(ssl.rotate_z(obs, np.radians(PHI)))
+        mc[k] = fs.fit(b, X, v, np.ones(len(b)), ok).reshape(fs.NB, -1)
+    dmc = mc - mc.mean(0)
+    C_mc = np.einsum("mbi,mbj->bij", dmc, dmc) / (N_MC - 1)
+    C_coadd = cov + C_mc
+    vr = lambda C, blocks, f: round(float(np.median((np.diagonal(C[blocks], axis1=1, axis2=2)
+                                                     / np.diagonal(C_true[blocks], axis1=1, axis2=2))[:, f * 5:(f + 1) * 5])), 3)
     res = dict(sigma_DM=sigma_dm, n_independent_mocks=N_INDEP, layers={})
     for z, lab in enumerate(["absz_0to1", "absz_1to2", "absz_2to3"]):
         blocks = np.flatnonzero(use & (layer == z))
@@ -70,10 +87,15 @@ def main():
             error_inflation_vs_perfect_data={nm: round(float(np.median(infl[:, f * 5:(f + 1) * 5])), 3)
                                              for f, nm in enumerate(fs.FIELD_NAMES)},
             chi2_per_N_mock_vs_population_bootstrap_cov=round(chi2_per_N(c_mock - c_pop, cov, fs.N_BOOT, blocks), 3),
-            chi2_per_N_mock_vs_population_true_cov=round(chi2_per_N(c_mock - c_pop, C_true, N_INDEP, blocks), 3))
+            chi2_per_N_mock_vs_population_true_cov=round(chi2_per_N(c_mock - c_pop, C_true, N_INDEP, blocks), 3),
+            variance_ratio_MC_distance_only_over_true={nm: vr(C_mc, blocks, f) for f, nm in enumerate(fs.FIELD_NAMES)},
+            variance_ratio_coadded_over_true={nm: vr(C_coadd, blocks, f) for f, nm in enumerate(fs.FIELD_NAMES)},
+            chi2_per_N_mock_vs_population_coadded_cov=round(chi2_per_N(c_mock - c_pop, C_coadd, fs.N_BOOT, blocks), 3))
     blocks = np.flatnonzero(use)
     res["all_R0to6"] = dict(chi2_per_N_mock_vs_population_bootstrap_cov=round(chi2_per_N(c_mock - c_pop, cov, fs.N_BOOT, blocks), 3),
-                            chi2_per_N_mock_vs_population_true_cov=round(chi2_per_N(c_mock - c_pop, C_true, N_INDEP, blocks), 3))
+                            chi2_per_N_mock_vs_population_true_cov=round(chi2_per_N(c_mock - c_pop, C_true, N_INDEP, blocks), 3),
+                            chi2_per_N_mock_vs_population_coadded_cov=round(chi2_per_N(c_mock - c_pop, C_coadd, fs.N_BOOT,
+                                                                                        blocks), 3))
     RESULTS.parent.mkdir(parents=True, exist_ok=True)
     with open(RESULTS, "w") as fh:
         json.dump(res, fh, indent=1)
