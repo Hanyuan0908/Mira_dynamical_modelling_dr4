@@ -1645,6 +1645,34 @@ Truth: 26.02, 27°, 1, 1. All truth offsets are within 0.54σ. (*LOO on the old 
 - The per-orbit sums are saved (`~/mira_dr4_runs/test2b/draws_K10_features_NNN.npz`; trajectories
   `draws_K10_traj_NNN.npy`), so other weighting schemes on these libraries need no new integrations.
 
+## 2026-10-28 — Test 2b: how large a distance error can the current method take?
+
+- Scripts: `scripts/test2b_distance_error_truth_only.py` (cheap check, used) and `scripts/test2b_distance_error_tolerance.py`
+  (bias scan with ± offsets; stopped after level 0 and three 2.5% points; trajectories kept in
+  `~/mira_dr4_runs/test2b/tolerance/`).
+- Method: the current method unchanged (orbits from the observed stars, proposed Fourier scheme, joint bootstrap
+  covariance), in the true potential. Every level uses the same normal deviates, scaled.
+
+| fractional distance error (σ_DM) | χ²/N at the truth | extra χ² vs perfect data | tempered ΔlogL (1σ = −0.5) |
+|---|---|---|---|
+| 0% | 1.50 | 0 | 0 |
+| 2.5% (0.054 mag) | 1.64 | +89 | **−1.08** |
+| 5% (0.109 mag) | 2.69 | +1019 | **−12.3** |
+| 12.2% (0.265 mag, DR3 Miras) | 11.99 | ≈ +9000 | ≈ −110 |
+
+- The extra misfit rises steeply: from 2.5% to 5% it grows by 11.5×, about the power 3.5 of the error.
+- It reaches the 1σ step of the tempered likelihood (Δχ² = √(2N) ≈ 41) at about **2% distance error
+  (σ_DM ≈ 0.04 mag)**, by interpolation.
+- Above that, the misfit the distance errors cause at the truth exceeds what a 1σ change of the potential produces.
+- This measures the size of the damage, not its direction (bias vs broadening). The bias scan was stopped because the
+  machine was shared and the threshold was already clear.
+- Perfect-data baseline of the bias scan (level 0, ± offsets): shifts of the maximum from the data noise alone were
+  Ω_b +0.30 km/s/kpc (0.46σ), φ_b +0.2° (0.06σ), ln S −0.03 (−0.23σ) and ln bar_frac −0.07 (−0.45σ).
+- Side result: the library from the true positions against the 2.5% smeared data gives χ²/N 1.36, lower than 1.50 on
+  perfect data, because the smearing heats the data towards the hot library.
+- **Conclusion.** With one orbit per observed star, the method needs distances to about 2% (≈ 0.04 mag). DR3 Mira
+  distances (12.2%) are about 6× too uncertain.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 All in `figures/`.

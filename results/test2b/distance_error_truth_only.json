@@ -1,0 +1,24 @@
+{
+ "0.0%": {
+  "chi2_per_N": 1.498,
+  "N_data": 855
+ },
+ "2.5%": {
+  "chi2_per_N": 1.639,
+  "N_data": 836,
+  "extra_chi2": 89,
+  "tempered": -1.08
+ },
+ "5.0%": {
+  "chi2_per_N": 2.69,
+  "N_data": 855,
+  "extra_chi2": 1019,
+  "tempered": -12.32
+ },
+ "12.2%": {
+  "chi2_per_N": 11.99,
+  "N_data": 836,
+  "source": "results/test2b/smeared_initial_conditions.json (a)"
+ },
+ "note": "orbits from the observed stars in the true potential vs the observed data; 7.5% and 10% not run (stopped)"
+}

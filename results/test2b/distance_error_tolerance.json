@@ -1,0 +1,56 @@
+{
+ "fracs": [
+  0.0,
+  0.025,
+  0.05,
+  0.075,
+  0.1,
+  0.12222286597118409
+ ],
+ "offsets": {
+  "Omega_abs": 1.2,
+  "phi_b_deg": 5.0,
+  "S": 0.18,
+  "bar_frac": 0.3
+ },
+ "levels": {
+  "0.000": {
+   "sigma_DM": 0.0,
+   "N_data": 855,
+   "truth_chi2_per_N": 1.4979649706642622,
+   "logL": {
+    "truth": 0.0,
+    "Omega_abs_minus": -2.566,
+    "Omega_abs_plus": -0.862,
+    "phi_b_deg_minus": -1.06,
+    "phi_b_deg_plus": -0.898,
+    "S_minus": -0.797,
+    "S_plus": -1.494,
+    "bar_frac_minus": -0.841,
+    "bar_frac_plus": -2.487
+   },
+   "params": {
+    "Omega_abs": {
+     "width": 0.6481427250168493,
+     "shift": 0.29815177367578016,
+     "curvature_ok": true
+    },
+    "phi_b_deg": {
+     "width": 3.5726955027579685,
+     "shift": 0.20704120312650892,
+     "curvature_ok": true
+    },
+    "S": {
+     "width": 0.118915881005989,
+     "shift": -0.02736387163490741,
+     "curvature_ok": true
+    },
+    "bar_frac": {
+     "width": 0.16445662790971105,
+     "shift": -0.07419660259618287,
+     "curvature_ok": true
+    }
+   }
+  }
+ }
+}
