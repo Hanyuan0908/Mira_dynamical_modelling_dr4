@@ -3,28 +3,28 @@
   "N_data": 855,
   "truth_chi2_per_N": 1.4979649706642602,
   "truth_rank": 1,
-  "best_other": -0.7945393786189481,
-  "best_other_idx": 15,
-  "n_within_2": 5,
-  "n_within_4p5": 14
+  "best_other": -0.12890216657064713,
+  "best_other_idx": 235,
+  "n_within_2": 9,
+  "n_within_4p5": 20
  },
  "fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024": {
   "N_data": 765,
   "truth_chi2_per_N": 1.2660785167723412,
   "truth_rank": 1,
-  "best_other": -0.5553154124721509,
-  "best_other_idx": 15,
-  "n_within_2": 10,
-  "n_within_4p5": 21
+  "best_other": -0.48397040181364126,
+  "best_other_idx": 235,
+  "n_within_2": 13,
+  "n_within_4p5": 30
  },
  "fourier_stars_R0to6_all6_m024": {
   "N_data": 1350,
   "truth_chi2_per_N": 1.6529283448553562,
-  "truth_rank": 1,
-  "best_other": -0.33369036219372106,
-  "best_other_idx": 85,
-  "n_within_2": 7,
-  "n_within_4p5": 22
+  "truth_rank": 2,
+  "best_other": 0.03423605130756613,
+  "best_other_idx": 235,
+  "n_within_2": 11,
+  "n_within_4p5": 30
  },
  "fourier_stars_R0to8_vR_m24_vphi_sigR_sigphi_m024": {
   "N_data": 1007,
@@ -32,17 +32,17 @@
   "truth_rank": 1,
   "best_other": -0.6589301041000581,
   "best_other_idx": 15,
-  "n_within_2": 5,
-  "n_within_4p5": 14
+  "n_within_2": 7,
+  "n_within_4p5": 20
  },
  "fourier_stars_R0to6_vR_m24_vphi_sigR_sigphi_m024_blockdiag": {
   "N_data": 855,
   "truth_chi2_per_N": 1.3100741092938946,
   "truth_rank": 1,
-  "best_other": -0.6416034583196808,
-  "best_other_idx": 15,
-  "n_within_2": 5,
-  "n_within_4p5": 16
+  "best_other": -0.15434922486336333,
+  "best_other_idx": 235,
+  "n_within_2": 9,
+  "n_within_4p5": 22
  },
  "fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024_blockdiag": {
   "N_data": 765,
@@ -50,17 +50,17 @@
   "truth_rank": 1,
   "best_other": -0.4243178267538621,
   "best_other_idx": 15,
-  "n_within_2": 10,
-  "n_within_4p5": 21
+  "n_within_2": 14,
+  "n_within_4p5": 31
  },
  "fourier_stars_R0to6_all6_m024_blockdiag": {
   "N_data": 1350,
   "truth_chi2_per_N": 1.350721322813789,
   "truth_rank": 1,
-  "best_other": -0.5897248700074655,
-  "best_other_idx": 15,
-  "n_within_2": 7,
-  "n_within_4p5": 23
+  "best_other": -0.11579993365728924,
+  "best_other_idx": 235,
+  "n_within_2": 11,
+  "n_within_4p5": 31
  },
  "fourier_stars_R0to8_vR_m24_vphi_sigR_sigphi_m024_blockdiag": {
   "N_data": 1007,
@@ -68,7 +68,7 @@
   "truth_rank": 1,
   "best_other": -0.4673287573657454,
   "best_other_idx": 15,
-  "n_within_2": 5,
-  "n_within_4p5": 15
+  "n_within_2": 7,
+  "n_within_4p5": 21
  }
 }

@@ -1376,6 +1376,77 @@ Truth: 26.02, 27°, 1, 1. All truth offsets are within 0.54σ. (*LOO on the old 
   - a model-based covariance (mock-sized draws from a reference library, one random snapshot per orbit);
   - shrinking the joint covariance towards per-field.
 
+## 2026-10-28 — Focused global search: final results on all 257 points
+
+- All 257 integrations finished at 11:03. The final post-processing (`postprocess_final.log`) re-used the 173 points
+  already analysed.
+- Truth still ranks first on the proposed per-star scheme.
+  - The best other point is now #235 (Ω 25.71, φ 27.7°, S 1.17, f 0.69) at ΔlogL −0.13.
+  - Then #245 (26.04, 28.1°, 1.32, 0.59) at −0.73, and #15 (26.77, 27.6°, 0.82, 1.50) at −0.80.
+  - 9 points lie within −2 and 20 within −4.5.
+
+| likelihood (256 Sobol points) | \|Ω_b\| | φ_b [°] | S | bar_frac | LOO (32 best) |
+|---|---|---|---|---|---|
+| per-star, proposed | 26.06 +0.86/−0.78 | 27.3 +3.0/−3.1 | 1.06 +0.25/−0.17 | 0.87 +0.31/−0.25 | 0.45 |
+| per-star, no σ m = 0 | 25.61 +1.17/−0.95 | 27.8 ± 3.3 | 1.01 +0.23/−0.16 | 0.94 +0.38/−0.31 | 0.33 |
+| sector GLS, proposed | 26.18 +0.81/−0.76 | 27.8 ± 2.8 | 1.13 ± 0.21 | 0.84 +0.34/−0.21 | 0.57 |
+| polar-cell, means + disp | 26.07 +1.25/−1.05 | 27.3 ± 4.3 | 0.98 +0.22/−0.16 | 0.92 +0.41/−0.29 | 0.36 |
+
+- These are within 0.05σ of the 173-point posteriors; the extra 84 points mainly improved the emulator (LOO
+  0.86 → 0.45).
+- These still use the bootstrap covariance that over-weights |z| ≥ 1 (see the ground-truth check).
+
+## 2026-10-28 — Why is Ω_b well constrained but S and bar_frac are not?
+
+- Script: `scripts/analyse_bar_length_strength_degeneracy.py`.
+  - It uses the same emulator and seeds as the corner. Run on the 173-point table, it reproduces the reported
+    posterior exactly.
+- Numbers: `results/test1_nbody_qmc_focused/bar_length_strength_degeneracy_logLs_fourier_stars_R0to6_vR_m24_vphi_sigR_sigphi_m024.json`.
+- Figure: `figures/test1_nbody_qmc_focused_bar_length_strength_degeneracy_logLs_fourier_stars_R0to6_vR_m24_vphi_sigR_sigphi_m024.png`.
+  - Left: posterior in (S, bar_frac) with curves of fixed bar m = 2 potential.
+  - Middle: fractional width vs R.
+  - Right: Q_T(R) posterior.
+- All on the 256 Sobol points, proposed per-star scheme.
+
+**1. S and bar_frac trade off: corr(ln S, ln f) = −0.65.**
+
+| parameter | marginal 1σ | conditional 1σ (others fixed at the max) | ratio |
+|---|---|---|---|
+| \|Ω_b\| | 0.82 km/s/kpc (3.1%) | 0.58 (2.2%) | 1.42 |
+| φ_b | 3.0° | 3.1° | 0.99 |
+| S | 19% | 9.7% | 1.97 |
+| bar_frac | 32% | 17% | 1.90 |
+
+- The degeneracy doubles the S and bar_frac widths.
+- Best-measured combination: **bar_frac · S^2.06, to 12.7%**. The orthogonal direction is uncertain to 33%.
+- The evaluated points (not the emulator) lie on the same ridge. The best four after the truth have
+  f · S^2.06 = 0.95, 1.04, 1.00, 0.95 (#235, #245, #15, #42).
+- Ω_b correlates with bar_frac (+0.49) but not with S or φ_b (|r| ≤ 0.04). That is why its marginal width is 1.4× its
+  conditional one.
+
+**2. Even with the others fixed, the likelihood is much less sensitive to S and bar_frac than to Ω_b.**
+- From the conditional widths, a 10% change gives a tempered ΔlogL of about:
+  - −10 for Ω_b;
+  - −0.5 for S;
+  - −0.2 for bar_frac.
+
+**3. The data do not pin the bar force at any single radius** (my first guess, now ruled out).
+- The bar part of a trial potential is bar_frac · Φ_bar(r/S). The AGAMA scale convention was checked to 6×10⁻⁶.
+- So Q_T(R) = 2 bar_frac A₂₀(R/S) / (R |dΦ₀/dR|). Its posterior width is ≥ 24% at every R (minimum at R = 4.0 kpc),
+  worse than S alone.
+- The ridge f ∝ S^−2.06 has the slope of the fixed-potential curve at R ≈ 5–5.5 kpc near S = 1. But those curves bend
+  (slope −3.1 to −1.4 over S 0.8–1.6), so no single-radius force is constant along the ridge.
+- True Q_T peaks at 0.10 at R = 2.5 kpc. Posterior at 4 kpc: 0.079 +0.020/−0.017 (truth 0.087).
+
+**Context.**
+- Tempering inflates every width by (2 N_data)^¼ = 6.4×; the ratios between parameters are unaffected.
+- Posterior width relative to the flat prior's in the box: Ω_b 4.2×, φ_b 2.3×, S 1.5×, bar_frac 1.4× narrower.
+- Untested idea for the physics: the bar's non-axisymmetric force is at most 10% of the radial force (Q_T ≤ 0.10), so a
+  17% change in bar_frac changes the in-plane force by ≤ 1.7%, while Ω_b enters every star's motion in the bar frame.
+- A local Fisher analysis would test this. It would use the library coefficients' derivatives with respect to the
+  parameters, estimated from the Sobol points near the truth, and show which fields, terms and radii carry the
+  information on each parameter.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 All in `figures/`.
@@ -1404,6 +1475,7 @@ All in `figures/`.
 | `test1_nbody_qmc_focused_logl_corner_<column>.png` | focused run: evaluated log L (upper) and GP profile (lower) for the columns above and `logLs_fourier_stars_R0to8_…` |
 | `test1_nbody_qmc_focused_emulator_{slices,loo}_<column>.png` | focused run: 1D emulator slices through truth and maximum; leave-one-out check |
 | `test1_nbody_fourier_star_fit_vs_true_maps_absz_{0to1,1to2}.png` | per-star Fourier fit (m ≤ 4) from the 50k mock vs the true N-body maps (1.49 M particles): truth, reconstruction, difference, pulls, truncation |
+| `test1_nbody_qmc_focused_bar_length_strength_degeneracy_<column>.png` | why S and bar_frac are weakly constrained: (S, bar_frac) posterior with curves of fixed bar potential; fractional width of the bar m = 2 potential vs R against S, bar_frac, Ω_b; Q_T(R) posterior vs truth |
 | `test1_nbody_density_stationarity.png` | density change of the libraries; counts statistic retracted (needs the selection function) |
 
 ## Next steps

@@ -1,0 +1,109 @@
+{
+ "column": "logLs_fourier_stars_R0to6_vR_m24_vphi_sigR_sigphi_m024",
+ "csv": "/Users/hanyuan/Library/CloudStorage/Dropbox/python_script/mira_dynamics_dr4/results/test1_nbody_qmc_focused/evals.csv",
+ "n_train": 256,
+ "posterior": {
+  "Omega_abs": [
+   25.2827,
+   26.059,
+   26.9143
+  ],
+  "phi_b_deg": [
+   24.2516,
+   27.3171,
+   30.2952
+  ],
+  "S": [
+   0.8886,
+   1.0548,
+   1.3016
+  ],
+  "bar_frac": [
+   0.625,
+   0.8724,
+   1.1778
+  ]
+ },
+ "correlation": [
+  [
+   1.0,
+   -0.029,
+   0.019,
+   0.491
+  ],
+  [
+   -0.029,
+   1.0,
+   -0.037,
+   -0.021
+  ],
+  [
+   0.019,
+   -0.037,
+   1.0,
+   -0.653
+  ],
+  [
+   0.491,
+   -0.021,
+   -0.653,
+   1.0
+  ]
+ ],
+ "widths": {
+  "|\u03a9_b|": {
+   "marginal": 0.8158,
+   "conditional": 0.5765,
+   "conditional_closed_in_box": true,
+   "ratio": 1.42
+  },
+  "\u03c6_b": {
+   "marginal": 3.0218,
+   "conditional": 3.0638,
+   "conditional_closed_in_box": true,
+   "ratio": 0.99
+  },
+  "ln S": {
+   "marginal": 0.1909,
+   "conditional": 0.0971,
+   "conditional_closed_in_box": true,
+   "ratio": 1.97
+  },
+  "ln bar_frac": {
+   "marginal": 0.3168,
+   "conditional": 0.1668,
+   "conditional_closed_in_box": true,
+   "ratio": 1.9
+  }
+ },
+ "widths_note": "|Omega_b| in km/s/kpc, phi_b in deg, ln S and ln bar_frac dimensionless (= fractional); conditional = Delta logL = -0.5 along one axis through the emulator maximum",
+ "lnS_lnf_principal_axes": {
+  "narrow_sigma": 0.1266,
+  "wide_sigma": 0.3273,
+  "narrow_combination": "ln bar_frac + 2.06 ln S",
+  "wide_direction_slope_dlnf_dlnS": -2.06
+ },
+ "scale_convention_check_max_rel_err": 5.516149890860689e-06,
+ "bar_strength_vs_R": {
+  "R_best": 4.0,
+  "frac_width_at_R_best": 0.2375,
+  "frac_width_at": {
+   "1": 0.404,
+   "2": 0.304,
+   "3": 0.2585,
+   "4": 0.2375,
+   "5": 0.2619,
+   "6": 0.359
+  },
+  "QT_true_at_R_best": 0.0872,
+  "QT_posterior_at_R_best": [
+   0.0615,
+   0.0789,
+   0.0989
+  ],
+  "QT_true_max": [
+   0.1005,
+   2.5
+  ]
+ }
+}
