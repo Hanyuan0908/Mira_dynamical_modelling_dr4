@@ -1,0 +1,145 @@
+{
+ "sigma_DM": 0.2654035812684299,
+ "K_DRAW": 5,
+ "K_NN": 64,
+ "V_SCALE": 40.0,
+ "t_knn_s": 11.028608083724976,
+ "distance_error_vs_truth": {
+  "observed": {
+   "median_abs": 0.0823
+  },
+  "posterior_mean_A": {
+   "median_abs": 0.0596,
+   "median": 0.0047
+  },
+  "posterior_mean_B": {
+   "median_abs": 0.0537,
+   "median": 0.0092
+  }
+ },
+ "t0_initial_conditions_vs_perfect_data": {
+  "smeared stars": 15.6,
+  "draws A (density prior)": 19.736,
+  "draws B (full DF prior)": 4.472
+ },
+ "integration_s": {
+  "A": 427.09098982810974,
+  "B": 402.0107641220093
+ },
+ "library_vs_smeared_data": {
+  "A": {
+   "observed": 8.722,
+   "as_is": 8.103,
+   "observed_by_window": {
+    "0-0.1 Gyr": 12.78,
+    "0.25-0.5 Gyr": 8.888,
+    "0.5-0.75 Gyr": 9.144,
+    "0.75-1 Gyr": 9.516
+   }
+  },
+  "B": {
+   "observed": 4.094,
+   "as_is": 4.719,
+   "observed_by_window": {
+    "0-0.1 Gyr": 3.3,
+    "0.25-0.5 Gyr": 3.972,
+    "0.5-0.75 Gyr": 3.94,
+    "0.75-1 Gyr": 4.027
+   }
+  },
+  "smeared ICs": {
+   "observed": 13.429,
+   "as_is": 11.99,
+   "observed_by_window": {
+    "0-0.1 Gyr": 15.814,
+    "0.25-0.5 Gyr": 13.171,
+    "0.5-0.75 Gyr": 15.2,
+    "0.75-1 Gyr": 15.687
+   }
+  },
+  "true ICs": {
+   "observed": 1.405,
+   "as_is": 4.613,
+   "observed_by_window": {
+    "0-0.1 Gyr": 1.574,
+    "0.25-0.5 Gyr": 1.521,
+    "0.5-0.75 Gyr": 1.481,
+    "0.75-1 Gyr": 1.395
+   }
+  }
+ },
+ "library_vs_smeared_data_per_field_observed": {
+  "<v_R> m0": {
+   "A": 0.93,
+   "B": 0.931,
+   "smeared ICs": 0.972,
+   "true ICs": 1.083
+  },
+  "<v_R> m24": {
+   "A": 1.099,
+   "B": 1.003,
+   "smeared ICs": 1.223,
+   "true ICs": 0.979
+  },
+  "<v_phi> m0": {
+   "A": 6.37,
+   "B": 3.715,
+   "smeared ICs": 10.001,
+   "true ICs": 1.064
+  },
+  "<v_phi> m24": {
+   "A": 1.609,
+   "B": 1.292,
+   "smeared ICs": 1.784,
+   "true ICs": 1.088
+  },
+  "<v_z> m0": {
+   "A": 1.213,
+   "B": 1.13,
+   "smeared ICs": 1.153,
+   "true ICs": 1.193
+  },
+  "<v_z> m24": {
+   "A": 1.135,
+   "B": 1.129,
+   "smeared ICs": 1.211,
+   "true ICs": 1.172
+  },
+  "sigma_R^2 m0": {
+   "A": 29.791,
+   "B": 10.639,
+   "smeared ICs": 58.549,
+   "true ICs": 1.445
+  },
+  "sigma_R^2 m24": {
+   "A": 1.85,
+   "B": 1.34,
+   "smeared ICs": 3.427,
+   "true ICs": 0.959
+  },
+  "sigma_phi^2 m0": {
+   "A": 32.74,
+   "B": 12.605,
+   "smeared ICs": 47.283,
+   "true ICs": 1.744
+  },
+  "sigma_phi^2 m24": {
+   "A": 1.515,
+   "B": 1.322,
+   "smeared ICs": 1.959,
+   "true ICs": 1.033
+  },
+  "sigma_z^2 m0": {
+   "A": 7.336,
+   "B": 4.539,
+   "smeared ICs": 10.783,
+   "true ICs": 1.623
+  },
+  "sigma_z^2 m24": {
+   "A": 1.094,
+   "B": 1.007,
+   "smeared ICs": 1.242,
+   "true ICs": 1.066
+  }
+ }
+}

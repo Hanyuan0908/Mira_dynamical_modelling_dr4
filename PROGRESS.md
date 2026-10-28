@@ -1568,6 +1568,37 @@ Truth: 26.02, 27°, 1, 1. All truth offsets are within 0.54σ. (*LOO on the old 
   - iterating with the library's own density as that prior;
   - a library that does not start from the data stars.
 
+## 2026-10-28 — Test 2b: posterior distance draws as initial conditions (best case; does not solve it)
+
+- Script: `scripts/test2b_posterior_distance_draws.py`; numbers in `results/test2b/posterior_distance_draws.json`.
+- Figure: `figures/test2b_posterior_distance_draws_fourier_coefficients_absz_0to1.png`.
+- **Method.** Five distances per smeared star, drawn from its distance posterior on a ±4σ grid in DM. The prior is the
+  true N-body: 1.44 M star particles at R < 8, without the mock's own 50k stars; k = 64 nearest-neighbour estimates.
+  - A, density prior: likelihood × ρ(x(d)) d².
+  - B, full phase-space prior: likelihood × f(x(d), v(d)) d⁴, using the measured proper motions and v_los; 6D metric
+    40 km/s ≙ 1 kpc. Exact draws from B would reproduce the true distribution.
+  - 250k orbits each in the true potential: 427 s (A) and 402 s (B). Trajectories in `~/mira_dr4_runs/test2b/`.
+- Distances: the posterior means are closer to the truth than the observed distances (median |error| 6.0% for A and
+  5.4% for B, against 8.2%). Single draws scatter like the errors, as they should.
+
+| initial conditions | t = 0 draws vs perfect data, χ²/N | library observed vs smeared data, χ²/N | by window (0–0.1 / 0.25–0.5 / 0.5–0.75 / 0.75–1 Gyr) |
+|---|---|---|---|
+| smeared stars, 1 per star | 15.6 | 13.4 | 15.8 / 13.2 / 15.2 / 15.7 |
+| draws A, density prior | **19.7** | **8.7** | 12.8 / 8.9 / 9.1 / 9.5 |
+| draws B, full phase-space prior | **4.5** | **4.1** | 3.3 / 4.0 / 3.9 / 4.0 |
+| true positions (target) | — | 1.41 | 1.57 / 1.52 / 1.48 / 1.40 |
+
+- **Even the best case fails.** B leaves χ²/N ≈ 4, against 1.4 for the true positions.
+  - The m = 2, 4 terms are close (1.0–1.3 per field).
+  - The ring averages are too hot: σ_R² m = 0 10.6, σ_φ² m = 0 12.6, ⟨v_φ⟩ m = 0 3.7. σ_R and σ_φ are about 5 km/s
+    high at R > 2.5 kpc, and the σ_R cos 2φ bar response is weaker.
+  - Likely reason (not tested): the k = 64 6D estimate of f is too smooth to pin each star's distance, so draws at wrong
+    distances get wrong tangential velocities.
+- **A, the version we could use with a Galaxy density model, is worse at t = 0 than the smeared stars themselves**
+  (19.7 vs 15.6). It ignores how f depends on velocity.
+- **Conclusion.** De-smearing the initial conditions star by star needs an accurate 6D DF prior, which is the thing we
+  are modelling. Even with the true N-body it leaves χ²/N ≈ 4. As the user expected, this does not solve the problem.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 All in `figures/`.
@@ -1600,6 +1631,7 @@ All in `figures/`.
 | `test1_nbody_qmc_focused_fourier_coefficients_data_vs_models_absz_{0to1,1to2}.png` | Fourier coefficients (m = 0, cos/sin 2φ, cos/sin 4φ) of ⟨v_R⟩, ⟨v_φ⟩, σ_R, σ_φ vs R: data with errors against the truth model, two ridge models, a rejected Ω_b model and the all-particle N-body |
 | `test1_nbody_distance_error_fourier_coefficients_perfect_vs_smeared_absz_{0to1,1to2}.png` | Test 2b: Fourier coefficients of the perfect and the distance-smeared (σ_DM = 0.265) mock against the truth model and the truth model observed with the same errors |
 | `test2b_smeared_initial_conditions_fourier_coefficients_absz_{0to1,1to2}.png` | Test 2b: smeared data against libraries in the true potential from smeared initial conditions (as is; observed again) and from true initial conditions (observed) |
+| `test2b_posterior_distance_draws_fourier_coefficients_absz_0to1.png` | Test 2b: smeared data against libraries from posterior distance draws (density prior; full phase-space prior), smeared stars and true positions, all observed with the errors |
 | `test1_nbody_density_stationarity.png` | density change of the libraries; counts statistic retracted (needs the selection function) |
 
 ## Next steps
