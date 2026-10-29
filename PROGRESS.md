@@ -1807,6 +1807,11 @@ Truth: 26.02, 27°, 1, 1. All truth offsets are within 0.54σ. (*LOO on the old 
 - **Not done yet: the library side.** The library must be weighted by the selection: 1/⟨S⟩ along each orbit and
   S per sample. Because S acts on observed quantities, S has to be evaluated on the library observed with the
   distance errors (or averaged over them).
+- Spatial comparison: `figures/test2_spatial_mock_vs_dr3_miras_nbody_mock_selection_sigmaDM0.163_N50k.png`
+  (`scripts/plot_mock_vs_dr3_mira_spatial.py`).
+  - Fraction at |b| < 1°: Miras 5.1%, mock 9.1% (the extinction lane is under-resolved).
+  - Fraction at |z| > 3 kpc: Miras 0.45%, mock 0.06% (absent from the N-body).
+  - **Accepted by the user as good enough (2026-10-29).**
 
 ## Figure index (Test 1b, N-body, perfect mock)
 
