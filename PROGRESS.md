@@ -1779,6 +1779,35 @@ Truth: 26.02, 27°, 1, 1. All truth offsets are within 0.54σ. (*LOO on the old 
   `..._logl_corner_...`, and the bootstrap-error versions
   `figures/test2b_qmc_distance_error_7p5_emulator_corner_logLs_fourier_stars_R0to6_vR_m24_vphi_sigR_sigphi_m024_{observed,asis}.png`.
 
+## 2026-10-29 — Test 2: mock with distance errors and a DR3-Mira-like selection function
+
+- Recipe (user):
+  1. smear the distances of all N-body star particles first;
+  2. select them so they follow the DR3 Miras in (l, b);
+  3. and in their radial distribution.
+- Script: `scripts/make_mock_selection.py`; mock `mock/nbody_mock_selection_sigmaDM0.163_N50k.hdf5`.
+- Figure: `figures/test2_nbody_mock_selection_vs_dr3_miras_sigmaDM0.163.png`.
+- **Steps.**
+  - All 2 M star particles are observed with σ_DM = 0.163 mag (7.5%; l, b, proper motions and v_los exact;
+    seed 2031). Particles with observed R < 8 kpc enter.
+  - Target: DR3 Miras with DM_err < 0.4 and catalogue R < 8 kpc (45,206).
+  - Selection function on observed quantities: S(l, b, d) = S_sky[HEALPix nside 32] × S_dist[0.25 kpc bins in
+    heliocentric d] × S_R[0.25 kpc bins in Galactocentric R].
+  - Fitted by iterative proportional fitting (10 cycles) to the three target margins, scaled to 50k expected stars.
+  - Each particle is kept with probability min(S, 1) (seed 2032). The S tables are stored in the file, so S can be
+    evaluated anywhere.
+- **Result: 50,281 stars; no particle needed S > 1.** Sky-map correlation with the Miras 0.997. Medians:
+  - distance: 8.04 vs 8.02 kpc;
+  - R: 3.33 vs 3.33 kpc;
+  - |b|: 3.41° vs 3.39°.
+  - With sky and distance only, R was too concentrated (median 3.08), so R was added as a third margin.
+  - True |z| > 1 kpc: 14.6%; disc particles: 89%.
+- **Caveat.** The Miras' extinction gap at |b| < 1° is narrower than a HEALPix nside-32 pixel (1.8°), so the mock
+  shows only a weak stripe there.
+- **Not done yet: the library side.** The library must be weighted by the selection: 1/⟨S⟩ along each orbit and
+  S per sample. Because S acts on observed quantities, S has to be evaluated on the library observed with the
+  distance errors (or averaged over them).
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 All in `figures/`.
@@ -1813,6 +1842,7 @@ All in `figures/`.
 | `test2b_smeared_initial_conditions_fourier_coefficients_absz_{0to1,1to2}.png` | Test 2b: smeared data against libraries in the true potential from smeared initial conditions (as is; observed again) and from true initial conditions (observed) |
 | `test2b_posterior_distance_draws_fourier_coefficients_absz_0to1.png` | Test 2b: smeared data against libraries from posterior distance draws (density prior; full phase-space prior), smeared stars and true positions, all observed with the errors |
 | `test2b_qmc_distance_error_7p5_coadded_error_emulator_corner_logLs_{observed,asis}.png` | Test 2b, 7.5% distance error, full focused grid: posterior with the co-added error (library observed again / as is); `..._logl_corner_...` evaluated points; without `_coadded_error` and with the long column name: bootstrap-only error |
+| `test2_nbody_mock_selection_vs_dr3_miras_sigmaDM0.163.png` | Test 2 mock: sky map, distance and R distributions and face-on map of the selection-function mock against the DR3 Miras |
 | `test1_nbody_density_stationarity.png` | density change of the libraries; counts statistic retracted (needs the selection function) |
 
 ## Next steps

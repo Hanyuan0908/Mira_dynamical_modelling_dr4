@@ -140,7 +140,21 @@ python make_mock_distance_error.py --sigma-dm 0.16286      # 7.5% (sigma_DM = 0.
     the 12.2% mock scaled.
   - Caveat: the stars are selected on their **true** R < 8 kpc (not realistic). 1.7–2.7% end up at observed R > 8.
 
-### 5.2 Selection function (Test 2a) — NOT IMPLEMENTED yet
+### 5.2 Selection function (Test 2) — mock implemented, library weighting not yet
+
+```
+python make_mock_selection.py                       # sigma_DM 0.163 (7.5%), 50k expected stars
+python make_mock_selection.py --sigma-dm 0.1086     # 5%
+```
+
+- **Mock (`make_mock_selection.py`).** Recipe agreed 2026-10-29:
+  - Observe all 2 M N-body star particles with the distance-modulus error and keep those with observed R < 8 kpc.
+  - Select them with S(l, b, d) = S_sky[HEALPix nside 32] × S_dist[0.25 kpc in d] × S_R[0.25 kpc in Galactocentric R].
+  - S is fitted by iterative proportional fitting so the mock reproduces the DR3 Miras' (DM_err < 0.4, R < 8 kpc)
+    sky map, distance histogram and R histogram. Each particle is kept with probability min(S, 1).
+  - The S tables (`S_sky`, `dist_edges`/`S_dist`, `R_edges`/`S_R`) are stored in the mock file.
+  - Same output fields as the other mocks.
+- **Still to do: the library.** Earlier plan, written before the mock existed:
 
 Plan agreed earlier (PROGRESS.md, "Next steps"):
 - **Data.** Draw the mock through a Gaia-like selection S(l, b, m) (footprint, extinction, magnitude limit),
