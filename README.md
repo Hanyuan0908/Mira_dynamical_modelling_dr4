@@ -8,6 +8,8 @@ the sample stationary in the bar frame, so its kinematics stay unchanged.
 
 Progress, test results and links to the scripts and figures for each test are logged in
 [PROGRESS.md](PROGRESS.md).
+How to run the pipeline (mock data, orbit integration, likelihood, posterior), the frames and
+conventions, and what to change before running it on a cluster: [PIPELINE.md](PIPELINE.md).
 
 ## Layout
 
