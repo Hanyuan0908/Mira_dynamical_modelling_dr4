@@ -1743,6 +1743,42 @@ Truth: 26.02, 27°, 1, 1. All truth offsets are within 0.54σ. (*LOO on the old 
   - On perfect data, #5 was ΔlogL −5.3.
   - The other 8 points are worse than the truth: −3.8 to −26.5.
 
+## 2026-10-29 — Test 2b: the current method on a 7.5% distance-error mock (full focused Sobol grid)
+
+- Scripts: `scripts/test2b_qmc_distance_error_run.py`, `scripts/test2b_qmc_7p5_rescore_coadded.py`.
+  - Tables: `results/test2b_qmc_7p5/evals.csv` (bootstrap error) and `evals_coadded.csv` (co-added error).
+  - Emulator runs `test2b_qmc_7p5` and `test2b_qmc_7p5_coadded`.
+- Set-up:
+  - Mock `mock/nbody_mock_distance_error_sigmaDM0.163_R8_N50k.hdf5`: σ_DM 0.163 mag, i.e. 7.5% (std of
+    d_obs/d_true 7.54%); median position shift 0.41 kpc.
+  - At all 257 points of the focused grid, the observed stars were integrated (9.8 h, finished 07:00).
+  - Library: observed again with the same error (user's choice), and as is.
+  - Proposed per-star Fourier scheme.
+  - Error: co-added (user's recipe: distance Monte Carlo + bootstrap of the unsmeared data), or the bootstrap of the
+    observed data.
+- Truth: χ²/N 2.18 (co-added, observed again). Points better than the truth: 17 of 256 (observed again) and 22 (as
+  is). Best: #248 (Ω 29.1, φ 24.3°, S 0.92, f 1.55) +2.24; #120 (29.0, 19.8°, 0.74, 1.96) +2.03; #180 (27.8, 20.0°,
+  0.79, 1.53) +1.88.
+
+| posterior (GP emulator, 256 Sobol) | \|Ω_b\| | φ_b [°] | S | bar_frac | LOO |
+|---|---|---|---|---|---|
+| perfect data (reference) | 26.06 +0.86/−0.78 | 27.3 ± 3.0 | 1.06 +0.25/−0.17 | 0.87 +0.31/−0.25 | 0.45 |
+| **7.5%, co-added error, observed again** | **28.54 +1.95/−1.66** (−1.4σ) | **23.3 +4.7/−4.4** (+0.8σ) | **0.90 +0.23/−0.14** (+0.6σ) | **1.41 +0.38/−0.44** (−1.0σ) | 0.53 |
+| 7.5%, co-added error, as is | 27.57 +1.89/−1.40 (−0.9σ) | 22.5 +5.1/−4.3 (+0.9σ) | 0.91 +0.22/−0.15 (+0.5σ) | 1.43 +0.39/−0.46 (−1.0σ) | 0.61 |
+| 7.5%, bootstrap error, observed again | 28.52 +1.81/−1.34 (−1.6σ) | 22.7 +3.5/−3.3 (+1.3σ) | 0.84 +0.13/−0.09 (+1.4σ) | 1.63 +0.25/−0.36 (−2.1σ) | 1.31 |
+| 7.5%, bootstrap error, as is | 27.39 +1.24/−0.84 (−1.3σ) | 21.4 +3.5/−3.4 (+1.6σ) | 0.87 +0.13/−0.10 (+1.1σ) | 1.55 +0.31/−0.37 (−1.6σ) | 1.55 |
+
+(σ offsets are truth − median in units of the posterior half-width.)
+- **All four shift the same way: faster, shorter and stronger bar at a smaller angle.** With the co-added error:
+  Ω_b +2.5 km/s/kpc (+10%), φ_b −3.7°, S −10%, bar_frac +41%. The posterior is about 2× wider than on perfect data,
+  and the truth lies within 1.4σ in every parameter.
+- **The posterior is cut by the grid box.** The Ω_b marginal still rises at the upper edge (32), and bar_frac at 2.0.
+  The box was chosen around the perfect-data posterior, so the medians and widths above are box-limited and the real
+  shift may be larger.
+- Figures: `figures/test2b_qmc_distance_error_7p5_coadded_error_emulator_corner_logLs_{observed,asis}.png`,
+  `..._logl_corner_...`, and the bootstrap-error versions
+  `figures/test2b_qmc_distance_error_7p5_emulator_corner_logLs_fourier_stars_R0to6_vR_m24_vphi_sigR_sigphi_m024_{observed,asis}.png`.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 All in `figures/`.
@@ -1776,6 +1812,7 @@ All in `figures/`.
 | `test1_nbody_distance_error_fourier_coefficients_perfect_vs_smeared_absz_{0to1,1to2}.png` | Test 2b: Fourier coefficients of the perfect and the distance-smeared (σ_DM = 0.265) mock against the truth model and the truth model observed with the same errors |
 | `test2b_smeared_initial_conditions_fourier_coefficients_absz_{0to1,1to2}.png` | Test 2b: smeared data against libraries in the true potential from smeared initial conditions (as is; observed again) and from true initial conditions (observed) |
 | `test2b_posterior_distance_draws_fourier_coefficients_absz_0to1.png` | Test 2b: smeared data against libraries from posterior distance draws (density prior; full phase-space prior), smeared stars and true positions, all observed with the errors |
+| `test2b_qmc_distance_error_7p5_coadded_error_emulator_corner_logLs_{observed,asis}.png` | Test 2b, 7.5% distance error, full focused grid: posterior with the co-added error (library observed again / as is); `..._logl_corner_...` evaluated points; without `_coadded_error` and with the long column name: bootstrap-only error |
 | `test1_nbody_density_stationarity.png` | density change of the libraries; counts statistic retracted (needs the selection function) |
 
 ## Next steps
