@@ -27,9 +27,9 @@ import h5py
 import healpy as hp
 import matplotlib.pyplot as plt
 
-from common import MOCK_DIR, MIRA_DR3_FILE, R0_KPC, Z_SUN_KPC, V_SUN_KMS, set_style, savefig, INK, INK_2, ACCENT, \
-    BLUE_RAMP, CMAP_SEQ_W
-from galaxies import galaxy
+from common import MOCK_DIR, MIRA_DR3_FILE, R0_KPC, Z_SUN_KPC, V_SUN_KMS, rel, set_style, savefig, INK, INK_2, \
+    ACCENT, BLUE_RAMP, CMAP_SEQ_W
+from galaxies import galaxy, add_argument as add_galaxy_argument
 import observe
 
 NSIDE = 32
@@ -63,16 +63,27 @@ def fit_selection(index, targets, n_target):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--sigma-dm", type=float, default=0.075 / (np.log(10) / 5), help="default 7.5% (0.1629 mag)")
+    ap.add_argument("--sigma-dm", type=float, default=None, help="distance-modulus error [mag]")
+    ap.add_argument("--frac", type=float, default=0.075,
+                    help="fractional distance error (default 0.075; ignored if --sigma-dm is given)")
     ap.add_argument("--n", type=int, default=50000)
+    ap.add_argument("--seed-err", type=int, default=SEED_ERR, help="distance-error draw")
+    ap.add_argument("--seed-sel", type=int, default=SEED_SEL, help="Bernoulli selection draw")
+    add_galaxy_argument(ap)
+    ap.set_defaults(galaxy="nbody")
     args = ap.parse_args()
+    if args.sigma_dm is None:
+        args.sigma_dm = args.frac * 5.0 / np.log(10)
     set_style()
-    out = MOCK_DIR / f"nbody_mock_selection_sigmaDM{args.sigma_dm:.3f}_N{args.n // 1000}k.hdf5"
+    g = galaxy(args.galaxy)
+    # non-default seeds get their own file, so repeat realisations do not overwrite the fiducial one
+    tag = "" if (args.seed_err, args.seed_sel) == (SEED_ERR, SEED_SEL) else f"_s{args.seed_err}"
+    out = MOCK_DIR / f"{g['prefix']}_mock_selection_sigmaDM{args.sigma_dm:.3f}_N{args.n // 1000}k{tag}.hdf5"
 
-    with h5py.File(galaxy("nbody")["stars"], "r") as f:
+    with h5py.File(g["stars"], "r") as f:
         cols = {k: f[k][:] for k in ("x", "y", "z", "vx", "vy", "vz", "mass", "comp")}
     obs_true = observe.to_galactic(*(cols[k] for k in ("x", "y", "z", "vx", "vy", "vz")))
-    rng = np.random.default_rng(SEED_ERR)
+    rng = np.random.default_rng(args.seed_err)
     d_obs = observe.scatter_distance_modulus(obs_true["d"], args.sigma_dm, rng)
     x, y, z, vx, vy, vz = observe.to_galactocentric(obs_true["l"], obs_true["b"], d_obs, obs_true["pml"],
                                                     obs_true["pmb"], obs_true["vlos"])
@@ -94,7 +105,7 @@ def main():
                                        [t_sky.astype(float), t_dist.astype(float), t_R.astype(float)], args.n)
     S = np.where(inside, s_sky[pix_all] * s_dist[dbin_all] * s_R[rbin_all], 0.0)
     capped = S > 1
-    keep = np.random.default_rng(SEED_SEL).random(len(S)) < np.minimum(S, 1.0)   # independent of the error draw
+    keep = np.random.default_rng(args.seed_sel).random(len(S)) < np.minimum(S, 1.0)   # independent of the error draw
     idx = np.flatnonzero(keep)
 
     with h5py.File(out, "w") as f:
@@ -114,10 +125,11 @@ def main():
                         "v_los exact) and selected like the DR3 Miras (DM_err < 0.4, R < 8 kpc): S(l, b, d_obs) = "
                         "S_sky[HEALPix(l, b)] * S_dist[d_obs bin] * S_R[R_obs bin] for observed R < 8 kpc, kept with probability "
                         "min(S, 1). Observed values under the usual names, true values as <name>_true.",
-            source=galaxy("nbody")["stars"].name, sigma_DM=args.sigma_dm,
+            source=g["stars"].name, galaxy=args.galaxy, snapshot_time=g.get("time", float("nan")),
+            sigma_DM=args.sigma_dm,
             frac_distance_error=np.log(10) / 5 * args.sigma_dm, n_expected=args.n, n=len(idx),
             healpix_nside=NSIDE, healpix_nest=False, d_bin_kpc=D_BIN, R_bin_kpc=R_BIN, R_max_obs=R_MAX, sigma_DM_cut_target=SIGMA_DM_CUT,
-            n_target_miras=len(tgt), seed_distance_error=SEED_ERR, seed_selection=SEED_SEL,
+            n_target_miras=len(tgt), seed_distance_error=args.seed_err, seed_selection=args.seed_sel,
             frac_particles_with_S_above_1=float(capped[inside].mean()), R0=R0_KPC, z_sun=Z_SUN_KPC, v_sun=V_SUN_KMS))
 
     # diagnostics: margins of mock vs target, and what the selection does to the face-on distribution
@@ -170,11 +182,12 @@ def main():
     ax.set_ylabel("density")
     ax.legend(fontsize=8, frameon=False)
     ax.set_title("radial distribution", fontsize=10)
-    fig.suptitle(f"Mock with distance errors (σ_DM = {args.sigma_dm:.3f} mag, {100 * np.log(10) / 5 * args.sigma_dm:.1f}%) "
+    fig.suptitle(f"{g['label']} mock with distance errors "
+                 f"(σ_DM = {args.sigma_dm:.3f} mag, {100 * np.log(10) / 5 * args.sigma_dm:.1f}%) "
                  f"and a DR3-Mira-like selection in (l, b), distance and R; HEALPix nside {NSIDE}, distance and R "
                  f"bins {D_BIN} kpc", fontsize=11, y=0.995)
-    savefig(fig, f"test2_nbody_mock_selection_vs_dr3_miras_sigmaDM{args.sigma_dm:.3f}")
-    print(f"wrote {out.name}: {len(idx):,} stars (expected {args.n:,}); particles with S > 1 (capped): "
+    savefig(fig, f"test2_{g['prefix']}_mock_selection_vs_dr3_miras_sigmaDM{args.sigma_dm:.3f}")
+    print(f"wrote {rel(out)}: {len(idx):,} stars (expected {args.n:,}); particles with S > 1 (capped): "
           f"{100 * res['frac_capped']:.2f}%; sky-map correlation mock vs target {res['sky_corr']:.3f}")
     print(f"  distance median: Miras {np.median(tgt.luminosity_distance):.2f}, mock {np.median(d_obs[idx]):.2f} kpc; "
           f"R median: Miras {np.median(np.hypot(tgt.x, tgt.y)):.2f}, mock {np.median(np.hypot(x[idx], y[idx])):.2f} kpc; "

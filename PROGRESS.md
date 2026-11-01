@@ -1813,6 +1813,1063 @@ Truth: 26.02, 27°, 1, 1. All truth offsets are within 0.54σ. (*LOO on the old 
   - Fraction at |z| > 3 kpc: Miras 0.45%, mock 0.06% (absent from the N-body).
   - **Accepted by the user as good enough (2026-10-29).**
 
+## 2026-10-29 — Pattern speed of the N-body run over 2-8 Gyr (snapshot choice for Test 2)
+
+- Script: `scripts/measure_nbody_pattern_speed_evolution.py`; table `results/nbody_pattern_speed_evolution.csv`;
+  figure `figures/nbody_pattern_speed_evolution.png`.
+- Purpose: pick the snapshots for the planned faithfulness tests (10% distance errors + selection function) at
+  several pattern speeds. The whole run `mock/Nbody/t_t0_*` is one secularly evolving galaxy, so different times
+  give different Ω_b with the same physics.
+- Method, reusing the existing mock machinery: `nbody.read_nemo` / `components` read each NEMO snapshot,
+  `prepare_au18_mwframe.shrinking_sphere` centres it, the disc is spun to L_z < 0 (the mocks' MW-like frame), and
+  Ω_b comes from the Dehnen, Semczuk & Schönrich (2023) Fourier method exactly as in
+  `measure_au18_pattern_speed.py`. The bar is **not** rotated to −27° here, so the m = 2 phase can be compared
+  between snapshots. 49 snapshots, ~4 s each.
+  - Ω(R) and hence R_CR come from the snapshot's **own accelerations** (azimuthal average of a_R in a |z| < 0.25 kpc
+    slab), not a spherical enclosed-mass estimate: at t = 7 this gives R_CR = 8.61 kpc against the 8.61 kpc of the
+    AGAMA ground-truth potential, while the spherical estimate is 2 kpc too small.
+- **Validation:** at t = 7 the script returns Ω_p = 26.0170 ± 0.1933, R_bar = 5.00 kpc, R_CR = 8.608 kpc, against
+  `results/nbody_ground_truth.json`'s 26.0168 ± 0.1926, 5.00 and 8.615 — the same numbers to 4 significant figures.
+
+| t (model) | t [Gyr] | Ω_b [km/s/kpc] | A₂^max | R_bar [kpc] | R_CR [kpc] | R_CR/R_bar |
+|---|---|---|---|---|---|---|
+| 2.125 | 2.08 | 41.92 | 0.430 | 3.75 | 5.31 | 1.42 |
+| 3.125 | 3.06 | 38.23 | 0.455 | 4.00 | 5.84 | 1.46 |
+| 4.125 | 4.03 | 33.58 | 0.468 | 4.25 | 6.59 | 1.55 |
+| 5.125 | 5.01 | 29.87 | 0.445 | 4.50 | 7.43 | 1.65 |
+| 6.125 | 5.99 | 28.25 | 0.423 | 4.75 | 7.86 | 1.65 |
+| **7** | **6.84** | **26.02** | **0.397** | **5.00** | **8.61** | **1.72** |
+| 8.125 | 7.94 | 24.21 | 0.357 | 5.25 | 9.32 | 1.78 |
+
+- **The bar slows steadily:** 41.9 → 24.2 km/s/kpc over 2.1–7.9 Gyr, a 42% drop, roughly linear at
+  −3.1 km/s/kpc per Gyr. It is smooth, so any Ω_b in this range can be had by picking a snapshot.
+- As it slows it grows and weakens: R_bar 3.75 → 5.25 kpc, A₂^max peaks at 0.47 near 4 Gyr then falls to 0.36.
+  R_CR/R_bar rises 1.42 → 1.78, i.e. the bar goes from fast to slow in the usual classification.
+  v_c(8 kpc) stays within 220–227 km/s, so the mass model is near enough unchanged across the range.
+- **Consistency check** (`phase_check`): the snapshots are 0.122 Gyr apart, over which the bar turns ~1.25π, so the
+  m = 2 phase (defined mod π) is aliased and cannot be differenced to get Ω_b — hence the single-snapshot method.
+  Used in reverse, per step, it still tests Ω_b: the median residual is −1.5 ± 6.5°, i.e. a systematic Ω_b offset of
+  −0.21 ± 0.91 km/s/kpc, consistent with zero. The per-step scatter (rms 36°) is the bar's own phase wobble, not a
+  method error. This must be done per step: integrating across 2–8 Gyr accumulates 60π of phase, where a 1% error in
+  Ω_b already wraps.
+- **Caveat for the tests ahead.** Ω_b changes by ~0.4 km/s/kpc over the 1 Gyr the steady-state method integrates
+  (~1.5% at t = 7). The method assumes a *steady* bar, so this is a real, if small, model mismatch, built into the
+  test galaxy at every snapshot and largest at early times where the bar slows fastest.
+
+## 2026-10-29 — Test 2 mocks: 10% distance errors, with and without the selection function, at five pattern speeds
+
+- Scripts: `scripts/prepare_nbody_mwframe.py --time T`, `scripts/make_mock_perfect.py`,
+  `scripts/make_mock_distance_error.py --frac 0.10`, `scripts/make_mock_selection.py --galaxy nbody_t<T> --frac 0.10`.
+- Purpose: test the faithfulness of the method under a 10% distance error **and** a DR3-Mira-like selection
+  function, across the pattern speeds the run provides (previous entry).
+- **The snapshot times below are model times** (the `t_t0_<T>` file names), not Gyr: 1 model unit = 0.9778 Gyr,
+  so model t = 7 is 6.84 Gyr. Both columns are given.
+- **Error level:** 10% in distance, i.e. σ_DM = 0.2171 mag (σ_DM = 0.10 · 5 / ln 10), up from the 7.5%
+  (0.1629 mag) of the earlier runs. `make_mock_distance_error.py` and `make_mock_selection.py` now take
+  `--frac` directly.
+- **Galaxy registry:** each snapshot is its own test galaxy, `nbody_t<T>` (`galaxies.nbody_name(t)`), with all its
+  files tagged `nbody_t<T>_...`. `nbody` remains model t = 7 on the original un-tagged names, so every earlier
+  result stays valid.
+
+| t (model) | t [Gyr] | Ω_b [km/s/kpc] | A₂^max | R_bar | R_CR | set | N | median R |
+|---|---|---|---|---|---|---|---|---|
+| 2 | 1.96 | 44.25 | 0.472 | 4.25 | 5.07 | selection | 50,130 | 3.33 |
+| 3 | 2.93 | 39.53 | 0.446 | 4.00 | 5.65 | selection | 50,079 | 3.31 |
+| 4 | 3.91 | 33.96 | 0.472 | 4.25 | 6.49 | selection | 50,239 | 3.34 |
+| 5.5 | 5.38 | 28.84 | 0.448 | 4.50 | 7.72 | selection | 50,077 | 3.32 |
+| **7** | **6.84** | **26.02** | **0.397** | **5.00** | **8.61** | **selection** | **50,281** | **3.33** |
+| **7** | **6.84** | **26.02** | **0.397** | **5.00** | **8.61** | **benchmark, no selection** | **50,000** | **1.88** |
+
+- Files: `mock/<prefix>_mock_selection_sigmaDM0.217_N50k.hdf5` and, for the benchmark,
+  `mock/nbody_mock_distance_error_sigmaDM0.217_R8_N50k.hdf5`
+  (prefix = `nbody` for t = 7, `nbody_t<T>` otherwise). Figures
+  `figures/test2_<prefix>_mock_selection_vs_dr3_miras_sigmaDM0.217.png`.
+- **The selection matters a lot radially:** median R is 3.33 kpc in the selection mocks against **1.88 kpc** in the
+  no-selection benchmark. The benchmark draws uniformly from the centrally concentrated R < 8 kpc particles, while
+  the Miras' sky + distance selection pushes the sample outwards. This is the main thing the benchmark isolates.
+- All five selection mocks reproduce the DR3-Mira target margins: sky-map correlation 0.997–0.998, median distance
+  8.02–8.05 vs 8.02 kpc, median R 3.31–3.34 vs 3.33 kpc, median |b| 3.38–3.40 vs 3.39°. Fewer than 0.01% of
+  particles needed S > 1.
+- **Validation of the refactor.** Re-running the 7.5% selection mock on the new code reproduces the 2026-10-29 entry
+  exactly (50,281 stars, sky correlation 0.997, 0.00% capped), and the rebuilt t = 7 products reproduce the recorded
+  numbers: pool 1,493,610 particles at R < 8 kpc, mock split 40,023 disc / 9,977 bulge, A₂^max 0.397, R_bar 5.00 kpc.
+- **Not done yet:** the potentials for the four new snapshots (`build_nbody_potential.py`, `potential_family.py`) and
+  their `*_ground_truth.json`, all of which the orbit-integration stage needs. Ω_b, R_bar and R_CR above come from
+  `results/nbody_pattern_speed_evolution.csv` and can serve as the truth values.
+- **Still open (unchanged):** the library side of the selection function — orbits weighted by 1/⟨S⟩ and samples by
+  S(x_j), with S evaluated on the library *observed* with the distance errors (section 5.2 of PIPELINE.md).
+
+## 2026-10-29 — Test 2 mocks: spatial distribution and the v_R quadrupole
+
+- Script: `scripts/plot_test2_mock_spatial_and_vR.py` (`--frac` picks the error level; `--mocks` any file list).
+- Figures: `figures/test2_mock_spatial_10pct.png`, `figures/test2_mock_vR_quadrupole_10pct.png`.
+- **Spatial** (x–y, x–z, l–b; 0.2 kpc and 1° pixels), one column per set with the DR3 Miras as reference. The five
+  selection mocks track the Miras closely in all three projections. The no-selection benchmark stands out: it is
+  visibly more centrally concentrated face-on and much more peaked at l ≈ 0 on the sky, which is the 1.88 vs
+  3.33 kpc difference in median R seen before. The Miras' extinction lane at |b| < 1° is sharper than the mocks'
+  (the known HEALPix nside-32 resolution limit).
+- **v_R quadrupole.** Face-on ⟨v_R⟩ maps (|z| < 1 kpc) show the bar's quadrupole clearly in every set, and the m = 2
+  amplitude and node are fitted per ring with `test1_nbody_qmc_focused_fourier_stars.fit` — the same per-star
+  least-squares the likelihood uses, which fits ⟨v_R⟩(φ) rather than summing v_R cos 2φ and so is **not** biased by
+  the selection function.
+
+| set | N | N(\|z\|<1) | m=2 amp obs | true | change | node obs | node true | shift |
+|---|---|---|---|---|---|---|---|---|
+| t = 2 | 50,130 | 43,649 | 33.65 | 31.18 | +7.9% | −10.7° | −20.7° | +10.0° |
+| t = 3 | 50,079 | 43,347 | 27.43 | 24.94 | +10.0% | −20.9° | −31.7° | +10.8° |
+| t = 4 | 50,239 | 43,439 | 23.56 | 24.71 | −4.6% | −15.9° | −25.9° | +10.1° |
+| t = 5.5 | 50,077 | 43,007 | 22.04 | 19.60 | +12.4% | −11.7° | −22.9° | +11.2° |
+| t = 7 | 50,281 | 42,992 | 21.41 | 19.35 | +10.6% | −16.9° | −24.6° | +7.7° |
+| t = 7, no selection | 50,000 | 42,177 | 22.12 | 18.75 | +18.0% | −18.6° | −23.9° | +5.3° |
+| DR3 Miras (reference) | 45,206 | — | — | — | — | — | — | — |
+
+(medians over 1 < R < 4 kpc, |z| < 1 kpc; "true" = the same stars at their true positions.)
+- **The quadrupole amplitude falls with the bar's pattern speed,** 33.7 km/s at t = 2 (Ω_b 44.3) down to 21.4 at
+  t = 7 (Ω_b 26.0), tracking A₂^max.
+- **The 10% distance error rotates the measured node by +8 to +11° in every set,** i.e. the quadrupole appears at a
+  *smaller* bar angle than the truth. The direction matches the posterior shift already seen at 7.5% (φ_b −3.7°,
+  entry of 2026-10-29), so this is the same systematic seen directly in the data rather than through the posterior.
+  The no-selection benchmark shifts least (+5.3°), so **the selection function roughly doubles the bias** — worth
+  keeping in mind when the library-side weighting is written.
+- The amplitude is *not* damped by the distance error; it rises by ~10% (+18% without selection). Smearing along the
+  line of sight moves stars in R and φ, which mixes the strong inner quadrupole outwards.
+- **Validation of the estimator:** on all 1,493,610 parent particles at their true positions the fit gives a node of
+  −26.2° against the bar's −27.0° (the repo's density-weighted `quadrupole_node` gives −25.5°), so the shifts above
+  are physical, not an artefact of the fit. On the smeared 50k benchmark the density-weighted estimator moves far
+  more (−26.1° → −10.5°) than the least-squares one (−23.9° → −18.6°), another reason to prefer the latter.
+
+## 2026-10-29 — Pipeline rebuilt and run on this machine: ground-truth potential and chi2/N at the truth
+
+- New script: `scripts/run_single_point.py` — the per-point work of the global searches for a single parameter
+  point, so one data set can be scored without launching a Sobol design. Integrates, fits the data and library
+  Fourier modes, and reports chi2/N for every scheme in `fs.SCHEMES`. Resumable (re-uses a saved trajectory
+  unless `--fresh`).
+  - Outputs: `$MIRA_DR4_RUNS/single_point/{traj_<tag>.npy, point_<tag>.npz}` and
+    `results/single_point/single_point.csv`.
+  - Two library variants when the mock has a distance error, as in `test2b_qmc_distance_error_run.py`:
+    `asis` (model not smeared) and `observed` (library re-observed with the same error, seed 11).
+- **Ground-truth potential rebuilt here** (`build_nbody_potential.py`, `potential_family.py --galaxy nbody`,
+  `measure_au18_pattern_speed.py --galaxy nbody`). The disc CylSpline is the expensive part: 172 s of the build.
+  - v_c(8 kpc) = 221.1 km/s against the 222 recorded; Omega_p = 26.02 ± 0.19; R_CR = 8.60 kpc (recorded 8.615);
+    R_CR/R_bar = 1.72. Resonances: ILR 3.40, CR 8.60, OLR 14.74 kpc.
+
+| data (t = 7, no selection) | N | chi2/N, library as is | chi2/N, library observed | integrate [s] | total [s] |
+|---|---|---|---|---|---|
+| perfect mock | 50,000 | **1.439** | — | 162.9 | 169.8 |
+| 7.5% distance error | 50,000 | **4.612** | 5.265 | 149.0 | 157.0 |
+| 10% distance error | 50,000 | **8.411** | 8.910 | 148.2 | 156.1 |
+
+(truth point, |Omega_b| = 26.02, phi_b = 27°, S = bar_frac = 1; scheme
+`fourier_stars_R0to6_vR_m24_vphi_sigR_sigphi_m024`, N_data 855 (836 at 7.5%), accuracy 1e-5, 300 bootstraps.)
+- **Cost on this machine** (i7-10700KF, 8 cores / 16 threads): ~150 s for 50k orbits x 1 Gyr x 41 snapshots, plus
+  4.7 s for the data fit and 2 s for the library fit and chi2 — about **2.6 min per design point**, so a 257-point
+  search is roughly **11 h**. The reference Apple M5 Pro took 80–95 s per integration.
+- **Thread scaling measured** (10k orbits): 4 threads 178 orbits/s, 8 → 356, 12 → 391, 16 → 426. Hyperthreading is
+  worth ~20% over the physical core count, so `common.py` now defaults `OMP_NUM_THREADS` to `os.cpu_count()`
+  (an explicit setting or a scheduler's choice still wins). chi2 is bit-identical at 8 and 16 threads.
+- **The extra misfit from the distance error** is +2712 chi2 at 7.5% and +5960 at 10% over the perfect-data value,
+  a ratio of 2.20 for a 1.33x larger error, i.e. a power of 2.7. That sits between the 3.5 the earlier scan found
+  at 2.5–5% and the 2.4 implied by its 5% → 12.2% points, so the steep growth flattens with error, as expected.
+- **Smearing the library the same way makes the fit slightly worse, not better** (4.61 → 5.27 at 7.5%,
+  8.41 → 8.91 at 10%), for the no-selection data. The 7.5% search saw the opposite ordering on the posterior, so
+  this is worth watching when the selection-function runs are scored.
+- **Caveat: chi2/N on perfect data is 1.439 here against the 1.498 recorded** (same N_data = 855, same mock — the
+  mock reproduces exactly: pool 1,493,610, split 40,023 disc / 9,977 bulge). The likely cause is the AGAMA build:
+  1.0 (May 2024) here against 1.0.156 for the recorded runs, which changes the potential expansion coefficients and
+  so the orbits slightly. PIPELINE.md section 7 already flagged that bit-identical integration across machines was
+  untested; this is the first measurement of the size of the difference, about 4% in chi2/N at the truth.
+
+## 2026-10-29 — Test 2 posterior runs launched: six searches at 10% distance error (in progress)
+
+- Scripts: `scripts/test2b_qmc_distance_error_run.py` (extended), `scripts/selection.py` (new),
+  `scripts/run_test2_posteriors.sh`, `scripts/run_test2_posteriors_cluster.sh`.
+- Six Sobol searches of 257 points each, then the GP emulator and corner plots, over the 10% mocks:
+
+| run | data | machine |
+|---|---|---|
+| `test2_t7_nosf_10pct` | t = 7, no selection (benchmark) | workstation |
+| `test2_t7_sf_10pct` | t = 7, selection function | workstation |
+| `test2_t2_sf_10pct` | t = 2, selection function | workstation |
+| `test2_t4_sf_10pct` | t = 4, selection function | workstation |
+| `test2_t5.5_sf_10pct` | t = 5.5, selection function | 88-core cluster |
+| `test2_t3_sf_10pct` | t = 3, selection function | 88-core cluster |
+
+- **What was extended, following PIPELINE sections 7.7-7.8 rather than writing a new runner:**
+  - mock, run directory and galaxy are arguments; `--stride/--offset` give each worker a subset of the design;
+    `--merge` builds evals.csv from the per-point files.
+  - Points are claimed with an atomic `O_EXCL` lock, so the two machines share one output directory without
+    duplicating work; a lock older than 3 h with no result is reclaimed, so a dead worker strands nothing.
+  - The data fit and its 300 bootstraps are done **once** at the true bar angle and rotated to every trial angle
+    (`fs.rotation`, moved there from the rescore script, which now imports it). Checked on each data set at
+    start-up: max |direct - rotated| about 1e-10. Saves a refit at every point.
+  - The design's Omega axis is scaled by the galaxy's own pattern speed (`scaled_design`), so the same 257 Sobol
+    points cover 20.1-41.8 for t = 5.5 instead of the fiducial 20-32. The other three axes are unchanged.
+  - `build_nbody_potential.py` takes `--galaxy`; `potential_family.py` now resolves any `nbody_t<T>` name.
+  - The shell script builds a galaxy's trial potential if it is missing, before launching any worker.
+- **Library weighting for the selection function (`selection.py`), the piece listed as "not done yet":**
+  weight = S(x_j) / tau_i with tau_i = <S> along the orbit, S evaluated on the library *observed* with the mock's
+  distance error (bar frame -> MW frame -> l, b, d -> smear -> back). With S replaced by the R < R_SEL indicator
+  this is exactly the Test 1 weighting, so the two are one scheme with different S. All three variants
+  (`asis`, `observed`, `sf`) are scored from the same trajectory, so the extra ones cost no integration.
+  First check at the t = 7 truth: chi2/N 7.82 (`sf`) against 8.17 (`asis`) and 10.23 (`observed`), and a wrong
+  design point gives 13.7-17.1, so the scheme discriminates.
+- **Cost:** about 150 s per point for the no-selection mock and 110 s for the selection mocks (sparser centre),
+  so roughly 10.5 h and 8 h per search. Trajectories are kept (47 MB each, about 12 GB per run); the runner stops
+  saving them below 25 GB free rather than filling the disc.
+- **Checked before committing two days of compute:** the GP emulator, its corner/slices/LOO figures and
+  `plot_test1_logl_corner.py` were all run against the recorded 257-point 7.5% search renamed to the new
+  convention. They reproduce the logged posterior (Omega_b 28.52 +1.73/-1.38 against 28.52 +1.81/-1.34;
+  bar_frac 1.601 against 1.63), so the whole chain works end to end.
+- **Caveat to read the results with: bar_frac will be box-limited.** The focused design caps bar_frac at 2.0 and
+  the 7.5% posterior already piles up against that edge; at 10% the shift is larger. Omega was rescaled per
+  galaxy but the other axes were left as they are, so the bar_frac medians and widths are lower bounds on the
+  shift, not measurements. Widening that axis is a clean follow-up on the same machinery.
+
+## 2026-10-29 — Test 2 results: posteriors at 10% distance error (RUNNING; two of six done)
+
+<!-- TEST2-RESULTS-TABLE -->
+Posteriors from the GP emulator of `logLs_fourier_stars_R0to6_vR_m24_vphi_sigR_sigphi_m024_<variant>`; `sf` is the
+selection-function library weighting, which is the correct one for a selection mock. Offsets are
+(truth − median) in units of the posterior half-width.
+
+| run | Ω_b | φ_b [°] | S | bar_frac | LOO |
+|---|---|---|---|---|---|
+| **t = 3, SF** (truth Ω 39.53) | 42.33 +1.60/−1.54 (−1.8σ) | 19.80 +4.57/−3.24 (+1.8σ) | 0.784 +0.221/−0.080 (+1.4σ) | 1.375 +0.203/−0.497 (−1.1σ) | 2.15 |
+| **t = 5.5, SF** (truth Ω 28.84) | 33.66 +1.13/−1.82 (−3.3σ) | 24.87 +4.08/−5.50 (+0.4σ) | 0.949 +0.158/−0.073 (+0.4σ) | 1.405 +0.233/−0.478 (−1.1σ) | 2.84 |
+| **t = 7, no SF** `asis` (truth Ω 26.02) | 27.97 +1.18/−0.98 (−1.8σ) | 18.32 (+2.7σ) | 0.708 (+4.5σ) | 1.730 (−3.2σ) | 3.57 |
+| **t = 7, no SF** `observed` | 29.49 +1.67/−1.33 (−2.3σ) | 22.53 (+0.8σ) | 0.728 (+2.2σ) | 1.868 (−5.6σ) | 4.09 |
+| **t = 7, SF** `sf` | 28.23 (−2.2σ) | 21.57 (+1.2σ) | 0.823 (+2.3σ) | 1.367 (−1.4σ) | 3.00 |
+| **t = 2, SF** `sf` (truth Ω 44.25) | 43.73 (−1%) | 17.0 | 0.986 | 0.846 | 2.93 |
+| **t = 4, SF** `sf` (truth Ω 33.96) | 38.48 (+13%) | 24.2 | 0.913 | 1.359 | 2.33 |
+
+All six searches finished 2026-10-31 01:47: 257/257 design points each, 1,542 orbit integrations.
+The complete per-variant table is in the entry below.
+
+Truth χ²/N at each point, by library variant:
+
+| run | sf | asis | observed | points beating the truth (sf) |
+|---|---|---|---|---|
+| t = 3, SF | **6.512** | 7.496 | 8.217 | 14/256 |
+| t = 5.5, SF | **7.886** | 8.271 | 9.595 | 18/256 |
+
+- **The selection-function weighting works:** `sf` gives the lowest truth χ²/N on both runs, below both `asis`
+  (which ignores the selection) and `observed`. That is the first evidence that the new library weighting in
+  `selection.py` is doing what it should.
+- **The bias has the same direction as the 7.5% no-selection search: faster, shorter, stronger bar at a smaller
+  angle.** bar_frac is the most repeatable, +38% and +41% here against the +41% recorded at 7.5%.
+- **Ω_b, the parameter the method exists to measure, is biased high and by a snapshot-dependent amount:** +7.1%
+  at t = 3 and +16.7% at t = 5.5. Whether that scatter is the pattern speed itself, the bar strength (A₂ 0.446 vs
+  0.448) or just realisation noise needs the remaining four runs.
+- **At 10% with a selection function the truth is not recovered within the stated errors** (1.8σ and 3.3σ).
+- **Emulator quality is much worse than on perfect data:** LOO rms 2.15 and 2.84 against 0.45, so the likelihood
+  surface is noisy and the quoted widths should be treated as approximate.
+- **Caveats.** The Ω_b posterior at t = 5.5 reaches the top of the emulator box (35.47); the peak itself is
+  contained — the 20 design points that extend to Ω = 41.8 score ΔlogL −1.56 at best against +4.81 inside — but the
+  upper tail is clipped, so the + error is a lower bound. bar_frac remains box-affected at 2.0 throughout.
+
+## 2026-10-30 — The selection-function library weighting is NOT yet validated (read `sf` and `asis` together)
+
+`selection.py`'s `sf` weighting lowers χ²/N at the truth on every selection mock, but that does **not** carry over
+into better parameter recovery. Both variants, same data, same design:
+
+| run | lib | Ω_b bias | S | bar_frac | worst offset | LOO |
+|---|---|---|---|---|---|---|
+| t = 3 | asis | +8% | 0.798 | 1.707 | **4.9σ** | 2.86 |
+| t = 3 | **sf** | +7% | 0.784 | 1.375 | **1.8σ** | 2.15 |
+| t = 5.5 | asis | **−2%** | 0.897 | 1.186 | 3.5σ | 2.12 |
+| t = 5.5 | **sf** | **+17%** | 0.949 | 1.405 | 3.3σ | 2.84 |
+| t = 7 | asis | +3% | 0.889 | 1.296 | **1.4σ** | 2.24 |
+| t = 7 | **sf** | +9% | 0.823 | 1.367 | 2.3σ | 3.00 |
+
+- **No consistent winner.** `sf` wins clearly at t = 3 (worst offset 1.8σ against 4.9σ, mostly through bar_frac),
+  loses at t = 7, and at t = 5.5 turns a −2% Ω_b bias into +17%.
+- **`sf` biases Ω_b high every time** (+7%, +17%, +9%) while `asis` scatters about zero (+8%, −2%, +3%). A one-sided
+  bias in the one parameter the method exists to measure looks more like an implementation artefact than noise.
+- **Variance inflation is not the cause** — measured on the t = 7 truth trajectory, the `sf` weights have a *higher*
+  effective sample size than the `asis` ones (51.3% of 1.51 M samples against 31.2%) and a smaller max/median
+  weight ratio (30.9 against 40.0). 10.6% of library samples fall outside the selection (S = 0).
+- **Two untested hypotheses for the one-sided Ω_b bias:**
+  1. τ_i = ⟨S⟩ is averaged over the t ≥ 0.25 Gyr snapshots only, while the `asis` τ uses all t > 0; the
+     inconsistency sits in the 1/τ normalisation.
+  2. The data were selected with one realisation of the distance errors, but the library re-draws its own
+     (seed `OBS_SEED` = 11) when evaluating S. Correct in expectation, but not the same S field.
+- **How to read the results:** quote `sf` and `asis` side by side for every selection mock, not `sf` alone. A lower
+  χ²/N at the truth is not evidence that a weighting recovers parameters better, and it was wrong to present it
+  that way.
+
+## 2026-10-30 — It is the library *smearing*, not the selection weighting, that biases Ω_b high
+
+Follow-up to the entry above, which wrongly blamed `selection.py`. Running the emulator on all three library
+variants of the same searches separates the two effects: `asis` is neither smeared nor S-weighted, `observed` is
+smeared only, `sf` is smeared **and** S-weighted.
+
+| run | `asis` (no smear, no S) | `observed` (smear only) | `sf` (smear + S) |
+|---|---|---|---|
+| t = 3, SF | +8% | +12% | +7% |
+| t = 5.5, SF | −2% | +13% | +17% |
+| t = 7, no SF | +7% | +13% | — |
+| t = 7, SF | +3% | +7% | +9% |
+
+(Ω_b bias = posterior median / truth − 1.)
+
+- **Smearing the library is the systematic.** `asis` scatters about +4% on average; `observed` is consistently
+  +7 to +13%, in all four runs. Adding the selection weighting on top then moves Ω_b only modestly and in both
+  directions (+12 → +7, +13 → +17, +7 → +9), so **`selection.py` is not the source of the one-sided bias** and the
+  previous entry's suspicion of it was wrong.
+- **The effect is already in the recorded 7.5% search**, same sign and similar size: Ω_b 28.54 / 28.52 observed
+  against 27.57 / 27.39 as is, i.e. +3.7 and +4.3 percentage points. It was in the numbers but had not been
+  identified as a systematic.
+- **The τ definition is not involved.** `sf` averages S over the t ≥ 0.25 Gyr snapshots while `asis` uses all
+  t > 0; measured on the t = 7 truth trajectory the two τ agree to a median ratio of 0.9999 (5–95% 0.85–1.23),
+  unbiased scatter that cannot produce a one-sided bias. Hypothesis 1 of the previous entry is therefore dead.
+- **The open question for the user.** Observing the library with the same errors as the data is the principled
+  recipe and the one chosen for the 7.5% run, yet it recovers Ω_b *worse* than leaving the library unsmeared, in
+  4 of 4 runs at 10% and in both error models at 7.5%. Either the smearing is being applied in a way that biases
+  the moments (one error draw per point, seed `OBS_SEED` = 11, rather than an average over draws, is the obvious
+  suspect), or the unsmeared library is closer to the truth for a reason that does not generalise. This should be
+  settled before the recipe is used on real data.
+
+## 2026-10-31 — Test 2 complete: all six 10% posteriors, and which library weighting to use
+
+All six searches done (257 points each, 1,542 integrations). Every run has `evals.csv`, posteriors and corner
+plots under `results/<run>/` and `figures/<run>_emulator_corner_*.png`.
+
+| run | lib | Ω_b | bias | φ_b | S | bar_frac | worst | LOO |
+|---|---|---|---|---|---|---|---|---|
+| t = 2, SF (truth 44.25) | asis | 43.03 | −3% | 20.2 | 0.937 | 1.311 | 2.1σ | 2.60 |
+| t = 2, SF | sf | 43.73 | −1% | 17.0 | 0.986 | 0.846 | 5.3σ | 2.93 |
+| t = 3, SF (truth 39.53) | asis | 42.51 | +8% | 23.9 | 0.798 | 1.707 | 4.9σ | 2.86 |
+| t = 3, SF | observed | 44.11 | +12% | 20.9 | 0.830 | 1.338 | 2.1σ | 2.32 |
+| t = 3, SF | sf | 42.33 | +7% | 19.8 | 0.784 | 1.375 | 1.8σ | 2.15 |
+| t = 4, SF (truth 33.96) | asis | 36.37 | +7% | 22.8 | 0.895 | 1.489 | 2.2σ | 2.48 |
+| t = 4, SF | sf | 38.48 | +13% | 24.2 | 0.913 | 1.359 | 2.7σ | 2.33 |
+| t = 5.5, SF (truth 28.84) | asis | 28.19 | −2% | 17.5 | 0.897 | 1.186 | 3.5σ | 2.12 |
+| t = 5.5, SF | observed | 32.62 | +13% | 17.9 | 0.614 | 1.959 | 14.2σ | 2.33 |
+| t = 5.5, SF | sf | 33.66 | +17% | 24.9 | 0.949 | 1.405 | 3.3σ | 2.84 |
+| t = 7, SF (truth 26.02) | asis | 26.85 | +3% | 20.9 | 0.889 | 1.296 | 1.4σ | 2.24 |
+| t = 7, SF | observed | 27.79 | +7% | 17.8 | 0.807 | 1.161 | 2.9σ | 2.68 |
+| t = 7, SF | sf | 28.23 | +9% | 21.6 | 0.823 | 1.367 | 2.3σ | 3.00 |
+| t = 7, no SF | asis | 27.97 | +7% | 18.3 | 0.708 | 1.730 | 4.5σ | 3.57 |
+| t = 7, no SF | observed | 29.49 | +13% | 22.5 | 0.728 | 1.868 | 5.6σ | 4.09 |
+
+| library variant | mean \|Ω_b bias\| | mean worst offset | mean LOO |
+|---|---|---|---|
+| **asis** (not smeared, no S) | **5.0%** | **3.1σ** | **2.65** |
+| observed (smeared, no S) | 11.2% | 6.2σ | 2.85 |
+| sf (smeared + S) | 9.4% | 3.1σ | 2.65 |
+
+- **At 10% distance error the method does not recover the truth within its errors.** The best variant, `asis`,
+  still misses Ω_b by 5% on average, and the worst parameter is 3σ out in the mean. Ω_b is never recovered to
+  better than 1%.
+- **The selection function is not the main problem; the distance error is.** At t = 7, where both exist, adding
+  the selection function changes Ω_b from +7% (no SF, `asis`) to +3% (SF, `asis`) — no worse, and bar_frac and S
+  improve. The 10% smearing dominates.
+- **Do not smear the library.** `observed` is the worst variant on every measure, biasing Ω_b to +7…+13% in all
+  four runs where it was computed (see the entry below for the isolation of this effect). The `sf` weighting
+  inherits the same smearing and most of the same bias.
+- **The `sf` weighting is still not validated.** It matches `asis` on worst-offset and LOO but is worse on Ω_b
+  (9.4% against 5.0%), and the sign of its advantage flips between snapshots: better at t = 3 (1.8σ against
+  4.9σ), much worse at t = 2 (5.3σ against 2.1σ). Quote both variants.
+- **No trend of the bias with pattern speed.** `asis` gives −3%, +8%, +7%, −2%, +3% going from Ω_b 44 down to 26,
+  i.e. scatter, not a trend. Whatever drives the bias is not the bar's speed.
+- **Caveat that limits several rows: bar_frac is box-limited at 2.0.** 1.868, 1.959 and 1.730 sit on the edge with
+  no design points beyond it, so those are truncated, not measured; the t = 5.5 `observed` row (14.2σ, S = 0.614)
+  is pathological for this reason. A re-run with a wider bar_frac axis is the obvious next step.
+- **Emulator quality is the other limit:** LOO rms 2.1–4.1 against 0.45 on perfect data, so all quoted widths,
+  and hence the σ offsets, are approximate.
+
+## 2026-10-31 — Why Ω_b came out high: the dispersion ring averages. Scheme B fixes it, and the principled recipes then win
+
+This supersedes the two entries below it, which concluded that smearing the library is harmful and that
+`selection.py` does not help. Both conclusions were artefacts of the χ² scheme.
+
+**The mechanism**, measured on the saved coefficients (no new integrations):
+
+1. *Every library is hotter than the data.* Ring-averaged σ_R over 1 < R < 6 kpc, |z| < 1, at the truth point:
+
+   | | σ_R − data |
+   |---|---|
+   | data (t = 7 SF) | 97.99 km/s |
+   | library `asis` | +7.3 |
+   | library `sf` | +8.1 |
+   | library `observed` | **+11.6** |
+
+   The orbits are seeded from distance-smeared stars, which inflates their energies, so even the unsmeared
+   library runs ~7 km/s hot — the "hot library" problem of the perfect-data runs (~1.5 km/s), five times worse at
+   10%. Re-observing the library adds another ~4.5 km/s.
+2. *Ω_b is the dominant lever on library temperature.* Regressing library σ_R on the design (257 points,
+   standardised), in km/s per 1 sd of each parameter:
+
+   | variant | Ω_b | φ_b | ln S | ln bar_frac |
+   |---|---|---|---|---|
+   | asis | **−3.84** | +0.29 | +0.73 | +0.60 |
+   | observed | **−3.46** | +0.51 | +0.45 | +0.36 |
+   | sf | **−3.00** | +0.46 | +0.37 | +0.24 |
+
+   Ω_b is about ten times more effective at cooling the library than S or bar_frac.
+3. *Scheme A fits the σ_R², σ_φ² m = 0 terms*, i.e. the ring-averaged dispersions, so the fit buys agreement in
+   library temperature by raising Ω_b. The hotter the library, the further it goes — which is exactly the ordering
+   seen in the posteriors.
+
+**Scheme B** (`fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024`) drops those four coefficients per block and
+keeps everything else. It was introduced for the perfect-data hot library; at 10% it is decisive.
+
+| | scheme A | scheme B |
+|---|---|---|
+| mean \|Ω_b bias\| | 8.1% | **4.2%** |
+| mean worst offset | 3.9σ | **1.6σ** |
+| mean LOO rms | 2.70 | **1.20** |
+
+**And under scheme B the ordering of the library variants reverses** — the principled recipes win:
+
+| | mean \|Ω_b bias\|, scheme B |
+|---|---|
+| `sf` (smeared + selection weighting) | **2.1%** |
+| `observed` (smeared) | 2.7% |
+| `asis` (not smeared, selection ignored) | 6.2% |
+
+`sf` beats `asis` in 5 of 5 selection mocks. Full scheme-B results (truth φ_b 27, S 1, bar_frac 1):
+
+| run | lib | Ω_b | bias | φ_b | S | bar_frac | worst |
+|---|---|---|---|---|---|---|---|
+| t = 2 | sf | 43.40 | −1.9% | 18.8 | 1.009 | 0.817 | 2.4σ (φ_b) |
+| t = 3 | sf | 40.63 | +2.8% | 24.5 | 0.953 | 0.939 | 0.6σ |
+| t = 4 | sf | 34.86 | +2.7% | 23.8 | 1.104 | 0.853 | 0.6σ |
+| t = 5.5 | sf | 28.06 | −2.7% | 21.3 | 0.991 | 0.897 | 0.9σ |
+| t = 7, SF | sf | 25.92 | −0.4% | 22.9 | 0.989 | 0.947 | 0.5σ |
+| t = 7, no SF | observed | 26.73 | +2.7% | 27.0 | 1.005 | 1.069 | 0.5σ |
+
+- **S and bar_frac are recovered to about 1σ** (0.95–1.10 and 0.82–0.95), against 0.71–0.95 and 1.2–1.9 under
+  scheme A where bar_frac railed at the box edge. The box limit is no longer reached.
+- **The t = 7 no-selection run with the correct forward model is essentially perfect** in all four parameters.
+- **φ_b is the one surviving bias:** 18.8–24.5 against 27, low by ~4° and worst at t = 2 (2.4σ). This matches the
+  quadrupole-node shift measured directly in the mocks (+8 to +11° at 10%), so it is the same effect seen through
+  the posterior rather than a separate problem.
+- **Recommendation:** use scheme B with the matched forward model (`observed` without a selection function, `sf`
+  with one). Scheme A should not be used on data with distance errors at this level.
+- Figures: `figures/test2_pattern_speed_recovery_scheme{A,B}.png`
+  (`scripts/plot_test2_pattern_speed_recovery.py --scheme ...`).
+
+## 2026-11-01 — Two checks: the pattern speed is 26.1 (not 25), and the Ω_b error bars are too small by ~1.5x
+
+**1. Is the Dehnen Ω_b right?** The simulation directory has its own table,
+`SchwarMAX/Bar_model_TG21/model/bar_strength_and_pattern_speed.csv`, which gives 24.64 (its Dehnen column) and
+25.20 (its finite-difference column) at t = 7, against our 26.02. Checked with a third, assumption-free method
+(`scripts/check_nbody_pattern_speed_independent.py`): track the m = 2 phase between snapshots in a **fixed**
+frame and difference it. No velocities, no method, just where the bar is.
+
+| t | measured m = 2 phase |
+|---|---|
+| 6.750 | +58.07° |
+| 6.875 | +49.33° |
+| 7.000 | +41.69° |
+| 7.125 | +35.56° |
+| 7.250 | +30.32° |
+
+Per step the bar turns 180° + (5.2 to 8.7)°, giving Ω_b = 26.35, 26.20, 25.99, 25.86 — a decelerating bar.
+Fitting all five: **Ω_b = 26.10 ± 0.05, rms residual 1.0°**, identical (to 0.02) across annuli 0.5–3, 1–4, 1–5
+and 2–5 kpc and for disc-only. Per-step residuals are 1.4° at Ω_b = 26.10, but **6.6° at 25.20 and 10.6° at
+24.64**, so those are excluded.
+
+- The aliasing is not an escape: the phase is defined mod π and dt = 0.125, so aliases are π/dt = 25.13 km/s/kpc
+  apart. The alternatives to 26.10 are 0.97 and 51.2, both far outside any sensible range.
+- Snapshot times were verified from the files' own `Time` field: exactly 0.125 model units apart. The units are
+  self-consistent too — v_c(8 kpc) = 221.1 km/s and asymmetric drift 9.4 km/s predict a mean stellar v_φ of
+  211.7, and the measured value is 211.8.
+- **So our two independent methods agree (26.02 Fourier, 26.10 phase) and the simulation's table is low**, by
+  +0.91 on average against its Dehnen column and +0.63 against its finite-difference one, with 0.47 rms scatter.
+  The mean ratio is 1.021, tantalisingly close to 1/0.9778 = 1.0227 (the model-time-to-Gyr factor), but the
+  scatter is ±3% so that is suggestive, not a demonstration — the generating script is not in the directory.
+- **Effect on the Test 2 results: negligible.** The truth used throughout is 26.017 against the 26.10 measured
+  here, a 0.3% difference, where the biases under discussion are 2–7%.
+
+**2. Why are the Ω_b error bars so small?** Because the tempering assumes the model fits.
+`logLs = −χ²/(2√(2 N_data))` normalises χ² by √(2N), its standard deviation *when χ²/N = 1*. It is not.
+
+| run | χ²/N at truth | χ²/N at best | Ω_b width | width × √(χ²/N) | bias | bias / inflated σ |
+|---|---|---|---|---|---|---|
+| t = 2 | 2.16 | 2.01 | 1.76 | 2.50 | −0.85 | 0.34 |
+| t = 3 | 2.24 | 2.24 | 1.91 | 2.86 | +1.10 | 0.38 |
+| t = 4 | 2.24 | 2.16 | 1.73 | 2.55 | +0.90 | 0.35 |
+| t = 5.5 | 2.35 | 2.35 | 1.13 | 1.74 | −0.78 | 0.45 |
+| t = 7 | 2.49 | 2.37 | 0.91 | 1.39 | −0.09 | 0.07 |
+
+(scheme B, `sf`; width = half the 16–84% range.)
+
+- **χ²/N ≈ 2.0–2.4 at the best design point**, so the model does not fit within the bootstrap errors. The usual
+  correction is to scale the covariance by χ²_min/N, equivalently χ² → χ²/c, which flattens the curvature by c
+  and widens every parameter by **√c ≈ 1.4–1.55**.
+- **With that correction every run is consistent with the truth: 0.07–0.45σ.** The apparent >1σ biases are an
+  artefact of treating a misspecified model's curvature as if it were statistical.
+- **The two runs with the smallest error bars have the largest χ²/N** (t = 5.5 and t = 7: widths 1.13 and 0.91,
+  χ²/N 2.35 and 2.49). That is the signature of misspecification rather than of better data — a worse fit makes
+  the χ² surface steeper, so the uncorrected posterior is *narrower*, not wider.
+- Under scheme A, χ²/N was 7–8, so √c ≈ 2.7; that is a large part of why its posteriors looked so confidently
+  wrong.
+- **Recommendation:** quote Ω_b errors inflated by √(χ²_min/N), or re-temper with
+  `logLs = −χ²/(2 c √(2N))`. Figure: `figures/test2_pattern_speed_recovery_schemeB_inflated.png`
+  (`plot_test2_pattern_speed_recovery.py --inflate`).
+- **What is left is the residual χ²/N ≈ 2 itself** — the hot library, the sparse-block bootstrap covariance
+  (a known 1.25 instead of 1 at |z| 1–2 kpc), and the φ_b quadrupole-node shift. Reducing it is what would
+  genuinely tighten the constraint, rather than widening the error bar to cover the bias.
+
+## 2026-11-01 — Emulator audit against the literature: the error bars are narrow because the GP error is not propagated
+
+Follow-up to the entry below, which attributed the narrow Ω_b posteriors to χ²/N > 1 and a √(χ²_min/N) rescaling.
+That factor is a **convention**, not a derivation — it is what `scipy.curve_fit` does by default
+(`absolute_sigma=False`) and what the PDG uses for discrepant averages, and it assumes the excess χ² comes from
+uniformly underestimated errors. If the excess is a localised model defect it is the wrong correction. It should
+not have been called "the usual correction".
+
+A second cause is better founded and is standard practice in the emulator literature:
+
+| run | GP LOO rms | GP predictive σ at truth | 1σ of the tempered logL |
+|---|---|---|---|
+| t = 2 | 0.82 | 1.55 | 0.5 |
+| t = 3 | 0.86 | 1.15 | 0.5 |
+| t = 4 | 0.78 | 0.82 | 0.5 |
+| t = 5.5 | 1.08 | 1.02 | 0.5 |
+| t = 7 | 1.07 | 1.04 | 0.5 |
+
+- **The emulator's own uncertainty is 1.6–3.1× the logL difference that defines the 1σ contour**, and
+  `test1_gp_emulator.logpost` samples `emu.predict(q)[0]` — the GP **mean only**. The GP variance is computed
+  (`return_std=True` is used for the slice plots) but never enters the posterior. The quoted widths are therefore
+  the width of a surface known to ±1 in units where the 1σ feature is 0.5.
+- **How the peer-reviewed emulators differ.** Our design (scrambled Sobol, quadratic mean + Matérn-5/2 with ARD
+  length scales and a white-noise term, LOO validation) is conventional — a polynomial mean plus a GP on the
+  residual is exactly the Bayes-linear emulator form of Vernon, Goldstein & Bower, and Matérn-5/2 with ARD is the
+  standard emulator kernel. Two things are not conventional:
+  1. **A single fixed design with no refinement.** Rogers et al. (2019) show that Bayesian optimisation of the
+     training set (GP-UCB acquisition) shrinks the 95% credible volume by 90% *with fewer simulations* than a
+     Latin hypercube; Vernon & Bower's history matching uses iterative waves that cut the volume by orders of
+     magnitude. We evaluate 257 points once, over a box chosen from an earlier run, and never add points where
+     the emulator is uncertain. Our trajectories are saved, so a second wave concentrated on the posterior ridge
+     would be cheap and is the obvious improvement.
+  2. **We emulate logL itself, not the observable.** Most cosmology emulators (Coyote/CosmicEmu, the Lyman-α
+     emulators) emulate the *data vector* and then evaluate an exact likelihood. Emulating logL is done
+     (Leclercq 2018; the Bayesian-optimisation-for-evidence line of work) but is harder, because logL spans a
+     huge dynamic range and GP accuracy degrades away from the peak — which is what the LOO numbers above show.
+- **Recommendation, in order of value:** (i) propagate the GP variance into the posterior, e.g. draw
+  logL ~ N(mean, σ) inside `logpost` or marginalise over it; (ii) run a second design wave on the posterior
+  ridge; (iii) only then argue about χ²/N rescaling.
+
+**Pattern speed, continued.** Asked to use the simulation directory's tabulated Ω_b as the truth, which the
+plots `figures/test2_pattern_speed_recovery_schemeB_truth_tabulated{,_fd}.png` now do
+(`plot_test2_pattern_speed_recovery.py --truth tabulated`). On those values the mean |Ω_b bias| of the `sf`
+weighting rises from 2.1% to 4.8% (−1.1, +7.0, +9.0, +1.8, +5.2% at t = 2, 3, 4, 5.5, 7), i.e. the method looks
+worse, not better. Our own measurement was checked further: the m = 2 phase agrees with the inertia-tensor major
+axis to 0.2°, a direct image cross-correlation of consecutive snapshots gives Ω_b = 26.05, and the snapshot time
+unit was confirmed by integrating 3000 near-circular outer-disc stars in the axisymmetrised potential — dt =
+0.1250 model units fits best (5.1° median error) against 0.1278 (7.1°) for the "Time field is in Gyr"
+hypothesis. Four independent routes give 26.0–26.1.
+
+## 2026-11-01 — Truth switched to the tabulated Ω_b; emulating the coefficients fails, and why; library noise found
+
+**Truth.** Adopted the simulation directory's **finite-difference** column as the truth (user's decision;
+`plot_test2_pattern_speed_recovery.py --truth tabulated_fd`, now the default). Scheme B, `sf` weighting:
+
+| run | truth (fd) | recovered | bias | σ |
+|---|---|---|---|---|
+| t = 2 | 43.90 | 43.40 | −1.1% | −0.28 |
+| t = 3 | 38.67 | 40.63 | +5.1% | +1.02 |
+| t = 4 | 33.28 | 34.86 | +4.7% | +0.91 |
+| t = 5.5 | 28.21 | 28.06 | −0.5% | −0.13 |
+| t = 7 | 25.20 | 25.92 | +2.9% | +0.80 |
+
+Mean |bias| 2.9% (against 2.1% on our own measurement, 4.8% on the tabulated Dehnen column).
+Our independent value stands at 26.0–26.1 for t = 7 by four routes, but is not used.
+Figure `figures/test2_pattern_speed_recovery_schemeB_fdtruth.png`.
+
+**Emulating the Fourier coefficients instead of logL — tried, and it is worse.**
+`scripts/emulate_fourier_coefficients.py` emulates the library coefficient vector (663 numbers for scheme B),
+whitened by the data covariance so that PCA truncation error maps directly onto χ², then evaluates χ² exactly.
+This is what the cosmology emulators do (emulate the data vector, keep an exact likelihood), so it was expected
+to win.
+
+| n PC | variance explained | held-out logLs error rms |
+|---|---|---|
+| 16 | 75.4% | 2.75 |
+| 48 | 84.4% | 2.74 |
+| 128 | 95.2% | 2.72 |
+| direct logL emulator | — | **1.07** |
+
+- **The error is flat in the number of components**, so it is not PCA truncation: the coefficient variation
+  itself is not a smooth function of θ. The unpredictable part is per-point **library sampling noise**, which
+  enters χ² = h|e|² quadratically (and with a positive bias) and so cannot be emulated away, whereas the direct
+  logL emulator absorbs it into its WhiteKernel.
+- Conclusion: **keep emulating logL** for this problem. The usual argument for emulating the data vector assumes
+  a noise-free simulator; ours is not.
+
+**The library noise is real, and the likelihood ignores it.** Bootstrapping the 50k orbits 100 times at the
+t = 7 truth point (selection weighting, scheme B) gives the library's own coefficient covariance C_lib:
+
+- C_lib / C_data, median over blocks: **0.091** (16–84%: 0.045–0.202).
+- χ²/N at the truth: **2.489** with C_data alone, **1.931** with C_data + C_lib.
+
+So neglected library noise accounts for **37% of the excess** of χ²/N above 1. It is a genuine likelihood
+misspecification, it is cheap to fix (one orbit bootstrap per run), and fixing it changes the posterior itself,
+not just the error bar — it down-weights the blocks where the library is noisiest. The remaining χ²/N ≈ 1.93 is
+still unexplained (hot library, sparse-block bootstrap covariance, the φ_b quadrupole shift).
+
+**On reframing as simulation-based inference.** Not the right tool here: the likelihood is explicit (Gaussian in
+the coefficients with a bootstrap covariance), the simulator is deterministic in θ given fixed initial
+conditions, and NPE/NLE/NRE want 10³–10⁵ simulations against our 257 at 150 s each. The useful part of the SBI
+instinct — "characterise the simulator's own stochasticity" — is precisely the C_lib measurement above, which
+costs one bootstrap rather than 10⁴ integrations.
+
+## 2026-11-01 — Emulator error is NOT why the Ω_b errors look small (negative result; retracts the entry below)
+
+The entry below claimed the narrow Ω_b posteriors came from not propagating the GP uncertainty, on the grounds
+that the GP's predictive σ ≈ 1.0 exceeds the 0.5 that defines the 1σ contour. That reasoning was wrong and the
+measurement says so. Recorded so nobody repeats it.
+
+**What the GP's σ actually is.** The fitted kernel for `test2_t7_sf_10pct` (scheme B, `sf`) is
+
+    103² × Matérn(length_scale=[1.97, 6.89, 1.53, 1.73], ν=2.5) + WhiteKernel(0.731)
+
+so σ ≈ 1.05 splits into **white noise 0.855** (scatter in the logL *values*, i.e. library sampling noise — the
+same thing measured as C_lib) and **interpolation 0.608** (genuine "not sampled here"). `return_std` is the
+predictive σ for a *new observation*; it is not the uncertainty of the fitted surface, which is far smaller
+because 256 points average the noise down.
+
+**Three ways to propagate it, all tested, all negligible:**
+
+| treatment | Ω_b width |
+|---|---|
+| GP mean only (current) | 0.93 |
+| + ½σ²_total (log-normal mean) | 0.94 |
+| + ½σ²_interp only | 0.94 |
+| 24 refits on logL jittered by σ_white, pooled | 0.94 (**1.01×**) |
+
+The realisation test also gives a median scatter of only **±0.07** against a width of 0.93. Jittering 256
+points by 0.855 and refitting moves the surface by ≈ 0.855/√256 ≈ 0.05, which is exactly what is seen.
+
+**Why the naive argument failed.** logL spans ≈ 100 across the design box (kernel amplitude 103) while the
+emulator uncertainty is ≈ 0.7. Near the peak the design is dense, so adding ½σ² lifts only regions that are
+already excluded, and the posterior barely moves.
+
+**So the error bars are not obviously too small.** The tempering `−χ²/(2√(2N))` already inflates parameter
+widths by √(√(2N)) ≈ 6 over the naive Δχ² = 1 criterion. The problem is not the width but the **bias**: the
+systematic offset in Ω_b (2–5%) is comparable to the tempered width (3–4%), which is a model-misspecification
+problem, not an error-bar one. Of the two candidate corrections raised earlier, √(χ²_min/N) is a fitting
+convention rather than a derivation, and emulator-error propagation is now measured to be a 1% effect. Neither
+should be used to explain away the bias.
+
+**Still worth doing** (for correctness, not for the error bars): add C_lib to the covariance — it removes 37%
+of the χ² excess and changes the posterior, not just its width.
+
+## 2026-11-01 — Is sqrt(2N) the right temperature? No: it is ~4x too wide, and it hides the bias
+
+`scripts/calibrate_posterior_temperature.py` (uses saved coefficients only, no integrations).
+
+**The stated justification for sqrt(2N) does not hold.** sqrt(2N) is the standard deviation of the *absolute*
+chi2 over data realisations. A posterior width depends instead on the scatter of the *difference* between two
+models on the *same* data, where the data fluctuation is common to both and cancels. For predictions m1, m2:
+
+    Delta^2 = (m1-m2)^T C^-1 (m1-m2),   E[dchi2] = +/- Delta^2,   std[dchi2] = 2 Delta
+
+so the noise scale is **2*Delta, set by the model separation, not by N**.
+
+**Numerically it happens to land close.** For the 20 design points nearest the truth (t = 7, scheme B, `sf`),
+Delta = 17.9–22.7, so 2*Delta = 35.9–45.4 against sqrt(2N) = 36.4. That is a coincidence of this design's
+density, not a principle — halve the design spacing and 2*Delta halves while sqrt(2N) does not move.
+
+**What the statistical error actually is.** Fisher matrix from the saved library coefficients (local linear fit
+of the whitened predictions over the 60 nearest design points, marginal over the other three parameters):
+
+| run | Fisher sigma(Omega_b) | tempered posterior width | ratio | observed bias |
+|---|---|---|---|---|
+| t = 7, SF | **0.234** (0.90%) | 0.93 | **4.0x** | +0.72 |
+| t = 5.5, SF | **0.273** (0.95%) | 1.13 | **4.1x** | −0.15 |
+
+**Coverage test.** 400 synthetic data sets drawn from the truth model, posterior built from the 256 Sobol
+points by importance weighting:
+
+| temperature | coverage of the 68% interval | median width |
+|---|---|---|
+| 8 | 41% | 0.07 |
+| 16 | 87% | 0.28 |
+| **36.4 = sqrt(2N)** | **100%** | 0.85 |
+| 64 | 100% | 1.40 |
+
+- **The current tempering is far too conservative**, not too tight: 100% coverage where 68% is wanted.
+- *Caveat:* with only 256 discrete points a narrow posterior is under-resolved, so the widths below T ≈ 16 are
+  underestimates and the low-T coverage numbers are not trustworthy. The T = 36.4 row is reliable (its width,
+  0.85, matches the 0.93 that emcee on the GP gives).
+- **The consequence matters: the tempering is absorbing the systematic into the error bar.** The t = 7 bias of
+  +0.72 is **3.1 sigma** against the Fisher error but only 0.8 sigma against the tempered width. Shrinking the
+  temperature to its statistically correct value would not fix the method - it would reveal the bias as highly
+  significant.
+
+**How to get a faithful posterior (recommendation).** Separate the two errors instead of conflating them:
+1. **Fix the covariance, then use T = 1.** Add C_lib (worth 37% of the chi2 excess) and address the sparse-block
+   bootstrap miscalibration. The width is then the statistical one, about 0.9% in Omega_b.
+2. **Measure the systematic separately** by running the method over several mock realisations and quoting the
+   scatter/offset as a systematic error, rather than inflating the statistical error until it covers.
+
+**One real correlation issue the user raised.** The covariance is block-diagonal. For the *data* that is
+correct: each star belongs to exactly one (ring, layer) block, so the bootstrap noise is independent between
+blocks. For the *library* it is not: every orbit visits many blocks, so C_lib has cross-block terms that the
+per-block bootstrap measured here does not capture. Any C_lib added to the likelihood should be estimated with
+those cross-block terms, or the correlated part of the library noise will still be unaccounted for.
+
+## 2026-11-01 — Error budget for Ω_b, S and bar_frac; and the bar angle from the v_R quadrupole instead
+
+**Error budget** (`scripts/quantify_test2_errors.py`, scheme B, `sf`, truth = tabulated finite-difference
+column, mean over the five snapshots). Statistical = Fisher 1σ of the likelihood itself (correct covariance,
+T = 1); systematic = mean(recovered − truth) across the five runs, ± scatter/√5.
+
+| parameter | statistical | tempered (quoted) | ratio | systematic | sys/stat |
+|---|---|---|---|---|---|
+| Ω_b | 0.317 (0.9%) | 1.489 | 4.7× | **+0.72 ± 0.47** (+2.1%) | 2.3 |
+| φ_b | 1.205° | 5.838° | 4.8× | **−4.76 ± 1.01°** | **3.9** |
+| S | 3.4% | 16.0% | 4.7× | **+0.8 ± 2.5%** | **0.2** |
+| bar_frac | 6.4% | 32.6% | 5.1× | **−11.7 ± 2.8%** | 1.8 |
+
+- The tempering inflates every parameter by a consistent 4.7–5.1×, confirming it is a global temperature and
+  not a per-parameter effect.
+- **S is the one parameter recovered without bias** (+0.8 ± 2.5%, sys/stat 0.2).
+- **bar_frac is biased low by 12%** and Ω_b high by 2%; both are 2σ-level systematics.
+- **φ_b is the worst by far** — but *not* through degeneracy: its statistical precision is excellent (1.2°).
+  It is a −4.8° bias, 3.9× the statistical error. Written to
+  `results/test2_error_budget_sf_schemeB.json`.
+
+**The bar angle does not need the orbit library.** A bar drives a quadrupole in ⟨v_R⟩ whose node lies along its
+major axis, so φ_b is directly visible — the distance error just rotates the node, and if σ_DM is known that
+rotation can be calibrated out. `scripts/plot_bar_angle_vs_distance_error.py`, t = 7, 10 independent error
+draws per level, node fitted per ring with the per-star least squares (so the selection does not bias it):
+
+| fractional distance error | node [deg] | scatter | shift from the true −27° |
+|---|---|---|---|
+| 0% | −23.90 | — | +3.10 |
+| 2.5% | −24.68 | 2.28 | +2.32 |
+| 5% | −22.11 | 2.53 | +4.89 |
+| 7.5% | −20.48 | 3.97 | +6.52 |
+| 10% | −17.67 | 2.81 | +9.33 |
+| 12.5% | −14.26 | 1.93 | +12.74 |
+| 15% | −12.05 | 1.69 | +14.95 |
+| 20% | −8.69 | 2.21 | +18.31 |
+
+- **The relation is linear and steep:** shift = 1.4° + 0.81° per 1% distance error (fit over 0–12.5%), with a
+  1.07° rms residual about the line.
+- **The selection function barely matters** — the with/without curves agree to about 2°, well inside the
+  realisation scatter, which is the same conclusion the posteriors reached.
+- **Measured against true positions the node does not move** (−23.9° at every error level, by construction),
+  confirming the whole shift comes from the distance smearing.
+- **Precision of the calibrated angle: about 2.3°** (the single-realisation scatter), against the library
+  method's −4.8° bias. So this is the better route to φ_b, with two caveats:
+  1. there is an **intrinsic +1.4 to +3.1° offset at zero distance error** — the quadrupole node is not exactly
+     the bar's density axis, so that offset has to be calibrated from a simulation and is not model-free;
+  2. σ_DM must be known well: a 1% error in the assumed distance error moves the recovered angle by 0.81°.
+- Figure `figures/test2_bar_angle_vs_distance_error_nbody.png`,
+  table `results/nbody_bar_angle_vs_distance_error.csv`.
+
+## 2026-11-01 — The bar-angle calibration is NOT universal: it depends on the true bar angle
+
+`scripts/plot_bar_angle_calibration_universality.py`. The galaxy is rotated about z so the bar sits at a
+chosen angle to the Sun–GC line, re-observed from the fixed Sun, smeared, and the v_R quadrupole node
+remeasured. The same 50k stars are used at every angle (the R < 8 kpc pool is rotation-invariant), so only the
+geometry relative to the Sun changes — which is exactly what the line-of-sight distance error couples to.
+
+Node − true bar angle [deg], 5 error draws per cell:
+
+| distance error | 15° | 20° | 25° | 27° | 30° | 35° |
+|---|---|---|---|---|---|---|
+| 0% | 3.10 | 3.10 | 3.10 | 3.10 | 3.10 | 3.10 |
+| 5% | 2.96 | 3.71 | 4.25 | 5.16 | 5.67 | 4.79 |
+| 10% | 6.60 | 7.97 | 10.12 | 10.22 | 11.61 | 12.58 |
+| 15% | 8.72 | 11.06 | 14.08 | 15.03 | 17.34 | 18.35 |
+| 20% | 9.27 | 13.58 | 16.81 | 17.17 | 19.11 | 23.20 |
+
+- **The bias roughly doubles from 15° to 35°** (6.6° → 12.6° at a 10% distance error). The spread across bar
+  angles is 4.3° median and 13.9° maximum, against a single-realisation scatter of only 1.8°, so the dependence
+  is real, not noise. A single calibration curve therefore cannot be applied without already knowing the angle.
+- At 0% the shift is identical (3.10°) at every angle, as it must be for the same stars rigidly rotated — a
+  useful check that the rotation and the measurement are consistent.
+- **It is still invertible, just less sensitive.** The measured node remains monotonic in the true angle, but
+  the gradient flattens as the error grows:
+
+  | distance error | d(node)/d(φ_true) | φ error per 1° of node error |
+  |---|---|---|
+  | 0% | −1.00 | 1.00 |
+  | 5% | −0.88 | 1.13 |
+  | 10% | −0.69 | 1.45 |
+  | 15% | −0.49 | 2.05 |
+  | 20% | −0.34 | 2.97 |
+
+- **At a 10% distance error, φ_b is recoverable to about 2.7°** (node scatter 1.8° × 1.45), against the
+  library's −4.8° ± 1.0° bias. So the quadrupole route still wins, but it needs the full two-dimensional
+  calibration surface node(φ_true, σ_DM) rather than a single curve, and it degrades quickly beyond ~15%.
+- Figure `figures/test2_bar_angle_calibration_universality_nbody.png`,
+  table `results/nbody_bar_angle_calibration_universality.csv`.
+
+**Correction to the previous entry.** With 10 realisations now run for the selection-function curve too, the
+no-selection and with-selection calibrations agree within 1–2° at every error level, inside their ±1.7–3.0°
+scatter, so "the selection function barely matters" is now supported rather than asserted. The claimed
+"intrinsic +1.4 to +3.1° offset at zero error" was overstated: it is a property of the particular 50k draw
+(scatter ±2.3°), and on all 1,493,610 parent particles the zero-error offset is only **+0.8°**.
+
+## 2026-11-01 — The inversion curve: observed quadrupole node against true bar angle at 10% distance error
+
+`scripts/plot_bar_angle_inversion.py`, t = 7, bar rotated to 15–35 deg in 2.5 deg steps, 15 distance-error
+realisations per angle. The selection function is applied as a property of the *survey* — the same S(l, b, d)
+tables at every bar angle, since a footprint does not know where the bar is — giving ~50,100 selected stars
+from the full 2 M each time.
+
+| true angle | node, no selection | node, with selection |
+|---|---|---|
+| 15° | −9.02 ± 1.91 | −8.88 ± 2.18 |
+| 20° | −13.06 ± 2.75 | −12.02 ± 2.35 |
+| 25° | −16.03 ± 2.66 | −15.77 ± 1.92 |
+| 27.5° | −18.50 ± 3.12 | −16.20 ± 1.38 |
+| 30° | −20.15 ± 3.30 | −18.81 ± 1.54 |
+| 35° | −21.89 ± 3.85 | −22.16 ± 2.03 |
+
+| | fitted relation | node scatter | φ_b recoverable to |
+|---|---|---|---|
+| no selection | node = −0.664 φ_true + 0.42 | 2.75° | **4.1°** |
+| with selection | node = −0.669 φ_true + 1.29 | 2.14° | **3.2°** |
+
+- **The relation is flatter than 1:1** — slope −0.66 to −0.67, not −1. The node under-reports the bar angle
+  (a true 35° reads about −22°), and because the mapping is compressed a given node error becomes a 1.5×
+  larger angle error. The node is therefore not a direct readout at 10% error; it has to be inverted through
+  this curve.
+- **The selection function makes no significant difference** to either the slope (−0.664 vs −0.669) or the
+  scatter, consistent with everything else we have found about it.
+- **φ_b is recoverable to 3–4°**, against the orbit library's −4.8° ± 1.0° bias. Better, but not dramatically,
+  and the calibration is specific to this galaxy and this error level.
+
+**Correction.** An earlier 5-realisation run of the same script gave scatters of 3.44° (no selection) and
+1.29° (with), implying 5.6° and 1.9°, and suggested the selection case was much the better one. With 15
+realisations the two agree (2.75° and 2.14°). A standard deviation from 5 samples carries about 30%
+uncertainty, so that apparent factor of 2.7 was noise and should not have been quoted as a difference.
+
+## 2026-11-01 — Does the bar-angle calibration transfer between snapshots? Mostly, with a −1.9° bias
+
+`scripts/plot_bar_angle_transfer_test.py`. The relation fitted at t = 7 is applied to the measured quadrupole
+nodes of t = 4 — a genuinely different bar (A₂ 0.472 vs 0.397, R_bar 4.25 vs 5.00 kpc, Ω_b 33.3 vs 25.2), both
+with 10% distance errors and the DR3-Mira-like selection, 15 realisations per angle.
+
+| | fitted relation |
+|---|---|
+| t = 7 (the calibration) | node = **−0.669** φ_true **+1.29** |
+| t = 4 (its own relation) | node = **−0.639** φ_true **+1.79** |
+
+Applying the t = 7 calibration to the t = 4 nodes:
+
+| true φ_b | node | inferred φ_b | error |
+|---|---|---|---|
+| 15.0 | −7.77 | 13.54 | −1.46 |
+| 20.0 | −10.92 | 18.24 | −1.76 |
+| 25.0 | −14.22 | 23.17 | −1.83 |
+| 30.0 | −17.45 | 28.00 | −2.00 |
+| 35.0 | −20.60 | 32.71 | −2.29 |
+
+- **Mean error −1.86°, rms 1.89°**, against a per-measurement scatter of 2.20°. So a single measurement would
+  be consistent with the truth at about 1σ — the calibration does transfer in that practical sense.
+- **But the offset is a genuine systematic, not noise.** All nine residuals have the same sign and their
+  scatter about the mean is only 0.34°, so it will not average down with more stars or more realisations. The
+  slopes differ by 4.5% (−0.669 vs −0.639) and the intercepts by 0.5°, and together these produce the −1.9°
+  shift across 15–35°.
+- **Budget for the transferred method:** about 1.9° systematic plus 2.2° statistical, so **≈2.9° in
+  quadrature**, against the orbit library's −4.8° ± 1.0° bias. Still the better route, but the margin is
+  narrower than the 3.2° within-snapshot figure implied.
+- **Implication for real data.** A calibration taken from a simulation and applied to the Milky Way would
+  carry a systematic of at least this order, and plausibly more: t = 4 and t = 7 are the same galaxy 2.9 Gyr
+  apart, which is far closer to each other than either is to the MW. The quadrupole route is not calibration-free.
+- Figure `figures/test2_bar_angle_transfer_nbody_to_nbody_t4.png`;
+  tables `results/nbody{,_t4}_bar_angle_inversion_10pct.csv`.
+
+## 2026-11-01 — The transfer offset IS the selection function interacting with a different bar
+
+Follow-up to the transfer test. The −1.86° offset when the t = 7 bar-angle calibration is applied to t = 4 was
+attributed to "the bars being different". Re-running the same transfer with the selection function switched
+off separates the two causes:
+
+| transfer t = 7 → t = 4 | mean error | rms | slopes (t7 / t4) | intercepts |
+|---|---|---|---|---|
+| **with** selection | **−1.86°** | 1.89° | −0.669 / −0.639 | +1.29 / +1.79 |
+| **without** selection | **−0.35°** | 0.47° | −0.664 / −0.645 | +0.42 / +0.16 |
+
+- **Without the selection the calibration transfers almost perfectly** (−0.35°, residuals −0.07 to −1.11°),
+  even though the two bars are genuinely different (A₂ 0.472 vs 0.397, R_bar 4.25 vs 5.00 kpc, Ω_b 33.3 vs
+  25.2). The intrinsic difference between the bars costs only ~0.35°.
+- **The selection contributes the other −1.5°**, and roughly doubles both the slope difference (2.9% → 4.5%)
+  and the intercept difference (0.26° → 0.50°). The same fixed S(l, b, d) selects a different *part* of each
+  bar, because the two have different density distributions, so it weights the kinematic maps differently and
+  shifts the node by a different amount.
+- **This reconciles two statements that looked contradictory.** At a *fixed* galaxy the selection is almost
+  irrelevant — it adds +0.54° to the bias and leaves the calibration slope unchanged to 1%. *Across* galaxies
+  it is the dominant term in the transfer error. So the selection is harmless when calibrating and applying on
+  the same galaxy, and harmful exactly in the configuration real data forces: calibrate on a simulation, apply
+  to the Milky Way, whose bar differs from any snapshot by far more than t = 4 differs from t = 7.
+- Practical consequence: the calibration systematic cannot be reduced by choosing a snapshot with the right
+  pattern speed; it is set by how well the simulation reproduces the bar's *density distribution* as seen
+  through the survey's selection.
+
+## 2026-11-01 — Testing Zhang et al. (2024): <|v_R|/v_tot> beats the v_R quadrupole, but is not galaxy-free
+
+Zhang et al. (2024) propose the m = 2 phase of <|v_R|/v_tot> as a bar-orientation proxy, more robust to
+distance error than a <v_R> map; the GaiaNIR follow-up (arXiv:2604.18329) quotes 1–7° accuracy.
+`scripts/compare_bar_angle_estimators.py` and `scripts/test_estimator_transfer.py` test it here.
+
+**1. Robustness to distance error at a fixed galaxy — the claim holds, strongly.** t = 7, native bar angle,
+with the selection function, 15 realisations:
+
+| | median drift over 5–20% | median scatter |
+|---|---|---|
+| ⟨v_R⟩ quadrupole node | **9.06°** | 3.08° |
+| ⟨\|v_R\|/v_tot⟩ m = 2 phase | **0.55°** | 1.79° |
+
+Better on accuracy *and* precision. The raw phase (true axis −27.0°) reads −27.71, −27.76, −27.80, −26.89 at
+0, 5, 10, 15% error — within 0.9° of the truth with **no calibration at all** — and only breaks down at 20%
+(−23.69).
+
+**Why.** ⟨v_R⟩ is *signed*: its inflow and outflow lobes partially cancel when distance smearing mixes
+azimuths, and because the smearing is along the line of sight rather than isotropic the cancellation is
+asymmetric, which rotates the node. ⟨\|v_R\|/v_tot⟩ is unsigned — it tracks σ_R/v_tot, which peaks along the
+bar major axis — so mixing dilutes the amplitude without turning the phase.
+
+**2. But the direct read-out is galaxy-dependent.** Taking the measured phase as the bar angle, 10% error plus
+selection, over φ_true = 15–35°:
+
+| | mean error | rms | max |
+|---|---|---|---|
+| t = 7, ⟨v_R⟩ node | +8.41° | 8.59° | 11.05° |
+| **t = 7, ⟨\|v_R\|/v_tot⟩** | **+0.44°** | **0.62°** | **0.96°** |
+| t = 4, ⟨v_R⟩ node | +10.97° | 11.28° | 14.63° |
+| **t = 4, ⟨\|v_R\|/v_tot⟩** | **+4.44°** | 4.59° | 6.22° |
+
+At t = 7 the estimator is essentially exact without calibration; at t = 4 it over-reports by 3–6°. The fitted
+relations show why — the slope is near −1 but not equal to it, and it differs between snapshots:
+
+| estimator | t = 7 slope | t = 4 slope |
+|---|---|---|
+| ⟨v_R⟩ node | −0.731 | −0.594 |
+| ⟨\|v_R\|/v_tot⟩ | **−0.947** | **−0.825** |
+
+**3. Transfer between snapshots: no better than the quadrupole.** Applying the t = 7 relation to t = 4 gives a
+mean error of −3.49° (⟨v_R⟩) and −4.23° (⟨\|v_R\|/v_tot⟩). The slope *ratio* favours
+⟨\|v_R\|/v_tot⟩ (0.87 vs 0.81, i.e. less compression) but the intercept difference works against it, and the
+two end up comparable. So the estimator removes the distance-error sensitivity but **not** the galaxy
+dependence — which, per the entry above, is the selection function interacting with each bar's density
+distribution.
+
+**Caveats.** The 9 angles in each scan share the same 10 distance-error seeds, so they are correlated and the
+formal slope errors (±0.01–0.02) understate the true uncertainty; an earlier independent run gave −0.669 for
+the t = 7 ⟨v_R⟩ slope against −0.731 here, a ~1.8σ difference by the formal errors. The transfer numbers in
+particular carry roughly ±1.5° of realisation noise, so −3.49 vs −4.23 should not be read as a real ordering.
+What is robust across runs is the factor ~16–22 difference in distance-error drift and the slope being much
+closer to −1 for ⟨\|v_R\|/v_tot⟩.
+
+Figures `figures/test2_bar_angle_estimators_nbody{,_sf}.png`,
+`figures/test2_estimator_transfer_nbody_to_nbody_t4.png`.
+
+## 2026-10-31 — Estimating the selection function from the data instead of knowing it (BACKFILLED log entry)
+
+`scripts/selection.py` (`empirical_tables`, `ratio_tables`), `scripts/rescore_empirical_selection.py`.
+The `sf` weighting used the S tables stored in the mock, i.e. perfect knowledge of the selection, which no
+survey has. Two estimators built from the data alone, both rescoring the finished searches from saved
+trajectories (no integrations):
+
+- **`sfratio`** — the direct ratio ρ_obs/ρ_lib per (HEALPix nside 16 × 1 kpc distance) cell (user's proposal).
+- **`sfemp`** — a separable S = s_sky × s_dist × s_R fitted to the data's three margins by weighted IPF.
+
+Settings came from a scan at the truth: nside 32 and a **single** IPF pass for `sfemp`; iterating to
+self-consistency through the 1/τ feedback makes it worse (correlation with the true S falls 0.73 → 0.55).
+
+| how S is obtained | mean \|Ω_b bias\| | mean worst offset | mean LOO |
+|---|---|---|---|
+| none (`asis`) | 7.3% | 2.6σ | 1.34 |
+| **ρ_obs/ρ_lib** (`sfratio`) | **3.6%** | 1.5σ | 1.05 |
+| separable fit (`sfemp`) | 4.0% | 1.5σ | 0.94 |
+| true S (`sf`) | 2.1% | 1.0σ | 0.92 |
+
+- **An estimated S recovers about 70% of the gain from knowing S exactly**, and the direct ratio beats the
+  separable fit in 4 of 5 snapshots.
+- **The better estimate of S is the worse estimator of the parameters.** The separable fit reproduces the true
+  S much better (correlation 0.73 against 0.48) yet recovers Ω_b slightly worse. The likelihood does not need
+  S to be right, only right enough to fix the weighting within each block — which is why the noisy cell-by-cell
+  ratio is good enough.
+- Posteriors and a README in `figures/test2_schemeB_selection/` (20 corner plots, four treatments × five
+  snapshots).
+
+## 2026-11-01 — Combining ring phases by amplitude, not by median: the v_R bias becomes universal (BACKFILLED)
+
+The per-ring m = 2 phases were being combined with a plain **median over a fixed 1–4 kpc window**, which gives
+a ring with no bar signal the same vote as one with a strong signal. Replacing that with the **sum of the
+complex m = 2 coefficients** (each ring weights itself by its own amplitude) changes the conclusions.
+
+Drift of the measured angle from 0 to 10% distance error, selection on, 8 realisations:
+
+| scheme | t = 2 | t = 3 | t = 4 | t = 5.5 | t = 7 | spread |
+|---|---|---|---|---|---|---|
+| ⟨\|v_R\|/v_tot⟩, median 1–4 | +4.87 | +7.40 | +4.17 | +2.97 | −0.37 | 7.77 |
+| ⟨\|v_R\|/v_tot⟩, vecsum >30% peak | +3.85 | +5.98 | +3.95 | +3.09 | +2.06 | **3.92** |
+| ⟨v_R⟩ node, median 1–4 | +9.95 | +8.88 | +9.18 | +9.05 | +11.08 | 2.20 |
+| **⟨v_R⟩ node, vecsum 1–4** | +10.77 | +10.45 | +10.36 | +9.58 | +10.61 | **1.19** |
+
+- Weighting halves the snapshot spread for ⟨\|v_R\|/v_tot⟩ — the user's suggestion was right that signal-free
+  rings were voting.
+- **It also removes t = 7's apparent immunity** (−0.37 → +2.06). The earlier "⟨\|v_R\|/v_tot⟩ is unbiased"
+  result was an artefact of the median combination at one unrepresentative snapshot.
+- **The decisive number is the scatter across snapshots, because that is what survives calibration:**
+  ⟨v_R⟩ node **+10.35° ± 0.46°**, ⟨\|v_R\|/v_tot⟩ +4.01° ± 2.52°. The ±0.46° is comparable to the individual
+  measurement errors, so the ⟨v_R⟩ drift is consistent with being *perfectly* universal across a factor-1.8
+  range of pattern speed. **A large known bias beats a small unknown one**, so the ⟨v_R⟩ quadrupole is the
+  better estimator after all — reversing the recommendation of the entry below.
+
+**Verification** (`scripts/bar_angle_vecsum_verification.py`, 12 realisations, independent seeds per point):
+
+| estimator | direction | mean error | rms |
+|---|---|---|---|
+| **⟨v_R⟩ node** | t = 7 → t = 4 | **−0.89°** | 1.05 |
+| **⟨v_R⟩ node** | t = 4 → t = 7 | **+0.93°** | 1.25 |
+| ⟨\|v_R\|/v_tot⟩ | t = 7 → t = 4 | −3.71° | 3.79 |
+| ⟨\|v_R\|/v_tot⟩ | t = 4 → t = 7 | +4.16° | 4.26 |
+
+The errors are antisymmetric under swapping source and target, as a real transfer bias must be — a useful
+internal check. **With amplitude weighting the ⟨v_R⟩ calibration transfers between snapshots to ~1°**, against
+the 1.9–3.5° found with the median combination.
+Figures `figures/test2_bar_angle_vecsum_{drift,transfer}.png`.
+
+**Methodological fix that made this measurable.** The earlier scripts used the *same* distance-error seeds at
+every bar angle, correlating the points. Measured effect on the fitted slope: spread 0.125 across four seed
+choices, against a formal fit error of 0.019 — 6.6×. With independent seeds per angle the spread halves to
+0.064. This is why two transfer runs of the same quantity disagreed (−1.86 vs −3.49) and why slopes quoted to
+three decimals earlier in this log should be read as ±0.05.
+
+## 2026-11-01 — Why the <|v_R|/v_tot> drift differs between snapshots (BACKFILLED; inconclusive on cause)
+
+With the median combination, the ⟨\|v_R\|/v_tot⟩ drift at 10% ranged from −1.05° (t = 7) to +5.98° (t = 3).
+Measured bar properties against that drift, all five snapshots:
+
+| snapshot | A₂ | R_bar | kinematic twist (1–4 kpc) | drift 0→10% |
+|---|---|---|---|---|
+| t = 2 | 0.472 | 4.25 | 17.2° | +3.86 ± 0.46 |
+| t = 3 | 0.446 | 4.00 | 10.1° | +5.98 ± 0.79 |
+| t = 4 | 0.472 | 4.25 | 9.1° | +2.70 ± 0.34 |
+| t = 5.5 | 0.448 | 4.50 | 4.7° | +1.22 ± 0.64 |
+| t = 7 | 0.397 | 5.00 | 4.8° | −1.05 ± 0.43 |
+
+| correlation with drift | |
+|---|---|
+| bar length R_bar | **−0.96** |
+| kinematic twist | +0.65 |
+| bar strength A₂ | +0.66 |
+
+- "Kinematic twist" is the peak-to-peak variation of the per-ring ⟨\|v_R\|/v_tot⟩ phase over 1–4 kpc at zero
+  distance error. t = 7's bar is almost untwisted (−27.3 to −26.1°, 2.1° with finer binning); t = 4's runs from
+  −30.4° at 1 kpc to −20.3° at 4 kpc. Smearing mixes radii, so a twisted bar has its phase rotated while a flat
+  one does not — the natural mechanism.
+- **But the cause is not established.** These five snapshots are one secular sequence, so R_bar, A₂, twist and
+  Ω_b all co-vary; with n = 5 and mutually confounded predictors, −0.96 against +0.65 does not single out bar
+  length. The obvious mechanism — the fixed 1–4 kpc window sitting at different fractions of the bar — was
+  tested and **ruled out**: rescaling to 0.2–0.8 R_bar changed t = 7 from −1.17 to −1.17 and t = 4 from +2.97
+  to +2.73.
+- Superseded in practice by the amplitude-weighted combination (entry above), which shrinks the spread and
+  makes the ⟨v_R⟩ node the preferred estimator regardless.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 All in `figures/`.

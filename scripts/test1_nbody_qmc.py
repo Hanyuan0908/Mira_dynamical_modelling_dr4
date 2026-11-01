@@ -3,25 +3,24 @@
 everything needed to recompute other likelihoods later saved (no re-integration needed):
 
   results/test1_nbody/qmc_evals.csv           totals: KDE, local-Gaussian logL, moment chi^2 variants
-  ~/mira_dr4_runs/test1_nbody/NNN.npz         per-star KDE / Gaussian log p, local mu and C, tau,
+  $MIRA_DR4_RUNS/test1_nbody/NNN.npz         per-star KDE / Gaussian log p, local mu and C, tau,
                                               polar cell moments (data and library), 0.5 kpc box sums
-  ~/mira_dr4_runs/test1_nbody/traj_NNN.npy    full trajectories, bar frame, float32 (N, 41, 6),
+  $MIRA_DR4_RUNS/test1_nbody/traj_NNN.npy    full trajectories, bar frame, float32 (N, 41, 6),
                                               snapshots every 25 Myr over 1 Gyr (times in the npz)
 Resumes if restarted (skips indices already in the CSV).
 """
 import csv
 import time
-from pathlib import Path
 
 import numpy as np
 import h5py
 from scipy.stats import qmc
 
-from common import ROOT, MOCK_DIR
+from common import ROOT, MOCK_DIR, RUNS_DIR
 import steady_state_likelihood as ssl
 
 OUT_CSV = ROOT / "results" / "test1_nbody" / "qmc_evals.csv"
-ARR_DIR = Path.home() / "mira_dr4_runs" / "test1_nbody"
+ARR_DIR = RUNS_DIR / "test1_nbody"
 MOCK = MOCK_DIR / "nbody_mock_perfect_R8_N50k.hdf5"
 N_QMC = 64
 SEED = 2027

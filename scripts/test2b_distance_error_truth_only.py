@@ -12,6 +12,7 @@ import json
 import numpy as np
 
 from common import ROOT
+import steady_state_likelihood as ssl
 import test1_nbody_qmc_focused_fourier_stars as fs
 import test1_nbody_qmc as old
 from test2b_distance_error_tolerance import FRACS, TRUTH, PROPOSED, observed_stars, trajectory
@@ -20,7 +21,7 @@ RESULTS = ROOT / "results" / "test2b" / "distance_error_truth_only.json"
 
 
 def main():
-    times = np.load(old.ARR_DIR / "000.npz")["times"]
+    times = ssl.snapshot_times()
     rng = np.random.default_rng(fs.SEED)
     boot_w = rng.multinomial(50000, np.full(50000, 1 / 50000), size=fs.N_BOOT).astype(float)
     traj_true = np.load(old.ARR_DIR / "traj_000.npy")

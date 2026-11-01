@@ -7,8 +7,9 @@ Galactocentric phase space is recomputed from (l, b, d_obs, pm_l*, pm_b, v_los),
 are both smeared along the line of sight. The stars are the same 50k as in the perfect mock (selected on their true
 R < 8 kpc); some now have an observed R > 8 kpc.
 
-Writes mock/nbody_mock_distance_error_sigmaDM<sigma>_R8_N50k.hdf5 with the observed values under the usual names
+Writes mock/<prefix>_mock_distance_error_sigmaDM<sigma>_R8_N50k.hdf5 with the observed values under the usual names
 (x, y, z, vx, vy, vz, d) so existing readers work unchanged, the true values as <name>_true, and DM_true, DM_obs, DM_err.
+The prefix carries the snapshot (nbody, or nbody_t<T>; --galaxy), so snapshots do not overwrite each other.
 """
 import argparse
 
@@ -16,13 +17,21 @@ import numpy as np
 import pandas as pd
 import h5py
 
-from common import MOCK_DIR, MIRA_DR3_FILE, R0_KPC, Z_SUN_KPC, V_SUN_KMS
+from common import MOCK_DIR, MIRA_DR3_FILE, R0_KPC, Z_SUN_KPC, V_SUN_KMS, rel
+from galaxies import galaxy, add_argument as add_galaxy_argument
 import observe
 
-PERFECT = MOCK_DIR / "nbody_mock_perfect_R8_N50k.hdf5"
 SIGMA_DM_CUT = 0.4
 SEED = 2029
 PHASE = ("x", "y", "z", "vx", "vy", "vz")
+
+
+def perfect_mock(name="nbody"):
+    """The perfect mock this snapshot's distance-error mock is built from."""
+    return MOCK_DIR / f"{galaxy(name)['prefix']}_mock_perfect_R8_N50k.hdf5"
+
+
+PERFECT = perfect_mock("nbody")
 
 
 def catalogue_sigma_dm(cut=SIGMA_DM_CUT):
@@ -36,13 +45,21 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--sigma-dm", type=float, default=None, help="default: catalogue median with DM_err < 0.4")
     p.add_argument("--seed", type=int, default=SEED)
+    p.add_argument("--frac", type=float, default=None,
+                   help="fractional distance error instead of --sigma-dm (e.g. 0.10 for 10%%)")
+    add_galaxy_argument(p)
+    p.set_defaults(galaxy="nbody")
     args = p.parse_args()
     sigma_dm, n_cat = catalogue_sigma_dm()
+    if args.frac is not None:
+        sigma_dm = args.frac * 5.0 / np.log(10)
     if args.sigma_dm is not None:
         sigma_dm = args.sigma_dm
-    out = MOCK_DIR / f"nbody_mock_distance_error_sigmaDM{sigma_dm:.3f}_R8_N50k.hdf5"
+    g = galaxy(args.galaxy)
+    perfect = perfect_mock(args.galaxy)
+    out = MOCK_DIR / f"{g['prefix']}_mock_distance_error_sigmaDM{sigma_dm:.3f}_R8_N50k.hdf5"
 
-    with h5py.File(PERFECT, "r") as f:
+    with h5py.File(perfect, "r") as f:
         cols = {k: f[k][:] for k in f.keys()}
         attrs = dict(f.attrs)
     # the stored observables reproduce the stored phase space (float32) when converted back at the true distance
@@ -68,7 +85,8 @@ def main():
             description="Perfect N-body mock with Mira-like distance errors: DM_obs = DM_true + sigma_DM N(0,1) for "
                         "every star; l, b, pm, v_los exact; x..vz, d observed (true values in <name>_true). Same stars "
                         "as the perfect mock (selected on true R < 8 kpc).",
-            source=PERFECT.name, sigma_DM=sigma_dm, frac_distance_error=np.log(10) / 5 * sigma_dm,
+            source=perfect.name, galaxy=args.galaxy, sigma_DM=sigma_dm,
+            frac_distance_error=np.log(10) / 5 * sigma_dm,
             sigma_DM_from=f"median DM_err of {MIRA_DR3_FILE.name} with DM_err < {SIGMA_DM_CUT} ({n_cat} stars)",
             seed_distance_error=args.seed, R0=R0_KPC, z_sun=Z_SUN_KPC, v_sun=V_SUN_KMS))
         f.attrs.update(attrs)
@@ -77,7 +95,7 @@ def main():
     R_obs, R_true = np.hypot(x, y), np.hypot(cols["x"], cols["y"])
     dpos = np.sqrt((x - cols["x"])**2 + (y - cols["y"])**2 + (z - cols["z"])**2)
     frac = d_obs / cols["d"] - 1
-    print(f"wrote {out.name}: sigma_DM = {sigma_dm:.4f} mag (fractional distance error {np.log(10) / 5 * sigma_dm:.4f}); "
+    print(f"wrote {rel(out)}: sigma_DM = {sigma_dm:.4f} mag (fractional distance error {np.log(10) / 5 * sigma_dm:.4f}); "
           f"round trip at true d: max |diff| {roundtrip:.2e}")
     print(f"  d_obs / d_true - 1: median {np.median(frac):+.4f}, std {np.std(frac):.4f}, 16-84% "
           f"{np.percentile(frac, 16):+.4f} {np.percentile(frac, 84):+.4f}")

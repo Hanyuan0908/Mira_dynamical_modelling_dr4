@@ -16,7 +16,7 @@ import numpy as np
 import h5py
 import agama
 
-from galaxies import galaxy, load_potential
+from galaxies import galaxy, load_potential, add_argument as add_galaxy_argument
 from build_au18_potential import vcirc
 
 agama.setUnits(mass=1, length=1, velocity=1)
@@ -35,25 +35,32 @@ SOURCE = {"dm": ("dm", 2), "dm_spherical": ("dm", 2), "dm_axisymmetric": ("dm", 
 
 
 def main():
-    POT_DIR.mkdir(exist_ok=True)
+    import argparse
+    ap = argparse.ArgumentParser(description=__doc__)
+    add_galaxy_argument(ap)
+    ap.set_defaults(galaxy="nbody")
+    name = ap.parse_args().galaxy
+    g = galaxy(name)
+    pot_dir = g["pot_dir"]
+    pot_dir.mkdir(exist_ok=True)
     data = {}
     for key in ("stars", "dm"):
-        with h5py.File(G[key], "r") as f:
+        with h5py.File(g[key], "r") as f:
             data[key] = (np.column_stack([f[k][:].astype(np.float64) for k in "xyz"]),
                          f["mass"][:].astype(np.float64), f["comp"][:])
-    summary = dict(units="Msun, kpc, km/s", frame="MW-like frame of nbody_stars_mwframe.hdf5", params=PARAMS)
-    for name, kw in PARAMS.items():
-        pos, m, comp = data[SOURCE[name][0]]
-        s = comp == SOURCE[name][1]
+    summary = dict(units="Msun, kpc, km/s", frame=f"MW-like frame of {g['stars'].name}", params=PARAMS)
+    for key_name, kw in PARAMS.items():
+        pos, m, comp = data[SOURCE[key_name][0]]
+        s = comp == SOURCE[key_name][1]
         t0 = time.time()
         pot = agama.Potential(particles=(pos[s], m[s]), **kw)
-        pot.export(str(POT_DIR / f"{name}.ini"))
-        summary[name] = dict(N=int(s.sum()), mass=float(m[s].sum()), build_s=round(time.time() - t0, 1))
-        print(f"{name:13s}: {s.sum():9,} particles, {m[s].sum():.3e} Msun, built in {time.time() - t0:.1f} s")
-    comps, total = load_potential("nbody")
+        pot.export(str(pot_dir / f"{key_name}.ini"))
+        summary[key_name] = dict(N=int(s.sum()), mass=float(m[s].sum()), build_s=round(time.time() - t0, 1))
+        print(f"{key_name:13s}: {s.sum():9,} particles, {m[s].sum():.3e} Msun, built in {time.time() - t0:.1f} s")
+    comps, total = load_potential(name)
     R = np.array([2.0, 4.0, 8.0, 12.0])
     summary["vc"] = {k: dict(zip(map(str, R), map(float, vcirc(p, R)))) for k, p in {**comps, "total": total}.items()}
-    with open(POT_DIR / "summary.json", "w") as f:
+    with open(pot_dir / "summary.json", "w") as f:
         json.dump(summary, f, indent=2)
     for k, v in summary["vc"].items():
         print(f"v_c {k:6s}: " + "  ".join(f"R={r}: {x:6.1f}" for r, x in v.items()))

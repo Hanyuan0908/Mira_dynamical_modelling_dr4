@@ -27,13 +27,7 @@ SCHEME = fs.SCHEMES["fourier_stars_R0to6_vR_m24_vphi_sigR_sigphi_m024"]
 C_MC_FILE = OUT_DIR / "C_MC_27deg.npy"
 
 
-def rotation(d_deg):
-    """30 x 30 transform of the (field, term) coefficients when the bar-frame azimuth shifts by d."""
-    T = np.eye(fs.NK)
-    for m, (c, s) in ((2, (1, 2)), (4, (3, 4))):
-        a = np.radians(m * d_deg)
-        T[np.ix_([c, s], [c, s])] = [[np.cos(a), -np.sin(a)], [np.sin(a), np.cos(a)]]
-    return np.kron(np.eye(6), T)
+rotation = fs.rotation          # moved to the module that defines the coefficient layout
 
 
 def c_mc(ok):

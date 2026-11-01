@@ -1,5 +1,12 @@
 """Shared paths, constants, data loaders and plot style for the Mira DR4 mock tests."""
+import os
 from pathlib import Path
+
+# AGAMA integrates orbits with OpenMP. Default to every hardware thread unless the caller (or a
+# scheduler) has already chosen: on an 8-core/16-thread i7-10700KF, 16 threads integrate at 426
+# orbits/s against 356 at 8, i.e. hyperthreading is worth ~20%. Must happen before agama/numpy
+# are imported, and common is imported first by every script, so this is the place for it.
+os.environ.setdefault("OMP_NUM_THREADS", str(os.cpu_count() or 1))
 
 import numpy as np
 import pandas as pd
@@ -10,6 +17,12 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data"
 MOCK_DIR = ROOT / "mock"
 FIG_DIR = ROOT / "figures"
+RESULTS_DIR = ROOT / "results"
+EXTERNAL_DIR = ROOT / "external"
+
+# Bulky per-point outputs (trajectories, library sums), kept out of the repo. Portable default:
+# ROOT/"runs", which can be a symlink to scratch space; override with $MIRA_DR4_RUNS.
+RUNS_DIR = Path(os.environ.get("MIRA_DR4_RUNS") or ROOT / "runs")
 
 MIRA_DR3_FILE = DATA_DIR / "gaia_dr3_lpv_mira.csv"
 
@@ -52,6 +65,19 @@ def load_dr3_mira(columns=MIRA_COLUMNS):
     return df
 
 
+def rel(path):
+    """Path relative to ROOT if it is inside the repo, else unchanged (for printing).
+    The un-resolved path is tried first, so a symlink inside the repo (e.g. mock/Nbody pointing at
+    scratch space) still prints as its repo-relative name."""
+    p = Path(path)
+    for q in (p, p.resolve()):
+        try:
+            return q.relative_to(ROOT)
+        except ValueError:
+            continue
+    return p
+
+
 def set_style():
     mpl.rcParams.update({
         "font.size": 10,
@@ -77,8 +103,10 @@ def set_style():
 
 
 def savefig(fig, name):
-    FIG_DIR.mkdir(exist_ok=True)
+    """Save under figures/<name>.png. `name` may contain "/" to group figures in a sub-directory,
+    e.g. savefig(fig, "test2_schemeB/t7_selection") -> figures/test2_schemeB/t7_selection.png."""
     path = FIG_DIR / f"{name}.png"
+    path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(path)
-    print(f"saved {path.relative_to(ROOT)}")
+    print(f"saved {rel(path)}")
     return path

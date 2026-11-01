@@ -11,3 +11,7 @@ __pycache__/
 # bulky derived per-star outputs
 results/test1_qmc/logp/
 results/**/*.npz
+
+# external code and local scratch (machine-specific; symlinks or checkouts)
+external/
+runs/

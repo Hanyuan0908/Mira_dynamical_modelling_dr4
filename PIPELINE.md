@@ -34,7 +34,10 @@ emulator of the log-likelihood then gives the posterior.
 - Test 1 (perfect data) recovers the truth.
 - Test 2b (distance errors): the method needs distances good to about 2%. At 7.5% the posterior shifts by about +2.5
   km/s/kpc in Ω_b and +40% in bar_frac.
-- Test 2a (selection function) is next and is **not implemented yet** (section 5.2).
+- Test 2a (selection function): the mocks exist — 10% distance errors with the DR3-Mira-like selection at model
+  times 2, 3, 4, 5.5 and 7 (Ω_b 44.3 down to 26.0 km/s/kpc), plus a no-selection benchmark at t = 7. The
+  **library-side selection weighting is still to be written** (section 5.2), as are the potentials for the four
+  new snapshots.
 
 ## 2. Environment
 
@@ -53,12 +56,20 @@ emulator of the log-likelihood then gives the posterior.
   | pandas | 2.3.3 |
   | matplotlib | 3.10.8 |
 
-- AGAMA integrates orbits with OpenMP over all cores; set `OMP_NUM_THREADS` to the cores of the job. Everything else
-  is single-threaded numpy.
+- `scikit-learn` is needed only by `test1_gp_emulator.py`, `healpy` only by `make_mock_selection.py`. Both are
+  optional for the integration runs.
+- Older stacks work: numpy 1.26 / scipy 1.15 / AGAMA 1.0 (May 2024) / sklearn 1.8 / healpy 1.17 runs the pipeline.
+  Pin `healpy` to a build matching your numpy's C-API (1.20 needs numpy 2.x).
+- AGAMA integrates orbits with OpenMP. `common.py` defaults `OMP_NUM_THREADS` to `os.cpu_count()`; set it
+  explicitly for a shared machine or a batch job and that wins. Everything else is single-threaded numpy.
+  Measured scaling on an 8-core/16-thread i7-10700KF (10k orbits): 4 threads 178 orbits/s, 8 → 356, 12 → 391,
+  16 → 426, so hyperthreading is worth about 20%. chi2 is bit-identical at 8 and 16 threads.
 - Run scripts from `scripts/`: they import each other as plain modules (`import common`, `import observe`, …).
 - Units throughout: Msun, kpc, km/s. AGAMA's time unit is 1 kpc/(km/s) = 0.9778 Gyr.
 - Reference timing (Apple M5 Pro, 15 cores): one trial potential with 50k orbits, 1 Gyr, 41 snapshots, accuracy
-  10⁻⁵ takes **80–95 s**; 500k orbits take 650–750 s.
+  10⁻⁵ takes **80–95 s**; 500k orbits take 650–750 s. On an i7-10700KF (8 cores / 16 threads) the same 50k
+  integration takes **~150 s**, and a whole design point (integration + data fit + library fit + χ²) 2.6 min,
+  so a 257-point search is about 11 h.
   - Concurrent heavy jobs slow it 2–3×.
   - Peak memory per 50k-orbit integration has not been measured. The trajectory alone is 47 MB (float32) and about
     100 MB in AGAMA's float64 output.
@@ -80,7 +91,7 @@ emulator of the log-likelihood then gives the posterior.
 
 `mock/halo_18/` (4 GB, Auriga Au18) is not needed for the N-body pipeline.
 
-Big outputs are written outside the repo, under `~/mira_dr4_runs/<run>/` (`Path.home()` in the scripts). Allow
+Big outputs go to `common.RUNS_DIR` (`ROOT/runs`, or `$MIRA_DR4_RUNS`); see section 7. Allow
 **~12.6 GB per 257-point run** (one 47 MB trajectory per point).
 
 ## 4. Frames and conventions (get these right)
@@ -118,15 +129,27 @@ python potential_family.py --galaxy nbody   # -> mock/nbody_potential/Nbody_{ful
 python measure_au18_pattern_speed.py --galaxy nbody   # -> results/nbody_ground_truth.json (Omega_p = 26.02)
 ```
 
-`measure_au18_pattern_speed.py` imports external code from a hard-coded path (`PATTERN_SPEED_DIR`; see section 7).
+`measure_au18_pattern_speed.py` imports external code from `external/patternSpeed-main` (`$PATTERN_SPEED_DIR`; see section 7).
 
 ### 5.1 Mock data
 
 ```
 python make_mock_perfect.py --galaxy nbody                 # 50k random star particles with R < 8 kpc, seed 2026
 python make_mock_distance_error.py                         # sigma_DM = DR3 Mira median (0.2654 mag, 12.2%), seed 2029
-python make_mock_distance_error.py --sigma-dm 0.16286      # 7.5% (sigma_DM = 0.075 / (ln 10 / 5))
+python make_mock_distance_error.py --frac 0.10             # 10% (sigma_DM = 0.2171 mag); --sigma-dm also works
 ```
+
+**Snapshots as test galaxies.** The N-body run is one secularly evolving galaxy, so each snapshot is a different
+pattern speed with the same physics (`measure_nbody_pattern_speed_evolution.py`). Any script taking `--galaxy`
+accepts `nbody_t<T>` for the snapshot at model time T, and `prepare_nbody_mwframe.py --time T` builds it:
+
+```
+python prepare_nbody_mwframe.py --time 5.5                 # -> mock/nbody_t5.5_{stars,dm}_mwframe.hdf5
+python make_mock_selection.py --galaxy nbody_t5.5 --frac 0.10
+```
+
+`nbody` is model t = 7 and keeps the original un-tagged file names; `nbody_t<T>` tags every file with its time.
+Model time is not Gyr: 1 unit = 0.9778 Gyr, so t = 7 is 6.84 Gyr.
 
 - **`make_mock_perfect.py`:**
   - Draws N stars without replacement from the particles with R < R_MAX.
@@ -143,8 +166,8 @@ python make_mock_distance_error.py --sigma-dm 0.16286      # 7.5% (sigma_DM = 0.
 ### 5.2 Selection function (Test 2) — mock implemented, library weighting not yet
 
 ```
-python make_mock_selection.py                       # sigma_DM 0.163 (7.5%), 50k expected stars
-python make_mock_selection.py --sigma-dm 0.1086     # 5%
+python make_mock_selection.py --frac 0.10                      # 10% (sigma_DM 0.2171), 50k expected stars
+python make_mock_selection.py --galaxy nbody_t4 --frac 0.10    # another snapshot
 ```
 
 - **Mock (`make_mock_selection.py`).** Recipe agreed 2026-10-29:
@@ -253,33 +276,56 @@ Checks worth re-running after changes:
 - `check_fourier_star_fit_vs_true_maps.py`: the Fourier fit and its errors against the 1.49 M-particle truth.
 - `check_bootstrap_errors_with_distance_errors.py`: bootstrap errors with distance errors.
 
-## 7. Running on a cluster: what to change first
+## 7. Running on another machine
 
-The scripts were written for one workstation. Before launching:
+The scripts read and write through repo-relative paths, so a fresh checkout needs only the data in place
+(section 3) and two optional environment variables.
 
-1. **Paths.**
-   - `~/mira_dr4_runs` is hard-coded through `Path.home()` in `test1_nbody_qmc.py` (`ARR_DIR`),
-     `test1_nbody_qmc_focused_run.py`, `test2b_qmc_distance_error_run.py`, `test2b_smeared_initial_conditions.py`
-     and `test2b_distance_error_tolerance.py`. Point it at scratch space (e.g. through an environment variable).
-   - `results/test1_nbody_qmc_focused/design.csv` stores **absolute** trajectory paths of this machine in
-     `traj_file`, read by `test1_nbody_qmc_focused_run.py` and `..._fourier_stars.py`.
-   - Absolute paths: `PATTERN_SPEED_DIR` in `measure_au18_pattern_speed.py` and `PY=` in
-     `run_test1_nbody_qmc_focused_postprocess.sh`.
-2. **Snapshot times.** Eleven scripts read them from an old run file (`np.load(old.ARR_DIR / "000.npz")["times"]`),
-   including both runners, the likelihood module and every `test2b_*` script.
-   On a fresh machine use `ssl.integrate`'s returned times, or `np.linspace(0, ssl.T_GYR, ssl.N_SNAP)`. They are the
-   same.
-3. **Parallelism.** The runners process the whole design serially and append to one `evals.csv`. For job arrays,
-   give each task a subset of points (add an index-range option) and write only per-point files (`fourier_NNN.npz`).
-   Then merge into `evals.csv` in one final step. The per-point `.npz` already contain every χ²/N_data needed.
-4. **Mock choice.** `test2b_qmc_distance_error_run.py` has the mock file and output directory as constants (`MOCK`,
-   `OUT_DIR`, `RES_DIR`). Make them arguments to run other error levels or selection-function mocks.
-5. **Threads and seeds.**
-   - Set `OMP_NUM_THREADS` per task.
+1. **Inputs.** `data/` and `mock/` are git-ignored. Either copy the files in, or symlink them:
+
+   ```
+   ln -s /path/to/gaia_dr3_lpv_mira.csv        data/gaia_dr3_lpv_mira.csv
+   ln -s /path/to/Bar_model_TG21/model         mock/Nbody
+   ln -s /path/to/patternSpeed-main            external/patternSpeed-main
+   ```
+
+   `external/` holds third-party code (the Dehnen, Semczuk & Schönrich pattern-speed package) and is
+   git-ignored too. Override its location with `$PATTERN_SPEED_DIR`.
+
+2. **Bulky outputs** (one 47 MB trajectory per design point; **~12.6 GB per 257-point run**) go to
+   `common.RUNS_DIR`, which is `ROOT/runs` by default. Point it at scratch space with either a symlink
+   (`ln -s /scratch/you/mira_dr4_runs runs`) or the environment variable:
+
+   ```
+   export MIRA_DR4_RUNS=/scratch/you/mira_dr4_runs
+   ```
+
+   Used by `test1_nbody_qmc.py`, `test1_nbody_qmc_focused_run.py`, `test2b_qmc_distance_error_run.py`,
+   `test2b_smeared_initial_conditions.py` and `test2b_distance_error_tolerance.py`.
+
+3. **Trajectory paths in `design.csv`** are stored relative to `RUNS_DIR` (`test1_nbody/traj_007.npy`).
+   `test1_nbody_qmc_focused_run.traj_path` resolves them, and still accepts the absolute paths written by
+   older runs when those files exist, so an existing design keeps working.
+
+4. **Snapshot times** come from `ssl.snapshot_times()` (`np.linspace(0, T_GYR, N_SNAP)`), not from a previous
+   run's output file, so nothing has to exist before the first point is integrated.
+
+5. **AGAMA version.** `agama.orbit`'s `verbose` argument was added after 1.0;
+   `potential_family.ORBIT_KW` probes for it, so the scripts run on either build.
+
+6. **Threads and seeds.**
+   - Set `OMP_NUM_THREADS` per task. AGAMA integrates orbits with OpenMP over all cores; everything else
+     is single-threaded numpy.
    - Seeds are fixed in the scripts: mock 2026, distance error 2029, Sobol 2027/2028, bootstrap 0, library
      observing 11. Re-running the fits on saved trajectories reproduces the saved coefficients exactly.
    - Whether AGAMA's integrations are bit-identical across machines has not been tested.
-6. **Not needed on Linux:** `caffeinate` (macOS; used only in ad-hoc commands, not in the scripts).
+
+7. **Parallelism.** The runners process the whole design serially and append to one `evals.csv`. For job arrays,
+   give each task a subset of points (add an index-range option) and write only per-point files (`fourier_NNN.npz`).
+   Then merge into `evals.csv` in one final step. The per-point `.npz` already contain every χ²/N_data needed.
+
+8. **Mock choice.** `test2b_qmc_distance_error_run.py` has the mock file and output directory as constants (`MOCK`,
+   `OUT_DIR`, `RES_DIR`). Make them arguments to run other error levels or selection-function mocks.
 
 ## 8. Known issues to keep in mind
 

@@ -30,7 +30,7 @@ import agama
 from scipy.spatial import cKDTree
 
 from common import BAR_ANGLE_DEG
-from potential_family import make_static_fast, TIME_UNIT_GYR, POT_DIR, files as family_files
+from potential_family import make_static_fast, TIME_UNIT_GYR, POT_DIR, ORBIT_KW, files as family_files
 from galaxies import galaxy as galaxy_info
 
 T_GYR = 1.0           # integration time
@@ -138,10 +138,22 @@ def rotate_z(w, angle):
 def integrate(pot, ic, Omega_b):
     T = T_GYR / TIME_UNIT_GYR
     orbs = agama.orbit(potential=pot, ic=ic, time=T, trajsize=N_SNAP, Omega=Omega_b, accuracy=ACCURACY,
-                       verbose=False)
+                       **ORBIT_KW)
     times = orbs[0, 0] * TIME_UNIT_GYR
     traj = np.stack(orbs[:, 1]).astype(np.float32)          # (N, N_SNAP, 6), bar frame
     return times, traj
+
+
+def snapshot_times():
+    """Snapshot times [Gyr] that integrate() returns, without needing a file from a previous run.
+
+    agama samples [0, T] with N_SNAP points and returns the time array in the trajectory's dtype,
+    float32 by default. That rounding matters: snapshot 10 comes back as 0.24999999, i.e. 1.5e-8
+    below T_MIN_GYR, so the `times >= T_MIN_GYR - 1e-9` cut in build_library / library_fit keeps 30
+    snapshots, not the 31 an exact float64 grid would give. Reproducing the float32 grid here keeps
+    results identical whether the times come from integrate() or from this function."""
+    T = T_GYR / TIME_UNIT_GYR
+    return np.linspace(0.0, T, N_SNAP).astype(np.float32) * TIME_UNIT_GYR
 
 
 def build_library(times, traj):

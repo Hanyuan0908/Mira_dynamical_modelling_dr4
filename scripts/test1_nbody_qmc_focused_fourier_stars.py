@@ -18,7 +18,7 @@ correlated: e.g. <v_phi> and sigma_phi^2 terms at -0.4 to -0.5, from the skewed 
 factor (N_BOOT - p - 2) / (N_BOOT - 1) on the inverse; the block-diagonal version (fields independent) is kept as
 chi2_<scheme>_blockdiag for comparison.
 Fields (index): 0 <v_R>, 1 <v_phi>, 2 <v_z>, 3 sigma_R^2, 4 sigma_phi^2, 5 sigma_z^2.
-Saved per point: ~/mira_dr4_runs/test1_nbody_qmc_focused/fourier_stars_NNN.npz (coef_data, coef_lib, cov_data, valid,
+Saved per point: $MIRA_DR4_RUNS/test1_nbody_qmc_focused/fourier_stars_NNN.npz (coef_data, coef_lib, cov_data, valid,
 n_stars). Columns chi2_/ndata_/logLs_fourier_stars_<scheme> are merged into results/test1_nbody_qmc_focused/evals.csv;
 chi2 over kept terms = dc_S^T (C_SS)^-1 dc_S (dropping a term = projecting it out of the fit); tempered
 logLs = -chi2 / (2 sqrt(2 N_data)), N_data = number of terms used at the truth.
@@ -30,7 +30,7 @@ import pandas as pd
 import h5py
 
 import steady_state_likelihood as ssl
-from test1_nbody_qmc_focused_run import OUT_DIR, DESIGN_CSV
+from test1_nbody_qmc_focused_run import OUT_DIR, DESIGN_CSV, traj_path
 import test1_nbody_qmc as old
 
 RING_EDGES = np.round(np.r_[np.arange(0.0, 6.0 + 1e-9, 0.3), [6.5, 7.0, 7.5, 8.0]], 6)
@@ -115,6 +115,19 @@ def library_fit(traj, times, ok):
     return fit(b, X, v, wt[m], ok, leverage=False)
 
 
+def rotation(d_deg):
+    """(6*NK, 6*NK) transform of a block's coefficients when the bar-frame azimuth shifts by d degrees.
+
+    Rings (R) and layers (|z|) are unchanged by a rotation about z, and so are v_R and v_phi, which are defined
+    relative to the position; only the (cos, sin) pair of mode m turns, by m*d. So the data fit at one angle gives
+    the fit at any other exactly, c' = T c and C' = T C T^T, instead of refitting with all its bootstraps."""
+    T = np.eye(NK)
+    for m, (c, s) in ((2, (1, 2)), (4, (3, 4))):
+        a = np.radians(m * d_deg)
+        T[np.ix_([c, s], [c, s])] = [[np.cos(a), -np.sin(a)], [np.sin(a), np.cos(a)]]
+    return np.kron(np.eye(6), T)
+
+
 def scheme_chi2(cd, cl, cov, valid, scheme, joint=True):
     """chi^2 and N_data of a scheme; joint=True uses the full covariance of the block's kept coefficients."""
     n_ring, spec = scheme
@@ -140,7 +153,7 @@ def main():
         stars = np.column_stack([f[k][:].astype(np.float64) for k in ("x", "y", "z", "vx", "vy", "vz")])
     rng = np.random.default_rng(SEED)
     boot_w = rng.multinomial(len(stars), np.full(len(stars), 1 / len(stars)), size=N_BOOT).astype(float)
-    times = np.load(old.ARR_DIR / "000.npz")["times"]
+    times = ssl.snapshot_times()
     rows, cache = [], {}
     for _, p in design.iterrows():
         i = int(p.idx)
@@ -154,7 +167,7 @@ def main():
             if phi not in cache:
                 cache = {phi: data_fit(stars, phi, boot_w)}
             cd, cov, n, ok = cache[phi]
-            cl = library_fit(np.load(p.traj_file), times, ok)
+            cl = library_fit(np.load(traj_path(p.traj_file, p.batch)), times, ok)
             valid = ok & np.all(np.isfinite(cd), axis=(1, 2)) & np.all(np.isfinite(cl), axis=(1, 2))
             np.savez(saved, ring_edges=RING_EDGES, layer_edges=LAYER_EDGES, terms=TERMS, fields=FIELD_NAMES,
                      coef_data=cd.reshape(NR, NL, 6, NK), coef_lib=cl.reshape(NR, NL, 6, NK),

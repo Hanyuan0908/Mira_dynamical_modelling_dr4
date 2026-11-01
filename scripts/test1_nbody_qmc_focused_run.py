@@ -6,7 +6,7 @@ Design (results/test1_nbody_qmc_focused/design.csv):
     S and bar_frac, so that the S-bar_frac ridge (which ran into the old box corner S 0.75, f 1.6) is contained.
 Integration as in test1_nbody_qmc.py (true N-body potential family, merged CylSpline, accuracy 1e-5, 1 Gyr, 41 snapshots).
 
-Saved per point in ~/mira_dr4_runs/test1_nbody_qmc_focused/:
+Saved per point in $MIRA_DR4_RUNS/test1_nbody_qmc_focused/:
   lib_NNN.npz   library sums on a fine folded grid (R 0.1 kpc to 8 kpc x phi mod pi 7.5 deg x |z| 0.25 kpc to 4 kpc + one
                 bin beyond): N (samples), W = sum w, W2 = sum w^2, S1 = sum w v for v = (v_R, v_phi, v_z sign z),
                 S2 = sum w v_a v_b for (RR, pp, zz, Rp, Rz, pz); any coarser (R, |z|, phi) grid with edges on these is
@@ -23,11 +23,11 @@ import numpy as np
 import h5py
 from scipy.stats import qmc
 
-from common import ROOT
+from common import ROOT, RUNS_DIR
 import steady_state_likelihood as ssl
 import test1_nbody_qmc as old
 
-OUT_DIR = Path.home() / "mira_dr4_runs" / "test1_nbody_qmc_focused"
+OUT_DIR = RUNS_DIR / "test1_nbody_qmc_focused"
 OLD_DIR = old.ARR_DIR
 DESIGN_CSV = ROOT / "results" / "test1_nbody_qmc_focused" / "design.csv"
 N_NEW = 192
@@ -45,9 +45,26 @@ FIELDS = ["idx", "kind", "batch", "Omega_abs", "phi_b_deg", "S", "bar_frac", "tr
           "t_process_s"]
 
 
+BATCH_DIR = {"old": "test1_nbody", "new": "test1_nbody_qmc_focused"}
+
+
+def traj_path(value, batch="new"):
+    """Trajectory file of a design row. Paths are stored relative to RUNS_DIR so that a design written
+    on one machine can be used on another; an absolute entry from an older design is honoured if it
+    exists, otherwise its file name is looked up in the canonical directory of its batch."""
+    p = Path(str(value))
+    if p.is_absolute():
+        if p.exists():
+            return p
+        p = Path(p.name)
+    if len(p.parts) == 1:
+        p = Path(BATCH_DIR[batch]) / p.name
+    return RUNS_DIR / p
+
+
 def design():
     """Old design (truth + 64 Sobol, trajectories exist) followed by N_NEW new Sobol points in BOX."""
-    pts = [dict(kind=p["kind"], batch="old", traj_file=str(OLD_DIR / f"traj_{i:03d}.npy"),
+    pts = [dict(kind=p["kind"], batch="old", traj_file=f"{BATCH_DIR['old']}/traj_{i:03d}.npy",
                 **{k: p[k] for k in ("Omega_abs", "phi_b_deg", "S", "bar_frac")}) for i, p in enumerate(old.design())]
     u = qmc.Sobol(d=4, scramble=True, seed=SEED).random(256)[:N_NEW]
     lo = np.array([v[0] for v in BOX.values()])
@@ -91,7 +108,7 @@ def main():
     DESIGN_CSV.parent.mkdir(parents=True, exist_ok=True)
     with h5py.File(old.MOCK, "r") as f:
         stars = np.column_stack([f[k][:].astype(np.float64) for k in ("x", "y", "z", "vx", "vy", "vz")])
-    times = np.load(OLD_DIR / "000.npz")["times"]
+    times = ssl.snapshot_times()
     ssl.ACCURACY = ACCURACY
     pts = design()
     new_csv = not DESIGN_CSV.exists()
@@ -106,7 +123,7 @@ def main():
                 continue
             t0 = time.time()
             if p["batch"] == "old":
-                traj = np.load(p["traj_file"])
+                traj = np.load(traj_path(p["traj_file"], p["batch"]))
                 t_int = 0.0
             else:
                 pot = ssl.bar_aligned_potential(p["bar_frac"], p["S"], "nbody")
@@ -114,7 +131,7 @@ def main():
                 tt, traj = ssl.integrate(pot, ic, -abs(p["Omega_abs"]))
                 t_int = time.time() - t0
                 np.save(OUT_DIR / f"traj_{i:03d}.npy", traj)
-                p["traj_file"] = str(OUT_DIR / f"traj_{i:03d}.npy")
+                p["traj_file"] = f"{BATCH_DIR['new']}/traj_{i:03d}.npy"
             t1 = time.time()
             w, wt, tau = library_samples(times, traj)
             sums = fine_sums(w, wt)

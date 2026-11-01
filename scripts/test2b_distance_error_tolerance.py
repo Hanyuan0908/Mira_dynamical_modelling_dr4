@@ -17,13 +17,12 @@ Numbers: results/test2b/distance_error_tolerance.json
 """
 import json
 import time
-from pathlib import Path
 
 import numpy as np
 import h5py
 import matplotlib.pyplot as plt
 
-from common import ROOT, MOCK_DIR, set_style, savefig, INK, INK_2, INK_MUTED, ACCENT, BLUE_RAMP
+from common import ROOT, MOCK_DIR, RUNS_DIR, set_style, savefig, INK, INK_2, INK_MUTED, ACCENT, BLUE_RAMP
 import steady_state_likelihood as ssl
 import test1_nbody_qmc_focused_fourier_stars as fs
 import test1_nbody_qmc as old
@@ -38,7 +37,7 @@ TRUTH = dict(old.TRUTH)
 OFFSETS = dict(Omega_abs=1.2, phi_b_deg=5.0, S=0.18, bar_frac=0.30)        # S, bar_frac: in ln
 LABELS = {"Omega_abs": "|Ω_b|", "phi_b_deg": "φ_b", "S": "ln S", "bar_frac": "ln bar_frac"}
 UNITS = {"Omega_abs": "km/s/kpc", "phi_b_deg": "deg", "S": "", "bar_frac": ""}
-TRAJ_DIR = Path.home() / "mira_dr4_runs" / "test2b" / "tolerance"
+TRAJ_DIR = RUNS_DIR / "test2b" / "tolerance"
 RESULTS = ROOT / "results" / "test2b" / "distance_error_tolerance.json"
 PROPOSED = fs.SCHEMES["fourier_stars_R0to6_vR_m24_vphi_sigR_sigphi_m024"]
 
@@ -84,7 +83,7 @@ def main():
     set_style()
     TRAJ_DIR.mkdir(parents=True, exist_ok=True)
     log = lambda s: print(s, flush=True)
-    times = np.load(old.ARR_DIR / "000.npz")["times"]
+    times = ssl.snapshot_times()
     rng = np.random.default_rng(fs.SEED)
     boot_w = rng.multinomial(50000, np.full(50000, 1 / 50000), size=fs.N_BOOT).astype(float)
     pts = points()

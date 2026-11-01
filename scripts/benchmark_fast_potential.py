@@ -88,7 +88,7 @@ def main():
                 for a, b in ((0, 1), (1, 3), (3, 6), (6, 10))}
         t0 = time.time()
         orbs = agama.orbit(potential=pot, ic=ic, time=T, trajsize=2, Omega=OMEGA_B_TRUE, accuracy=acc,
-                           verbose=False)
+                           **ORBIT_KW)
         dt = time.time() - t0
         end = np.array([o[-1] for o in orbs[:, 1]])
         dEJ = np.abs(jacobi(pot, end) / jacobi(pot, ic) - 1)

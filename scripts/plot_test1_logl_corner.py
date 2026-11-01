@@ -54,7 +54,8 @@ def profile(emu, dims):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--run", default="au18", choices=list(ge.RUNS))
+    ap.add_argument("--run", default="au18",
+                    help="a key of RUNS, or any run with a results/<run>/run_meta.json")
     ap.add_argument("--column", default="logL")
     ap.add_argument("--rmin", type=float, default=None)
     ap.add_argument("--rmax", type=float, default=None)

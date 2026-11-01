@@ -1,0 +1,15 @@
+{
+  "run": "test2_t7_nosf_10pct",
+  "mock": "nbody_mock_distance_error_sigmaDM0.217_R8_N50k.hdf5",
+  "galaxy": "nbody",
+  "omega_truth": 26.016836188550755,
+  "omega_scale": 0.9998784084762012,
+  "variants": [
+    "observed",
+    "asis"
+  ],
+  "sigma_DM": 0.21714724095162588,
+  "accuracy": 1e-05,
+  "design": "results/test1_nbody_qmc_focused/design.csv",
+  "n_points": 257
+}

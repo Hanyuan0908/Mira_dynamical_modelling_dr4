@@ -9,12 +9,31 @@ import numpy as np
 
 from common import MOCK_DIR
 
-SNAPSHOT = MOCK_DIR / "Nbody" / "t_t0_7"
+SNAPSHOT_DIR = MOCK_DIR / "Nbody"
+SNAPSHOT_STEM = "t_t0_"
+DEFAULT_TIME = 7.0
+SNAPSHOT = SNAPSHOT_DIR / f"{SNAPSHOT_STEM}{DEFAULT_TIME:g}"
 G_KPC_KMS_MSUN = 4.300917270e-6
 MASS_UNIT_MSUN = 1.0 / G_KPC_KMS_MSUN
 TIME_UNIT_GYR = 0.977792221
 COMP_CODE = {"disc": 0, "bulge": 1, "dm": 2}
 _DTYPE = {b"f": np.float32, b"d": np.float64, b"i": np.int32}
+
+
+def snapshot(t=DEFAULT_TIME):
+    """Path of the snapshot at model time t (file names are <stem><t>, t in model time units)."""
+    return SNAPSHOT_DIR / f"{SNAPSHOT_STEM}{float(t):g}"
+
+
+def available_times():
+    """Sorted model times of the snapshots present in SNAPSHOT_DIR."""
+    ts = []
+    for p in SNAPSHOT_DIR.glob(f"{SNAPSHOT_STEM}*"):
+        try:
+            ts.append(float(p.name[len(SNAPSHOT_STEM):]))
+        except ValueError:
+            continue
+    return np.array(sorted(ts))
 
 
 def read_nemo(path=SNAPSHOT, tags=("Mass", "Position", "Velocity", "Potential", "Acceleration")):

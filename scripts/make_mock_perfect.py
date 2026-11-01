@@ -25,7 +25,7 @@ def main():
     add_galaxy_argument(p)
     args = p.parse_args()
     g = galaxy(args.galaxy)
-    tag = "" if args.galaxy == "au18" else f"{g['prefix']}_"
+    tag = "" if args.galaxy == "au18" else f"{g['prefix']}_"       # nbody -> nbody_, nbody_t2 -> nbody_t2_
     out = MOCK_DIR / f"{tag}mock_perfect_R{args.rmax:g}_N{args.n // 1000}k.hdf5"
 
     with h5py.File(g["stars"], "r") as f:

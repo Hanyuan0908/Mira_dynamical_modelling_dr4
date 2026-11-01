@@ -16,13 +16,12 @@ Numbers: results/test2b/smeared_initial_conditions.json
 """
 import json
 import time
-from pathlib import Path
 
 import numpy as np
 import h5py
 import matplotlib.pyplot as plt
 
-from common import ROOT, set_style, savefig, INK, INK_2, INK_MUTED, ACCENT, BLUE_RAMP
+from common import ROOT, RUNS_DIR, set_style, savefig, INK, INK_2, INK_MUTED, ACCENT, BLUE_RAMP
 import steady_state_likelihood as ssl
 import test1_nbody_qmc_focused_fourier_stars as fs
 import test1_nbody_qmc as old
@@ -31,7 +30,7 @@ from plot_distance_error_effect_on_fourier_coefficients import (SMEARED, stars, 
                                                                 observe_library_samples)
 from plot_fourier_coefficients_data_vs_models import as_kms, FIELDS, TERMS, LAYERS, RC
 
-OUT_DIR = Path.home() / "mira_dr4_runs" / "test2b"
+OUT_DIR = RUNS_DIR / "test2b"
 TRAJ = OUT_DIR / "traj_smeared_ics_true_potential.npy"
 RESULTS = ROOT / "results" / "test2b" / "smeared_initial_conditions.json"
 WINDOWS = ((0.0, 0.1), (0.25, 0.5), (0.5, 0.75), (0.75, 1.0))
@@ -70,7 +69,7 @@ def window_fit(traj, times, ok, t_lo, t_hi, sigma_dm=None):
 
 def main():
     set_style()
-    times = np.load(old.ARR_DIR / "000.npz")["times"]
+    times = ssl.snapshot_times()
     traj_s, t_int = integrate_smeared(times)
     traj_t = np.load(old.ARR_DIR / "traj_000.npy")
     sigma_dm = float(h5py.File(SMEARED, "r").attrs["sigma_DM"])

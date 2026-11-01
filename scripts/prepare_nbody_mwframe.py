@@ -1,14 +1,17 @@
-"""Place the isolated N-body galaxy (mock/Nbody/t_t0_7) in the same MW-like frame as Au18.
+"""Place an isolated N-body snapshot (mock/Nbody/t_t0_<T>) in the same MW-like frame as Au18.
 
 Same recipe as prepare_au18_mwframe.py: centre on the stars (shrinking spheres), remove the bulk
 velocity of the stars within R_DISC, spin the disc to L_z < 0 (clockwise seen from +z), and rotate
 the bar (m = 2 phase of the stars within the bar) to -BAR_ANGLE_DEG. Masses are converted to Msun.
 
-Outputs:
-  mock/nbody_stars_mwframe.hdf5  disc + bulge particles (comp 0 = disc, 1 = bulge), with the simulation's
-                                 own potential and acceleration at each particle (pot_sim, acc_sim)
-  mock/nbody_dm_mwframe.hdf5     dark-matter particles, same fields
+Usage: python prepare_nbody_mwframe.py [--time T]      (T is model time, 1 unit = 0.9778 Gyr)
+
+Outputs (<tag> is empty for the fiducial T = 7 and "_t<T>" otherwise):
+  mock/nbody<tag>_stars_mwframe.hdf5  disc + bulge particles (comp 0 = disc, 1 = bulge), with the
+                                      simulation's own potential and acceleration (pot_sim, acc_sim)
+  mock/nbody<tag>_dm_mwframe.hdf5     dark-matter particles, same fields
 """
+import argparse
 import resource
 
 import numpy as np
@@ -16,16 +19,21 @@ import h5py
 
 import auriga as au
 import nbody
-from common import BAR_ANGLE_DEG, savefig
-from galaxies import galaxy
+from common import BAR_ANGLE_DEG, savefig, rel
+from galaxies import galaxy, nbody_name, add_time_argument
 from prepare_au18_mwframe import shrinking_sphere, measure_bar, plot_bar_diagnostic, R_DISC
 from common import set_style
 
 
 def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    add_time_argument(ap)
+    args = ap.parse_args()
     set_style()
-    g = galaxy("nbody")
-    d = nbody.read_nemo()
+    g = galaxy(nbody_name(args.time))
+    snap = nbody.snapshot(args.time)
+    print(f"reading {rel(snap)}")
+    d = nbody.read_nemo(snap)
     comp = nbody.components(d["Mass"])
     pos = d["Position"].astype(np.float64)
     vel = d["Velocity"].astype(np.float64)
@@ -56,7 +64,7 @@ def main():
     vphi = -(pf[ring, 0] * vf[ring, 1] - pf[ring, 1] * vf[ring, 0]) / Rc[ring]
     print(f"mean v_phi (along rotation) of stars at R = 8 kpc: {vphi.mean():.1f} km/s")
 
-    attrs = dict(source=str(nbody.SNAPSHOT), time_model=d["Time"], time_Gyr=d["Time"] * nbody.TIME_UNIT_GYR,
+    attrs = dict(source=str(rel(snap)), snapshot_time=float(args.time), time_model=d["Time"], time_Gyr=d["Time"] * nbody.TIME_UNIT_GYR,
                  centre_model_kpc=c, vcentre_kms=vc, rotation=R_tot,
                  note_rotation="x_new = rotation @ (x_snap - centre); velocities after subtracting vcentre",
                  mass_unit_Msun=nbody.MASS_UNIT_MSUN, bar_angle_deg=BAR_ANGLE_DEG,
@@ -72,8 +80,8 @@ def main():
             f["pot_sim"] = d["Potential"][sel]
             f["acc_sim"] = af[sel].astype(np.float32)
             f.attrs.update(attrs)
-        print(f"wrote {fname.name}: {sel.sum():,} particles")
-    plot_bar_diagnostic(bar0, bar, name="nbody_bar_fourier", label=g["label"])
+        print(f"wrote {rel(fname)}: {sel.sum():,} particles")
+    plot_bar_diagnostic(bar0, bar, name=f"{g['prefix']}_bar_fourier", label=g["label"])
     print(f"peak RSS {resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e9:.2f} GB")
 
 

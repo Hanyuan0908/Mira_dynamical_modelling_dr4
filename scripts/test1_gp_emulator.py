@@ -51,9 +51,33 @@ LO = np.array([v[0] for v in BOX.values()])
 HI = np.array([v[1] for v in BOX.values()])
 
 
+def run_from_meta(name):
+    """Build a run entry from results/<name>/run_meta.json, written by test2b_qmc_distance_error_run.py.
+
+    Those searches re-use the focused design with the Omega axis scaled to the galaxy's own pattern speed,
+    so the box is the focused box with the same scaling applied; everything else follows the file."""
+    import json
+    from common import MOCK_DIR, ROOT as _R
+    meta_path = _R / "results" / name / "run_meta.json"
+    if not meta_path.exists():
+        return None
+    m = json.load(open(meta_path))
+    s = float(m.get("omega_scale", 1.0))
+    box = dict(_nf.BOX)
+    box["Omega_abs"] = (box["Omega_abs"][0] * s, box["Omega_abs"][1] * s)
+    return dict(csv=_R / "results" / name / "evals.csv", box=box, out=_R / "results" / name,
+                mock=MOCK_DIR / m["mock"], prefix=name, perstar=None,
+                truth=dict(Omega_abs=float(m["omega_truth"]), phi_b_deg=27.0, S=1.0, bar_frac=1.0))
+
+
 def use_run(name):
     """Select the run whose design box, truth and files the module functions use."""
     global RUN, LO, HI
+    if name not in RUNS:
+        entry = run_from_meta(name)
+        if entry is None:
+            raise SystemExit(f"unknown run {name!r}: not in RUNS and no results/{name}/run_meta.json")
+        RUNS[name] = entry
     RUN = RUNS[name]
     LO = np.array([v[0] for v in RUN["box"].values()])
     HI = np.array([v[1] for v in RUN["box"].values()])
@@ -115,7 +139,8 @@ class Emulator:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--run", default="au18", choices=list(RUNS))
+    ap.add_argument("--run", default="au18",
+                    help="a key of RUNS, or any run directory with a results/<run>/run_meta.json")
     ap.add_argument("--column", default="logL")
     ap.add_argument("--rmin", type=float, default=None, help="use only stars with R >= rmin [kpc]")
     ap.add_argument("--rmax", type=float, default=None, help="use only stars with R < rmax [kpc]")

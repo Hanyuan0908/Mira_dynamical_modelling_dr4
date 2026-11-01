@@ -1,0 +1,16 @@
+{
+  "run": "test2_t4_sf_10pct",
+  "mock": "nbody_t4_mock_selection_sigmaDM0.217_N50k.hdf5",
+  "galaxy": "nbody_t4",
+  "omega_truth": 33.95529007524744,
+  "omega_scale": 1.304968872991831,
+  "variants": [
+    "observed",
+    "asis",
+    "sf"
+  ],
+  "sigma_DM": 0.21714724095162588,
+  "accuracy": 1e-05,
+  "design": "results/test1_nbody_qmc_focused/design.csv",
+  "n_points": 257
+}

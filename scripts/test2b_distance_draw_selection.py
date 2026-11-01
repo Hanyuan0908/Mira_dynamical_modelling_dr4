@@ -265,7 +265,7 @@ class Objective:
 
 
 def fit_all(maxiter):
-    times = np.load(old.ARR_DIR / "000.npz")["times"]
+    times = ssl.snapshot_times()
     ic, d_cand, sigma_dm = candidate_ics()
     n_stars = len(d_cand)
     with h5py.File(SMEARED, "r") as f:

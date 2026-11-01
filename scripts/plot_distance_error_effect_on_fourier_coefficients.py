@@ -62,7 +62,7 @@ def main():
     rng = np.random.default_rng(fs.SEED)
     boot_w = rng.multinomial(50000, np.full(50000, 1 / 50000), size=fs.N_BOOT).astype(float)
     traj = np.load(old.ARR_DIR / "traj_000.npy")
-    times = np.load(old.ARR_DIR / "000.npz")["times"]
+    times = ssl.snapshot_times()
     sets = {}
     for tag, path in (("perfect", old.MOCK), ("smeared", SMEARED)):
         cd, cov, n, ok = fs.data_fit(stars(path), old.TRUTH["phi_b_deg"], boot_w)

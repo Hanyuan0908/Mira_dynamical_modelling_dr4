@@ -9,17 +9,20 @@ the cross-check. No extra unit factor is applied.
 """
 import argparse
 import json
+import os
 import sys
 
 import numpy as np
 import h5py
 import matplotlib.pyplot as plt
 
-from common import ROOT, set_style, savefig, INK, INK_2, INK_MUTED, ACCENT, BLUE_RAMP
+from common import ROOT, EXTERNAL_DIR, set_style, savefig, INK, INK_2, INK_MUTED, ACCENT, BLUE_RAMP
 from build_au18_potential import vcirc
 from galaxies import galaxy, add_argument as add_galaxy_argument, load_potential
 
-PATTERN_SPEED_DIR = "/Users/hanyuan/Library/CloudStorage/Dropbox/python_script/patternSpeed-main"
+# Dehnen, Semczuk & Schoenrich (2023) code. Portable default: external/patternSpeed-main inside the
+# repo (a checkout or a symlink; git-ignored). Override with $PATTERN_SPEED_DIR.
+PATTERN_SPEED_DIR = os.environ.get("PATTERN_SPEED_DIR") or str(EXTERNAL_DIR / "patternSpeed-main")
 
 if not hasattr(np, "asfarray"):   # removed in NumPy 2.0; patternSpeed.py still calls it
     np.asfarray = lambda a: np.asarray(a, dtype=np.float64)

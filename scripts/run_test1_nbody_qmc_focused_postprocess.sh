@@ -9,7 +9,7 @@
 # Figures: figures/test1_nbody_qmc_focused_{emulator_corner,emulator_loo,emulator_slices,logl_corner}_<column>.png
 set -e
 cd "$(dirname "$0")"
-PY=/Users/hanyuan/miniforge3/envs/astro312/bin/python
+PY=${PYTHON:-python}            # activate the astro312 env, or set PYTHON=/path/to/python
 $PY -W ignore test1_nbody_qmc_focused_fourier.py
 $PY -W ignore test1_nbody_qmc_focused_fourier_stars.py
 for c in logLs_fourier_stars_R0to6_vR_m24_vphi_sigR_sigphi_m024 logLs_fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024 \

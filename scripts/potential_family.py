@@ -36,14 +36,21 @@ from galaxies import galaxy as _galaxy
 agama.setUnits(mass=1, length=1, velocity=1)
 
 TIME_UNIT_GYR = 0.977792221      # 1 kpc / (1 km/s) in Gyr
+# `verbose` was added to agama.orbit after 1.0; probe for it so the scripts run on either build.
+ORBIT_KW = {"verbose": False} if "verbose" in (agama.orbit.__doc__ or "") else {}
 FAMILY = {
     "au18": dict(file_prefix="Au18", fixed=("dm", "bh"), bar=("stars", "gas")),
     "nbody": dict(file_prefix="Nbody", fixed=("dm_spherical",), bar=("bulge", "disc")),
 }
 
 
+def _family(galaxy):
+    """Family recipe for a galaxy name; every nbody snapshot (nbody, nbody_t<T>) shares the nbody one."""
+    return FAMILY[galaxy] if galaxy in FAMILY else FAMILY["nbody"]
+
+
 def files(galaxy="au18"):
-    g, fp = _galaxy(galaxy), FAMILY[galaxy]["file_prefix"]
+    g, fp = _galaxy(galaxy), _family(galaxy)["file_prefix"]
     return {k: g["pot_dir"] / f"{fp}_{k}.ini" for k in ("full", "axi", "baryon_full", "baryon_axi")}
 
 
@@ -82,7 +89,7 @@ def _concat_ini(paths, out):
 def build_files(galaxy="au18"):
     """Create the four family files from the component files of the galaxy's build script."""
     if galaxy != "au18":
-        F, pd, fam = files(galaxy), _galaxy(galaxy)["pot_dir"], FAMILY[galaxy]
+        F, pd, fam = files(galaxy), _galaxy(galaxy)["pot_dir"], _family(galaxy)
         axi_paths = []
         for c in fam["bar"]:
             typ, prm = _expansion(galaxy, c)
@@ -146,7 +153,7 @@ def make_static_fast(bar_frac=1.0, S=1.0, phi0=0.0, mmax=4, symmetry="bisymmetri
     is re-expanded with its own expansion type and grid. The fixed components (DM, BH) are kept as
     they are (pot_dm_bh, if given, replaces them)."""
     if galaxy != "au18":
-        pd, fam = _galaxy(galaxy)["pot_dir"], FAMILY[galaxy]
+        pd, fam = _galaxy(galaxy)["pot_dir"], _family(galaxy)
         parts = []
         for c in fam["bar"]:
             pc = agama.Potential(agama.Potential(str(pd / f"{c}_axi.ini")),

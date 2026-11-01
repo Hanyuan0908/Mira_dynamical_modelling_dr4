@@ -14,7 +14,7 @@ import h5py
 import agama
 
 from common import ROOT, MOCK_DIR
-from potential_family import make_potential, load_axi, to_bar_frame, OMEGA_B_TRUE, TIME_UNIT_GYR
+from potential_family import make_potential, load_axi, to_bar_frame, OMEGA_B_TRUE, TIME_UNIT_GYR, ORBIT_KW
 
 T_GYR = 1.0
 TRAJSIZE = 101                 # snapshots every 10 Myr
@@ -45,7 +45,7 @@ def main():
     for m in args.methods:
         kw = dict(Omega=OMEGA_B_TRUE) if m == "rotating" else {}
         t0 = time.time()
-        orbs = agama.orbit(potential=pots[m], ic=ic, time=T, trajsize=TRAJSIZE, verbose=False, **kw)
+        orbs = agama.orbit(potential=pots[m], ic=ic, time=T, trajsize=TRAJSIZE, **ORBIT_KW, **kw)
         dt = time.time() - t0
         tgrid = orbs[0, 0]
         end = np.array([o[-1] for o in orbs[:, 1]])

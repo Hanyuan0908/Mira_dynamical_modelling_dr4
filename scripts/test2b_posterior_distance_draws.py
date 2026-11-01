@@ -116,7 +116,7 @@ def chi2N(cd, cl, cov, valid, scheme=PROPOSED):
 def main():
     set_style()
     sigma_dm = float(h5py.File(SMEARED, "r").attrs["sigma_DM"])
-    times = np.load(old.ARR_DIR / "000.npz")["times"]
+    times = ssl.snapshot_times()
     if DRAWS.exists():
         dr = dict(np.load(DRAWS))
     else:
