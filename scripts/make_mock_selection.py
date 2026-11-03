@@ -186,7 +186,7 @@ def main():
                  f"(σ_DM = {args.sigma_dm:.3f} mag, {100 * np.log(10) / 5 * args.sigma_dm:.1f}%) "
                  f"and a DR3-Mira-like selection in (l, b), distance and R; HEALPix nside {NSIDE}, distance and R "
                  f"bins {D_BIN} kpc", fontsize=11, y=0.995)
-    savefig(fig, f"test2_{g['prefix']}_mock_selection_vs_dr3_miras_sigmaDM{args.sigma_dm:.3f}")
+    savefig(fig, f"mock_validation/test2_{g['prefix']}_mock_selection_vs_dr3_miras_sigmaDM{args.sigma_dm:.3f}")
     print(f"wrote {rel(out)}: {len(idx):,} stars (expected {args.n:,}); particles with S > 1 (capped): "
           f"{100 * res['frac_capped']:.2f}%; sky-map correlation mock vs target {res['sky_corr']:.3f}")
     print(f"  distance median: Miras {np.median(tgt.luminosity_distance):.2f}, mock {np.median(d_obs[idx]):.2f} kpc; "

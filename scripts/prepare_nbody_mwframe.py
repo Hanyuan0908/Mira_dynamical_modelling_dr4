@@ -81,7 +81,7 @@ def main():
             f["acc_sim"] = af[sel].astype(np.float32)
             f.attrs.update(attrs)
         print(f"wrote {rel(fname)}: {sel.sum():,} particles")
-    plot_bar_diagnostic(bar0, bar, name=f"{g['prefix']}_bar_fourier", label=g["label"])
+    plot_bar_diagnostic(bar0, bar, name=f"setup_checks/{g['prefix']}_bar_fourier", label=g["label"])
     print(f"peak RSS {resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e9:.2f} GB")
 
 

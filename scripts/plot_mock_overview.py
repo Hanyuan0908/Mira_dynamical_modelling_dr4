@@ -101,7 +101,7 @@ def main():
 
     fig.suptitle(f"{args.mock.stem}: {n:,} stars, R < {R_max:g} kpc (dotted); all z; "
                  r"bar dashed, $v_\phi > 0$ along rotation", y=0.95, fontsize=11)
-    savefig(fig, f"{args.mock.stem}_overview")
+    savefig(fig, f"mock_validation/{args.mock.stem}_overview")
 
 
 if __name__ == "__main__":

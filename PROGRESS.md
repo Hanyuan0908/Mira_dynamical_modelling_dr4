@@ -2870,9 +2870,93 @@ Measured bar properties against that drift, all five snapshots:
 - Superseded in practice by the amplitude-weighted combination (entry above), which shrinks the spread and
   makes the ⟨v_R⟩ node the preferred estimator regardless.
 
+## 2026-11-02/03 — Test 2 at a 12.5% distance error, and the selection function you can actually have
+
+The 10% campaign repeated at **12.5%** (σ_DM = 0.125·5/ln10 = 0.2714 mag). Nothing about the method
+changed: same 257-point focused Sobol design, same DR3-Mira-like selection, same χ² schemes. Six
+searches, 1,542 integrations: four on the cluster (t = 2, 3, 4, 5.5), two on the workstation
+(t = 7 with and without the selection function). Scripts `run_test2_12p5pct_{local,cluster}.sh`;
+`run_test2_posteriors.sh` is now parameterised by `SIGMA`/`TAG` and its `ONLY` is an ordered queue,
+so the 10% defaults reproduce the old behaviour exactly.
+
+**All biases below are against the tabulated finite-difference column** (the convention adopted
+2026-11-01), scheme B, five snapshots.
+
+| how S is obtained | available for real data? | 10% | 12.5% |
+|---|---|---|---|
+| none (`asis`) | — control | 5.3% | 9.3% |
+| **ρ_obs/ρ_lib (`sfratio`)** | **yes** | **2.0%** | **3.1%** |
+| separable fit (`sfemp`) | yes | 2.2% | 3.1% |
+| true S (`sf`) | no — upper bound | 2.9% | 4.1% |
+
+Per snapshot at 12.5% (Ω_b bias): t = 2 −4.1%, t = 3 +2.5%, t = 4 +2.3%, t = 5.5 −4.7%, t = 7 −2.0%
+for `sfratio`; the 68% half-width grows 1.55 → 1.74 km/s/kpc (×1.13) from 10% to 12.5%.
+
+**The method degrades gracefully**: a 25% larger distance error costs about one point of bias and
+13% of posterior width.
+
+**An estimated S beats the exact S — and the earlier claim to the contrary was a truth-convention
+artefact.** The 2026-10-31 entry and `figures/test2_schemeB_selection/README.md` report
+`sf` 2.1% against `sfratio` 3.6%, i.e. "an estimated S recovers about 70% of the gain from knowing
+S exactly". Those numbers are scored against **our own measured Ω_b**, not the fd column. The same
+posteriors scored against fd give `sfratio` 2.0% against `sf` 2.9% — the ordering **reverses**.
+Both the README and that entry's table should be read as superseded. *(Retraction.)*
+
+The mechanism (user, 2026-11-03): what the likelihood needs is for the library's spatial
+distribution to match the data's, not for S to be recovered correctly. ρ_obs/ρ_lib forces exactly
+that, cell by cell. The exact S cannot, because the library is not the simulation — it is orbits
+integrated in a *trial* potential, time-sampled from t ≥ 0.25 Gyr and folded, so weighting it by the
+true S still leaves a density mismatch. This also explains the "better S estimate, worse parameters"
+puzzle recorded on 2026-10-31 (`sfemp` reproduces the true S at correlation 0.73 against `sfratio`'s
+0.48, yet recovers Ω_b no better): fidelity to S is the wrong target.
+
+**`sf` carries a positive Ω_b bias that the estimated S removes**: at 12.5%, t = 3 +6.0%, t = 4
++9.5%, t = 7 +2.6% with the true S, against +2.5%, +2.3%, −2.0% with the ratio. The t = 4 outlier
+reported mid-campaign (+4.7% → +9.5% from 10% to 12.5%) is largely a known-S artefact — with the
+ratio it is +0.2% → +2.3%.
+
+**Trajectory time cadence: 50 Myr costs nothing measurable** (`scripts/test_time_cadence.py`,
+rescoring finished searches on `traj[:, ::k]`). Storing every other snapshot halves the trajectory
+files, which are 98% of a run's bytes.
+
+| t = 2, scheme B, `sf` | Ω_b | bias |
+|---|---|---|
+| 25 Myr (30 library samples) | 42.96 [41.26–44.91] | −2.1% |
+| 50 Myr (15) | 43.14 [41.32–45.19] | −1.7% |
+| 100 Myr (8) | 42.87 [40.89–45.15] | −2.3% |
+
+Medians move by < 0.2 km/s/kpc, a tenth of the error bar; the emulator's LOO rms is unchanged. What
+*does* grow is χ²/N at the truth — +3.6% at t = 7 but **+12.4% at t = 2**, the fast bar, where a
+coarser sampling thins the phase coverage more. The posterior barely notices because the extra
+library noise is close to common across design points. `test2b_qmc_distance_error_run.py --cadence-step K`
+thins before scoring *and* before saving, so the stored file and any later rescoring share one grid.
+
+**The fd truth column is itself noisy**, which caps how well a per-snapshot bias can be measured:
+over the 49 snapshots in 2 ≤ t ≤ 8 the residual about a smooth fit is **0.66 km/s/kpc (2.1%)**, and
+adjacent snapshots 122 Myr apart differ by up to 4.15 — far more than a bar's pattern speed can
+physically change. Against a mean |bias| of 3.1% (≈1.0 km/s/kpc), roughly two-thirds of what we
+quote may be the method and one-third the truth column. Individual outliers deserve correspondingly
+less weight.
+
+**In progress.** Seven fill-in snapshots (t = 2.375, 2.625, 3.375, 3.625, 4.5, 5.0, 6.25), two per
+interval between the four fastest runs and one between t = 5.5 and 7, launched on the cluster
+2026-11-03 12:11 at the 50 Myr cadence. Twelve points from 25.2 to 43.9, largest gap 5.4 → 3.0, the
+range deliberately unchanged. Purpose: separate a systematic trend in Ω_b from snapshot scatter,
+which n = 5 cannot do. **Caveat that does not go away with more points** — these are one galaxy in a
+secular sequence, so Ω_b, A₂ and R_bar co-vary; twelve snapshots is not twelve independent galaxies,
+and this gives a systematic *along this sequence*, not a Milky Way systematic.
+
+Figures: `figures/key_results_12p5pct/` (summary, corner plots per snapshot, README),
+`figures/test2_error_level_comparison{,_sfratio}.png`, `figures/test2_snapshot_coverage.png`,
+`figures/mock_validation/test2_mock_grid_12.5pct.png`. `figures/` itself was re-filed — see
+`figures/README.md` and `scripts/organise_figures.py`.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
-All in `figures/`.
+Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
+below is still found by `find figures -name <name>`; most of the Test 1b set is in
+`figures/archive/test1/`, the emulator slices and leave-one-out checks in
+`figures/archive/emulator_diagnostics/`, and the corner plots in `figures/archive/posteriors/`.
 
 | file | what it shows |
 |---|---|

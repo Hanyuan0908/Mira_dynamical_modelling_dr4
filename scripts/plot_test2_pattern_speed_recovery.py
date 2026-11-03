@@ -21,6 +21,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from common import ROOT, RESULTS_DIR, set_style, savefig, rel, INK, INK_2, INK_MUTED, ACCENT, BLUE_RAMP
+from nbody import SNAPSHOT_DIR
 
 SCHEME_A = "fourier_stars_R0to6_vR_m24_vphi_sigR_sigphi_m024"
 SCHEME_B = "fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024"
@@ -34,7 +35,7 @@ STYLE = {"asis": (BLUE_RAMP[5], "o", "no selection weighting"),
          "sf": ("#1baf7a", "D", "S known exactly (mock header)")}
 
 
-TABLE = "/data/hz420-2/SchwarMAX/Bar_model_TG21/model/bar_strength_and_pattern_speed.csv"
+TABLE = SNAPSHOT_DIR / "bar_strength_and_pattern_speed.csv"   # ships with the snapshots, in mock/Nbody
 
 
 def tabulated(t_model, col="pattern_speed_dehnen"):

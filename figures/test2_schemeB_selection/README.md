@@ -13,6 +13,12 @@ The question these answer: **can S be estimated from the data instead of being k
 | `S-separable` | S = s_sky × s_dist × s_R fitted to the data's three margins | **yes** |
 | `S-true` | the exact tables that generated the mock | no — upper bound |
 
+> **Superseded (2026-11-03).** The table below is scored against *our own measured* Omega_b. The
+> project adopted the tabulated **finite-difference** column as the truth on 2026-11-01, and the same
+> posteriors scored that way reverse the ordering: `S-ratio` 2.0%, `S-separable` 2.2%, `S-none` 5.3%,
+> `S-true` **2.9%** - the estimated S *beats* the exact S, rather than recovering 70% of its gain.
+> See PROGRESS 2026-11-02/03.
+
 ## Summary
 
 | how S is obtained | mean \|Ω_b bias\| | mean worst offset | mean LOO |

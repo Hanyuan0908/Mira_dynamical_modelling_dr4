@@ -149,6 +149,12 @@ def main():
     ap.add_argument("--no-traj", action="store_true", help="do not save trajectories")
     ap.add_argument("--time-budget-h", type=float, default=None, help="stop cleanly after this many hours")
     ap.add_argument("--merge", action="store_true", help="only rebuild evals.csv from the per-point files")
+    ap.add_argument("--cadence-step", type=int, default=1, metavar="K",
+                    help="keep every K-th snapshot of the trajectory (2 = 50 Myr instead of 25). The "
+                         "library is scored on the thinned trajectory AND only the thinned trajectory is "
+                         "saved, so the stored file and every later rescoring are on the same grid. "
+                         "Halves the trajectory files; measured cost on the posterior is < 0.2 km/s/kpc "
+                         "(scripts/test_time_cadence.py).")
     args = ap.parse_args()
 
     mock = MOCK_DIR / args.mock
@@ -182,10 +188,19 @@ def main():
     with open(res_dir / "run_meta.json", "w") as fh:
         json.dump(dict(run=args.run, mock=args.mock, galaxy=args.galaxy, omega_truth=omega_truth,
                        omega_scale=scale, variants=variants, sigma_DM=sigma_dm, accuracy=old.ACCURACY,
-                       design=str(rel(DESIGN_CSV)), n_points=len(design)), fh, indent=2)
+                       design=str(rel(DESIGN_CSV)), n_points=len(design),
+                       cadence_step=args.cadence_step,
+                       snapshot_dt_myr=round(float(ssl.T_GYR / (ssl.N_SNAP - 1) * args.cadence_step * 1000), 3)),
+                  fh, indent=2)
 
     ssl.ACCURACY = old.ACCURACY
-    times = ssl.snapshot_times()
+    times_full = ssl.snapshot_times()
+    times = times_full[::args.cadence_step]
+    if args.cadence_step != 1:
+        print(f"cadence  keeping every {args.cadence_step} snapshots: {len(times)} of {len(times_full)} "
+              f"({(times[1] - times[0]) * 1000:.0f} Myr), library keeps "
+              f"{int((times >= ssl.T_MIN_GYR - 1e-9).sum())} of "
+              f"{int((times_full >= ssl.T_MIN_GYR - 1e-9).sum())}", flush=True)
     boot_w = np.random.default_rng(fs.SEED).multinomial(len(w_mw), np.full(len(w_mw), 1 / len(w_mw)),
                                                         size=fs.N_BOOT).astype(float)
     t0 = time.time()
@@ -218,10 +233,17 @@ def main():
         path = out_dir / f"traj_{i:03d}.npy"
         if path.exists():
             traj, t_int = np.load(path), 0.0
+            if traj.shape[1] == len(times_full) and args.cadence_step != 1:
+                traj = np.ascontiguousarray(traj[::1, ::args.cadence_step])   # full file, thin on read
+            elif traj.shape[1] != len(times):
+                raise SystemExit(f"{rel(path)} has {traj.shape[1]} snapshots; expected "
+                                 f"{len(times)} (step {args.cadence_step}) or {len(times_full)}")
         else:
             pot = ssl.bar_aligned_potential(p.bar_frac, p.S, args.galaxy)
             _, traj = ssl.integrate(pot, ssl.rotate_z(w_mw, np.radians(p.phi_b_deg)), -abs(p.Omega_abs))
             t_int = time.time() - t1
+            if args.cadence_step != 1:              # thin before scoring AND before saving, so the
+                traj = np.ascontiguousarray(traj[:, ::args.cadence_step])   # stored file matches the fit
             if not args.no_traj and shutil.disk_usage(out_dir).free / 2**30 > MIN_FREE_GB:
                 np.save(path, traj)
         t2 = time.time()

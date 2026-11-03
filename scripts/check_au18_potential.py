@@ -177,7 +177,7 @@ def force_check(pot, pos, acc_sim, R_bar, pre, lab):
     a2.set_title(rf"Bar torque $F_\phi$ (0.5 < R < 8, |z| < 1): sim = {slope:.3f} × AGAMA", color=INK_2)
     a2.set_aspect("equal")
     fig.suptitle(f"{lab}: AGAMA potential vs the simulation's own accelerations", y=1.0, fontsize=11)
-    savefig(fig, f"{pre}_force_check")
+    savefig(fig, f"setup_checks/{pre}_force_check")
     return out
 
 
@@ -287,7 +287,7 @@ def main():
     ax2.legend(loc="lower right", fontsize=8)
     fig.suptitle(f"{lab} stellar potential ({' + '.join(stellar_components(name))}): density implied by the "
                  "potential vs star particles", y=0.96, fontsize=11)
-    savefig(fig, f"{pre}_potential_density_check")
+    savefig(fig, f"setup_checks/{pre}_potential_density_check")
 
     # ---------- 2. rotation curve and asymmetric drift ----------
     R_c = np.arange(0.5, 20.0, DR_KIN) + DR_KIN / 2
@@ -345,7 +345,7 @@ def main():
     a2.set_xlabel(r"$R$ [kpc]")
     a2.set_ylabel("fractional residual")
     a2.legend(fontsize=7.5, loc="lower right")
-    savefig(fig, f"{pre}_rotation_curve_check")
+    savefig(fig, f"setup_checks/{pre}_rotation_curve_check")
 
     # ---------- 3. extra: AGAMA vs the simulation's potential at the star particles ----------
     if "pot_sim" in sim:
@@ -396,7 +396,7 @@ def main():
     a2.set_title(r"Face-on mean residual, $|z| < 1$ kpc", color=INK_2)
     cb = fig.colorbar(im, cax=a2.inset_axes([1.03, 0, 0.045, 1]), extend="both")
     cb.set_label(r"[(km s$^{-1}$)$^2$]", fontsize=9)
-    savefig(fig, f"{pre}_potential_vs_sim" if "pot_sim" in sim else "au18_potential_vs_arepo")
+    savefig(fig, f"setup_checks/{pre}_potential_vs_sim" if "pot_sim" in sim else "setup_checks/au18_potential_vs_arepo")
 
     if "acc_sim" in sim:
         results.update(force_check(total, pos, sim["acc_sim"], R_bar, pre, lab))

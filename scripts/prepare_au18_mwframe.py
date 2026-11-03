@@ -48,7 +48,7 @@ def measure_bar(x, y, z, m):
                 R_peak=0.5 * (R_edges[i_peak] + R_edges[i_peak + 1]), R_bar=R_bar, phase_bar=ph[0])
 
 
-def plot_bar_diagnostic(bar_before, bar_after, name="au18_bar_fourier", label="Au18"):
+def plot_bar_diagnostic(bar_before, bar_after, name="setup_checks/au18_bar_fourier", label="Au18"):
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(5.2, 5.0), sharex=True,
                                    gridspec_kw=dict(hspace=0.08))
     Rm = 0.5 * (bar_after["R_edges"][1:] + bar_after["R_edges"][:-1])

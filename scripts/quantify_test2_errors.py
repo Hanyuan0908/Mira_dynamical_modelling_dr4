@@ -19,6 +19,7 @@ Usage: python quantify_test2_errors.py [--variant sf] [--scheme B]
 import argparse, json
 import numpy as np, pandas as pd
 from common import ROOT, RUNS_DIR, RESULTS_DIR, BAR_ANGLE_DEG
+from nbody import SNAPSHOT_DIR
 import test1_nbody_qmc_focused_fourier_stars as fs
 from test1_nbody_qmc_focused_fourier_stars import rotation
 from test2b_qmc_distance_error_run import scaled_design
@@ -27,7 +28,7 @@ SCHEMES = {"A": "fourier_stars_R0to6_vR_m24_vphi_sigR_sigphi_m024",
            "B": "fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024"}
 RUNS = [("test2_t2_sf_10pct", 2.0), ("test2_t3_sf_10pct", 3.0), ("test2_t4_sf_10pct", 4.0),
         ("test2_t5.5_sf_10pct", 5.5), ("test2_t7_sf_10pct", 7.0)]
-TABLE = "/data/hz420-2/SchwarMAX/Bar_model_TG21/model/bar_strength_and_pattern_speed.csv"
+TABLE = SNAPSHOT_DIR / "bar_strength_and_pattern_speed.csv"   # ships with the snapshots, in mock/Nbody
 KEYS = ["Omega_b", "phi_b", "ln S", "ln bar_frac"]
 N_NEAR = 60
 

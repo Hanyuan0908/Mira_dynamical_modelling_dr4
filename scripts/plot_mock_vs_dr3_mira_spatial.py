@@ -71,7 +71,7 @@ def main():
             cb.ax.tick_params(labelsize=7)
     fig.suptitle(f"Spatial distribution: DR3 Miras vs {mock_name} (σ_DM = {sigma:.3f} mag); {PIX} kpc and "
                  f"{SKY_PIX:g}° pixels; star = Sun", fontsize=11, y=0.995)
-    savefig(fig, f"test2_spatial_mock_vs_dr3_miras_{mock_name.replace('.hdf5', '')}")
+    savefig(fig, f"mock_validation/test2_spatial_mock_vs_dr3_miras_{mock_name.replace('.hdf5', '')}")
 
 
 if __name__ == "__main__":

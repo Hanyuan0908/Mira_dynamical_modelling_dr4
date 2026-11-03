@@ -164,7 +164,7 @@ def main():
     ax.legend(fontsize=7.5)
     fig.suptitle("Potential family: Φ_axi + bar_frac·[Φ_bary(R(−ψ) x/S) − Φ_bary,axi(x/S)],  "
                  "ψ = Ω_b t  (dashed: bar major axis)", y=0.97, fontsize=11)
-    savefig(fig, f"{pre}potential_family_check")
+    savefig(fig, f"setup_checks/{pre}potential_family_check")
 
 
 if __name__ == "__main__":
