@@ -1,0 +1,17 @@
+nohup: ignoring input
+cluster run: 88 cores -> 11 workers x 8 threads
+batch 2: 5 12 14 20 22 28   (cadence step 2 = 50 Myr, search only, no emulator)
+environment ok
+=== Auriga dynamical-model campaign, sigma_DM 0.271 (tag 12p5pct) ===
+    88 cores -> 11 workers x 8 threads
+    runs dir  /data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/runs
+    archive   external (run archive_auriga_runs.sh on the workstation)
+    environment ok
+    pipeline modules know the Auriga halos
+    mocks, potentials and ground-truth files present for: 5 12 14 20 22 28
+    frame convention ok: clockwise (L_z<0), bar at 27 deg, Omega_b negative, as the N-body
+
+########## test2_au5_sf_12p5pct  (au5_mock_selection_sigmaDM0.271_N50k.hdf5, galaxy au5)  2026-11-05 13:14:44 ##########
+    54 GB free; 0/257 points already done
+    building the trial-potential family for au5 ...
+    trial-potential family ready

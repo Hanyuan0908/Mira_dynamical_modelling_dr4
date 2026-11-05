@@ -3,6 +3,8 @@
 Every galaxy provides a star file in the MW-like frame (x, y, z, vx, vy, vz, mass; kpc, km/s, Msun;
 bar at -27 deg, disc spinning clockwise seen from +z) and a directory of AGAMA potential components.
 """
+import re
+
 import numpy as np
 import agama
 
@@ -46,6 +48,15 @@ GALAXIES["nbody"] = _nbody_entry(NBODY_DEFAULT_TIME)
 def galaxy(name):
     """Galaxy entry by name: "au18", "nbody", or "nbody_t<T>" for any snapshot time T."""
     if name in GALAXIES:
+        return GALAXIES[name]
+    if re.fullmatch(r"au\d+", str(name)):          # any Auriga halo, same layout as au18
+        n = str(name)[2:]
+        GALAXIES[name] = dict(label=f"Auriga Au{n}", prefix=name,
+                              stars=MOCK_DIR / f"{name}_stars_mwframe.hdf5",
+                              pot_dir=MOCK_DIR / f"{name}_potential",
+                              components=("dm", "stars", "gas", "bh"),
+                              truth=RESULTS_DIR / f"{name}_ground_truth.json",
+                              checks=RESULTS_DIR / f"{name}_potential_checks.json")
         return GALAXIES[name]
     if str(name).startswith("nbody_t"):
         try:

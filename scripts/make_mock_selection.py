@@ -81,7 +81,10 @@ def main():
     out = MOCK_DIR / f"{g['prefix']}_mock_selection_sigmaDM{args.sigma_dm:.3f}_N{args.n // 1000}k{tag}.hdf5"
 
     with h5py.File(g["stars"], "r") as f:
-        cols = {k: f[k][:] for k in ("x", "y", "z", "vx", "vy", "vz", "mass", "comp")}
+        cols = {k: f[k][:] for k in ("x", "y", "z", "vx", "vy", "vz", "mass")}
+        # "comp" (disc/bulge/dm by particle mass) exists for the isolated N-body model but not for a
+        # cosmological galaxy such as Auriga, where every star particle is one population.
+        cols["comp"] = f["comp"][:] if "comp" in f else np.zeros(len(cols["x"]), np.int8)
     obs_true = observe.to_galactic(*(cols[k] for k in ("x", "y", "z", "vx", "vy", "vz")))
     rng = np.random.default_rng(args.seed_err)
     d_obs = observe.scatter_distance_modulus(obs_true["d"], args.sigma_dm, rng)

@@ -89,6 +89,16 @@ def main():
     ap.add_argument("--estimator", default="ipf", choices=list(ESTIMATORS),
                     help="ipf: separable S fitted to the data margins; ratio: direct rho_obs/rho_lib in (l,b,d)")
     ap.add_argument("--merge", action="store_true")
+    ap.add_argument("--cadence-step", type=int, default=1, metavar="K",
+                    help="thin the saved trajectory to every K-th snapshot before scoring (2 = 50 Myr "
+                         "from a 25 Myr file). Runs made after 2026-11-03 are already saved thinned, "
+                         "so this is only for re-scoring older ones on the same grid.")
+    ap.add_argument("--n-draw", type=int, default=10, metavar="K",
+                    help="distance-error draws per library sample, pooled into one fit. DEFAULT 10 "
+                         "since 2026-11-03: a one-sample library (K=1) biases chi2 high by a "
+                         "parameter-dependent amount, and K=10 cuts the emulator's leave-one-out "
+                         "error 1.47 -> 0.65. Pass --n-draw 1 to reproduce results from before that "
+                         "date. See selection.observed_library.")
     args = ap.parse_args()
     global VARIANT
     VARIANT = ESTIMATORS[args.estimator]
@@ -124,11 +134,15 @@ def main():
             continue
         p = design.set_index("idx").loc[i]
         traj = np.load(traj_f)
-        times = ssl.snapshot_times()
-        _obs_bar, lbdR, nk = selection.observed_library(traj, times, float(p.phi_b_deg), sigma_dm, seed=11)
+        if args.cadence_step > 1:
+            traj = np.ascontiguousarray(traj[:, ::args.cadence_step])
+        times = ssl.times_for_traj(traj)        # the file may already be thinned
+        K = max(1, args.n_draw)
+        _obs_bar, lbdR, nk = selection.observed_library(traj, times, float(p.phi_b_deg), sigma_dm,
+                                                        seed=11, n_draw=K)
         R0 = np.hypot(traj[:, 1:, 0], traj[:, 1:, 1])
         tau0 = np.clip(np.mean(R0 < ssl.R_SEL, axis=1), 1.0 / (traj.shape[1] - 1), 1.0)
-        w0 = np.repeat(1.0 / tau0, nk)
+        w0 = np.tile(np.repeat(1.0 / tau0, nk), K) / K
         if args.estimator == "ratio":
             tab = selection.ratio_tables(dat, lbdR, w0, nside=args.nside, d_bin=args.dbin)
             Se = selection.evaluate_ratio(tab, *lbdR)
@@ -136,8 +150,8 @@ def main():
             tab = selection.empirical_tables(dat, lbdR, w0, nside=args.nside)
             Se = selection.evaluate_raw(tab, *lbdR)
         obs_bar = _obs_bar
-        tau = np.clip(Se.reshape(traj.shape[0], nk).mean(1), selection.TAU_FLOOR, None)
-        wt = Se / np.repeat(tau, nk)
+        tau = np.clip(Se.reshape(K, traj.shape[0], nk).mean(axis=(0, 2)), selection.TAU_FLOOR, None)
+        wt = Se / np.tile(np.repeat(tau, nk), K) / K
         b, X, v, m = fs.prepare(obs_bar)
         cl = fs.fit(b, X, v, wt[m], ok, leverage=False)
         T = rotation(float(p.phi_b_deg) - BAR_ANGLE_DEG)
@@ -147,7 +161,7 @@ def main():
         res = {}
         for name, sc in fs.SCHEMES.items():
             res[f"chi2_{name}_{VARIANT}"], res[f"ndata_{name}_{VARIANT}"] = fs.scheme_chi2(cd, cl, cov, valid, sc)
-        np.savez(out, coef_lib=cl, tau=tau.astype(np.float32), nside=args.nside,
+        np.savez(out, coef_lib=cl, tau=tau.astype(np.float32), nside=args.nside, n_draw=K,
                  estimator=args.estimator, dbin=args.dbin,
                  params=np.array([p.Omega_abs, p.phi_b_deg, p.S, p.bar_frac]), kind=str(p.kind), **res)
         del traj

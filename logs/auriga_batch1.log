@@ -1,0 +1,76 @@
+nohup: ignoring input
+cluster run: 88 cores -> 11 workers x 8 threads
+batch: 9 10 17 18 24 26 27
+environment ok
+=== Auriga dynamical-model campaign, sigma_DM 0.271 (tag 12p5pct) ===
+    88 cores -> 11 workers x 8 threads
+    runs dir  /data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/runs
+    archive   external (run archive_auriga_runs.sh on the workstation)
+    environment ok
+    pipeline modules know the Auriga halos
+    mocks, potentials and ground-truth files present for: 9 10 17 18 24 26 27
+    frame convention ok: clockwise (L_z<0), bar at 27 deg, Omega_b negative, as the N-body
+
+########## test2_au9_sf_12p5pct  (au9_mock_selection_sigmaDM0.271_N50k.hdf5, galaxy au9)  2026-11-04 17:34:39 ##########
+    55 GB free; 0/257 points already done
+merged 257 points -> results/test2_au9_sf_12p5pct/evals.csv
+--- test2_au9_sf_12p5pct search done 2026-11-04 19:41:37 ---
+    posterior ok: test2_au9_sf_12p5pct / sf
+    43 GB free after test2_au9_sf_12p5pct
+
+########## test2_au10_sf_12p5pct  (au10_mock_selection_sigmaDM0.271_N50k.hdf5, galaxy au10)  2026-11-04 19:47:42 ##########
+    43 GB free; 0/257 points already done
+    building the trial-potential family for au10 ...
+    trial-potential family ready
+merged 257 points -> results/test2_au10_sf_12p5pct/evals.csv
+--- test2_au10_sf_12p5pct search done 2026-11-04 22:03:05 ---
+    posterior ok: test2_au10_sf_12p5pct / sf
+    43 GB free after test2_au10_sf_12p5pct
+
+########## test2_au17_sf_12p5pct  (au17_mock_selection_sigmaDM0.271_N50k.hdf5, galaxy au17)  2026-11-04 22:08:27 ##########
+    43 GB free; 0/257 points already done
+    building the trial-potential family for au17 ...
+    trial-potential family ready
+merged 257 points -> results/test2_au17_sf_12p5pct/evals.csv
+--- test2_au17_sf_12p5pct search done 2026-11-05 00:26:42 ---
+    posterior ok: test2_au17_sf_12p5pct / sf
+    43 GB free after test2_au17_sf_12p5pct
+
+########## test2_au18_sf_12p5pct  (au18_mock_selection_sigmaDM0.271_N50k.hdf5, galaxy au18)  2026-11-05 00:32:42 ##########
+    43 GB free; 0/257 points already done
+    building the trial-potential family for au18 ...
+    trial-potential family ready
+merged 257 points -> results/test2_au18_sf_12p5pct/evals.csv
+--- test2_au18_sf_12p5pct search done 2026-11-05 02:32:20 ---
+    posterior ok: test2_au18_sf_12p5pct / sf
+    43 GB free after test2_au18_sf_12p5pct
+
+########## test2_au24_sf_12p5pct  (au24_mock_selection_sigmaDM0.271_N50k.hdf5, galaxy au24)  2026-11-05 02:38:17 ##########
+    43 GB free; 0/257 points already done
+    building the trial-potential family for au24 ...
+    trial-potential family ready
+merged 257 points -> results/test2_au24_sf_12p5pct/evals.csv
+--- test2_au24_sf_12p5pct search done 2026-11-05 04:35:57 ---
+    posterior ok: test2_au24_sf_12p5pct / sf
+    43 GB free after test2_au24_sf_12p5pct
+
+########## test2_au26_sf_12p5pct  (au26_mock_selection_sigmaDM0.271_N50k.hdf5, galaxy au26)  2026-11-05 04:41:27 ##########
+    43 GB free; 0/257 points already done
+    building the trial-potential family for au26 ...
+    trial-potential family ready
+merged 257 points -> results/test2_au26_sf_12p5pct/evals.csv
+--- test2_au26_sf_12p5pct search done 2026-11-05 07:16:42 ---
+    posterior ok: test2_au26_sf_12p5pct / sf
+    42 GB free after test2_au26_sf_12p5pct
+
+########## test2_au27_sf_12p5pct  (au27_mock_selection_sigmaDM0.271_N50k.hdf5, galaxy au27)  2026-11-05 07:22:29 ##########
+    42 GB free; 0/257 points already done
+    building the trial-potential family for au27 ...
+    trial-potential family ready
+merged 257 points -> results/test2_au27_sf_12p5pct/evals.csv
+--- test2_au27_sf_12p5pct search done 2026-11-05 09:21:28 ---
+    posterior ok: test2_au27_sf_12p5pct / sf
+    42 GB free after test2_au27_sf_12p5pct
+    posterior FAILED: test2_au27_sf_12p5pct / sf (see /tmp/test2_au27_sf_12p5pct_emu_sf.log)
+./run_auriga_posteriors.sh: line 238: syntax error near unexpected token `done'
+./run_auriga_posteriors.sh: line 238: `  done'

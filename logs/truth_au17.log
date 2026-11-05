@@ -1,0 +1,7 @@
+fiducial: Omega_p = 50.95 +/- 0.17 km/s/kpc, bar region 0.24-6.12 kpc (Rm = 2.19), bar phase 27.00 deg (mirrored frame)
+  measureOmega R = 0.1-5 kpc: 50.76 +/- 0.25
+  measureOmega R = 0.5-4 kpc: 50.75 +/- 0.28
+corotation R_CR = 5.52 kpc; OLR = [8.398373226940826]; ILR = [0.986368854411683, 2.3487093175059774]
+R_CR / R_bar = 1.10 (R_bar = 5.00 kpc, A2 half-max), 0.90 (R1 = 6.12 kpc, Dehnen bar region)
+wrote results/au17_ground_truth.json
+saved figures/au17_pattern_speed.png

@@ -1,0 +1,62 @@
+zero-error m=2 geometry for 25 galaxies
+  nbody          R_eff  3.29 kpc  extent 2.10  twist  1.87 deg
+  nbody_t2       R_eff  2.39 kpc  extent 3.30  twist  5.00 deg
+  nbody_t2.375   R_eff  2.14 kpc  extent 2.70  twist  3.61 deg
+  nbody_t2.625   R_eff  2.07 kpc  extent 2.40  twist  3.11 deg
+  nbody_t3       R_eff  2.50 kpc  extent 3.30  twist  3.85 deg
+  nbody_t3.375   R_eff  2.44 kpc  extent 2.40  twist  2.76 deg
+  nbody_t3.625   R_eff  2.33 kpc  extent 1.80  twist  3.24 deg
+  nbody_t4       R_eff  2.47 kpc  extent 3.00  twist  3.62 deg
+  nbody_t4.5     R_eff  2.75 kpc  extent 2.10  twist  3.89 deg
+  nbody_t5       R_eff  2.95 kpc  extent 2.70  twist  1.62 deg
+  nbody_t5.5     R_eff  2.98 kpc  extent 2.40  twist  2.14 deg
+  nbody_t6.25    R_eff  3.17 kpc  extent 1.80  twist  1.69 deg
+  au5            R_eff  1.09 kpc  extent 1.80  twist  8.09 deg
+  au9            R_eff  1.72 kpc  extent 3.30  twist  3.04 deg
+  au10           R_eff  2.08 kpc  extent 7.60  twist  6.58 deg
+  au12           R_eff  1.29 kpc  extent 5.70  twist 15.23 deg
+  au14           R_eff  1.44 kpc  extent 2.70  twist  5.66 deg
+  au17           R_eff  1.67 kpc  extent 3.30  twist  4.19 deg
+  au18           R_eff  1.87 kpc  extent 3.60  twist  4.09 deg
+  au20           R_eff  1.89 kpc  extent 4.80  twist  6.02 deg
+  au22           R_eff  2.41 kpc  extent 7.00  twist  3.59 deg
+  au24           R_eff  1.32 kpc  extent 2.40  twist  4.46 deg
+  au26           R_eff  1.16 kpc  extent 2.40  twist  1.37 deg
+  au27           R_eff  1.21 kpc  extent 2.40  twist  3.54 deg
+  au28           R_eff  2.01 kpc  extent 3.90  twist  3.83 deg
+
+predictors of the 12.5% phase drift, 13 Auriga galaxies
+
+  quantity                       r        p     rho
+  --------------------------------------------------
+  R_CR                       -0.81   0.0007   -0.84
+  A_mean                     -0.53   0.0650   -0.30
+  R_bar                      -0.47   0.1024   -0.54
+  inv_R_eff                  +0.42   0.1514   +0.28
+  R_eff                      -0.29   0.3411   -0.28
+  R_extent                   -0.16   0.5953   -0.32
+  A2_max                     -0.09   0.7617   +0.08
+  twist                      -0.06   0.8575   -0.05
+
+  partial corr(R_CR,  drift | R_eff) = -0.80 (p = 0.001)
+  partial corr(R_eff, drift | R_CR ) = -0.21 (p = 0.486)
+  corr(R_CR, R_eff) = +0.20 (p = 0.5026)
+
+  sigma/R_eff prediction (sigma = 1.0 kpc), fitted scale k = 0.14:
+  galaxy    R_eff  deg(sigma/R)  predicted  measured
+  au5        1.09         52.65       7.30     10.90
+  au26       1.16         49.26       6.83      7.51
+  au27       1.21         47.55       6.60      4.79
+  au12       1.29         44.28       6.14      3.96
+  au24       1.32         43.50       6.03      5.96
+  au14       1.44         39.81       5.52      4.74
+  au17       1.67         34.26       4.75      5.85
+  au9        1.72         33.34       4.63      4.22
+  au18       1.87         30.57       4.24      2.75
+  au20       1.89         30.38       4.21     -0.97
+  au28       2.01         28.47       3.95      3.90
+  au10       2.08         27.59       3.83      6.40
+  au22       2.41         23.78       3.30      7.68
+  rms residual 2.45 deg against a 2.81 deg spread in the drift
+
+wrote results/bar_angle_drift_mechanism.csv

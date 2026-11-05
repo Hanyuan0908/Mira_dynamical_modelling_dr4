@@ -30,7 +30,8 @@ import agama
 from scipy.spatial import cKDTree
 
 from common import BAR_ANGLE_DEG
-from potential_family import make_static_fast, TIME_UNIT_GYR, POT_DIR, ORBIT_KW, files as family_files
+from potential_family import (make_static_fast, TIME_UNIT_GYR, POT_DIR, ORBIT_KW,
+                              files as family_files, _is_auriga)
 from galaxies import galaxy as galaxy_info
 
 T_GYR = 1.0           # integration time
@@ -52,15 +53,21 @@ _CACHE = {}
 
 
 def bar_aligned_potential(bar_frac, S, galaxy="au18"):
-    """Trial potential (static, bar along x)."""
+    """Trial potential (static, bar along x).
+
+    Any Auriga halo (au18, au5, ...) keeps dm + bh fixed and merges the barred baryons into one
+    mmax-8 CylSpline; the N-body snapshots keep the spherical halo and re-expand bulge and disc
+    separately. This used to test `galaxy == "au18"` and read the au18 POT_DIR, so every other
+    Auriga halo asked for a dm_spherical.ini it does not have.
+    """
     if galaxy not in _CACHE:
         pd = galaxy_info(galaxy)["pot_dir"]
-        _CACHE[galaxy] = (agama.Potential(agama.Potential(str(POT_DIR / "dm.ini")),
-                                          agama.Potential(str(POT_DIR / "bh.ini"))) if galaxy == "au18"
+        _CACHE[galaxy] = (agama.Potential(agama.Potential(str(pd / "dm.ini")),
+                                          agama.Potential(str(pd / "bh.ini"))) if _is_auriga(galaxy)
                           else agama.Potential(str(pd / "dm_spherical.ini")))
-    if galaxy == "au18":     # merged mmax-8 CylSpline for the baryons
+    if _is_auriga(galaxy):   # merged mmax-8 CylSpline for the baryons
         return make_static_fast(bar_frac, S, phi0=np.radians(BAR_ANGLE_DEG), mmax=8, symmetry="none",
-                                pot_dm_bh=_CACHE[galaxy])
+                                pot_dm_bh=_CACHE[galaxy], galaxy=galaxy)
     F = family_files(galaxy)
     bary = agama.Potential(agama.Potential(file=str(F["baryon_axi"])),
                            agama.Potential(file=str(F["baryon_full"]), scale=[bar_frac * S, S],
@@ -154,6 +161,24 @@ def snapshot_times():
     results identical whether the times come from integrate() or from this function."""
     T = T_GYR / TIME_UNIT_GYR
     return np.linspace(0.0, T, N_SNAP).astype(np.float32) * TIME_UNIT_GYR
+
+
+def times_for_traj(traj):
+    """Snapshot times matching a saved trajectory, whatever cadence it was stored at.
+
+    Runs may thin the trajectory before saving (test2b_qmc_distance_error_run.py --cadence-step K),
+    so a file can hold any sub-sampling of the N_SNAP grid. Everything that re-scores a saved
+    trajectory must take its time grid from the file rather than assuming the full one, or the
+    `times >= T_MIN_GYR` mask silently mismatches the array."""
+    n = traj.shape[1]
+    full = snapshot_times()
+    if n == len(full):
+        return full
+    step, rem = divmod(len(full) - 1, n - 1)
+    if rem or len(full[::step]) != n:
+        raise ValueError(f"trajectory has {n} snapshots, which is not a sub-sampling of the "
+                         f"{len(full)}-point grid")
+    return full[::step]
 
 
 def build_library(times, traj):

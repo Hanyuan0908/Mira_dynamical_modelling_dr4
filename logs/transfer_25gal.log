@@ -1,0 +1,153 @@
+150 measurements over 25 galaxies on 5 workers
+  [  1/150] nbody          phi  15.0  absvR/kin  10.74
+  [  2/150] nbody          phi  20.0  absvR/kin  14.91
+  [  3/150] nbody          phi  25.0  absvR/kin  19.44
+  [  4/150] nbody          phi  27.0  absvR/kin  20.88
+  [  5/150] nbody          phi  30.0  absvR/kin  22.23
+  [  6/150] nbody          phi  35.0  absvR/kin  27.36
+  [  7/150] nbody_t2       phi  15.0  absvR/kin   6.42
+  [  8/150] nbody_t2       phi  20.0  absvR/kin   9.81
+  [  9/150] nbody_t2       phi  25.0  absvR/kin  12.82
+  [ 10/150] nbody_t2       phi  27.0  absvR/kin  14.18
+  [ 11/150] nbody_t2       phi  30.0  absvR/kin  17.00
+  [ 12/150] nbody_t2       phi  35.0  absvR/kin  21.24
+  [ 13/150] nbody_t2.375   phi  15.0  absvR/kin  12.38
+  [ 14/150] nbody_t2.375   phi  20.0  absvR/kin  15.23
+  [ 15/150] nbody_t2.375   phi  25.0  absvR/kin  17.20
+  [ 16/150] nbody_t2.375   phi  27.0  absvR/kin  18.69
+  [ 17/150] nbody_t2.375   phi  30.0  absvR/kin  21.72
+  [ 18/150] nbody_t2.375   phi  35.0  absvR/kin  24.76
+  [ 19/150] nbody_t2.625   phi  15.0  absvR/kin  10.05
+  [ 20/150] nbody_t2.625   phi  20.0  absvR/kin  12.32
+  [ 21/150] nbody_t2.625   phi  25.0  absvR/kin  15.06
+  [ 22/150] nbody_t2.625   phi  27.0  absvR/kin  17.36
+  [ 23/150] nbody_t2.625   phi  30.0  absvR/kin  19.24
+  [ 24/150] nbody_t2.625   phi  35.0  absvR/kin  22.53
+  [ 25/150] nbody_t3       phi  15.0  absvR/kin  11.42
+  [ 26/150] nbody_t3       phi  20.0  absvR/kin  14.91
+  [ 27/150] nbody_t3       phi  25.0  absvR/kin  18.41
+  [ 28/150] nbody_t3       phi  27.0  absvR/kin  19.79
+  [ 29/150] nbody_t3       phi  30.0  absvR/kin  22.41
+  [ 30/150] nbody_t3       phi  35.0  absvR/kin  24.46
+  [ 31/150] nbody_t3.375   phi  15.0  absvR/kin   9.76
+  [ 32/150] nbody_t3.375   phi  20.0  absvR/kin  13.34
+  [ 33/150] nbody_t3.375   phi  25.0  absvR/kin  16.29
+  [ 34/150] nbody_t3.375   phi  27.0  absvR/kin  17.74
+  [ 35/150] nbody_t3.375   phi  30.0  absvR/kin  20.74
+  [ 36/150] nbody_t3.375   phi  35.0  absvR/kin  24.03
+  [ 37/150] nbody_t3.625   phi  15.0  absvR/kin  11.10
+  [ 38/150] nbody_t3.625   phi  20.0  absvR/kin  14.87
+  [ 39/150] nbody_t3.625   phi  25.0  absvR/kin  17.35
+  [ 40/150] nbody_t3.625   phi  27.0  absvR/kin  19.53
+  [ 41/150] nbody_t3.625   phi  30.0  absvR/kin  20.96
+  [ 42/150] nbody_t3.625   phi  35.0  absvR/kin  25.84
+  [ 43/150] nbody_t4       phi  15.0  absvR/kin   8.92
+  [ 44/150] nbody_t4       phi  20.0  absvR/kin  13.16
+  [ 45/150] nbody_t4       phi  25.0  absvR/kin  16.11
+  [ 46/150] nbody_t4       phi  27.0  absvR/kin  17.53
+  [ 47/150] nbody_t4       phi  30.0  absvR/kin  20.10
+  [ 48/150] nbody_t4       phi  35.0  absvR/kin  23.63
+  [ 49/150] nbody_t4.5     phi  15.0  absvR/kin  10.13
+  [ 50/150] nbody_t4.5     phi  20.0  absvR/kin  13.57
+  [ 51/150] nbody_t4.5     phi  25.0  absvR/kin  17.77
+  [ 52/150] nbody_t4.5     phi  27.0  absvR/kin  19.02
+  [ 53/150] nbody_t4.5     phi  30.0  absvR/kin  20.96
+  [ 54/150] nbody_t4.5     phi  35.0  absvR/kin  25.36
+  [ 55/150] nbody_t5       phi  15.0  absvR/kin  11.02
+  [ 56/150] nbody_t5       phi  20.0  absvR/kin  14.58
+  [ 57/150] nbody_t5       phi  25.0  absvR/kin  17.54
+  [ 58/150] nbody_t5       phi  27.0  absvR/kin  19.52
+  [ 59/150] nbody_t5       phi  30.0  absvR/kin  21.46
+  [ 60/150] nbody_t5       phi  35.0  absvR/kin  25.56
+  [ 61/150] nbody_t5.5     phi  15.0  absvR/kin  10.58
+  [ 62/150] nbody_t5.5     phi  20.0  absvR/kin  15.16
+  [ 63/150] nbody_t5.5     phi  25.0  absvR/kin  18.33
+  [ 64/150] nbody_t5.5     phi  27.0  absvR/kin  19.61
+  [ 65/150] nbody_t5.5     phi  30.0  absvR/kin  21.97
+  [ 66/150] nbody_t5.5     phi  35.0  absvR/kin  26.04
+  [ 67/150] nbody_t6.25    phi  15.0  absvR/kin  10.99
+  [ 68/150] nbody_t6.25    phi  20.0  absvR/kin  15.00
+  [ 69/150] nbody_t6.25    phi  25.0  absvR/kin  18.16
+  [ 70/150] nbody_t6.25    phi  27.0  absvR/kin  20.34
+  [ 71/150] nbody_t6.25    phi  30.0  absvR/kin  22.41
+  [ 72/150] nbody_t6.25    phi  35.0  absvR/kin  26.61
+  [ 73/150] au5            phi  15.0  absvR/kin   2.10
+  [ 74/150] au5            phi  20.0  absvR/kin   5.51
+  [ 75/150] au5            phi  25.0  absvR/kin   9.90
+  [ 76/150] au5            phi  27.0  absvR/kin  10.56
+  [ 77/150] au5            phi  30.0  absvR/kin  18.15
+  [ 78/150] au5            phi  35.0  absvR/kin  14.90
+  [ 79/150] au9            phi  15.0  absvR/kin  12.66
+  [ 80/150] au9            phi  20.0  absvR/kin  16.96
+  [ 81/150] au9            phi  25.0  absvR/kin  21.92
+  [ 82/150] au9            phi  27.0  absvR/kin  23.12
+  [ 83/150] au9            phi  30.0  absvR/kin  27.34
+  [ 84/150] au9            phi  35.0  absvR/kin  31.54
+  [ 85/150] au10           phi  15.0  absvR/kin  10.94
+  [ 86/150] au10           phi  20.0  absvR/kin  14.47
+  [ 87/150] au10           phi  25.0  absvR/kin  19.68
+  [ 88/150] au10           phi  27.0  absvR/kin  21.45
+  [ 89/150] au10           phi  30.0  absvR/kin  24.34
+  [ 90/150] au10           phi  35.0  absvR/kin  29.19
+  [ 91/150] au12           phi  15.0  absvR/kin  12.93
+  [ 92/150] au12           phi  20.0  absvR/kin  16.09
+  [ 93/150] au12           phi  25.0  absvR/kin  22.59
+  [ 94/150] au12           phi  27.0  absvR/kin  24.16
+  [ 95/150] au12           phi  30.0  absvR/kin  28.76
+  [ 96/150] au12           phi  35.0  absvR/kin  34.94
+  [ 97/150] au14           phi  15.0  absvR/kin  11.82
+  [ 98/150] au14           phi  20.0  absvR/kin  15.85
+  [ 99/150] au14           phi  25.0  absvR/kin  18.01
+  [100/150] au14           phi  27.0  absvR/kin  19.54
+  [101/150] au14           phi  30.0  absvR/kin  23.46
+  [102/150] au14           phi  35.0  absvR/kin  28.33
+  [103/150] au17           phi  15.0  absvR/kin  10.70
+  [104/150] au17           phi  20.0  absvR/kin  14.47
+  [105/150] au17           phi  25.0  absvR/kin  19.36
+  [106/150] au17           phi  27.0  absvR/kin  20.66
+  [107/150] au17           phi  30.0  absvR/kin  23.65
+  [108/150] au17           phi  35.0  absvR/kin  27.62
+  [109/150] au18           phi  15.0  absvR/kin  12.01
+  [110/150] au18           phi  20.0  absvR/kin  16.49
+  [111/150] au18           phi  25.0  absvR/kin  21.04
+  [112/150] au18           phi  27.0  absvR/kin  23.38
+  [113/150] au18           phi  30.0  absvR/kin  25.29
+  [114/150] au18           phi  35.0  absvR/kin  30.39
+  [115/150] au20           phi  15.0  absvR/kin  15.20
+  [116/150] au20           phi  20.0  absvR/kin  19.88
+  [117/150] au20           phi  25.0  absvR/kin  26.18
+  [118/150] au20           phi  27.0  absvR/kin  28.04
+  [119/150] au20           phi  30.0  absvR/kin  30.68
+  [120/150] au20           phi  35.0  absvR/kin  35.08
+  [121/150] au22           phi  15.0  absvR/kin   8.89
+  [122/150] au22           phi  20.0  absvR/kin  12.79
+  [123/150] au22           phi  25.0  absvR/kin  16.80
+  [124/150] au22           phi  27.0  absvR/kin  18.32
+  [125/150] au22           phi  30.0  absvR/kin  20.16
+  [126/150] au22           phi  35.0  absvR/kin  24.58
+  [127/150] au24           phi  15.0  absvR/kin  12.52
+  [128/150] au24           phi  20.0  absvR/kin  16.40
+  [129/150] au24           phi  25.0  absvR/kin  21.39
+  [130/150] au24           phi  27.0  absvR/kin  24.83
+  [131/150] au24           phi  30.0  absvR/kin  26.38
+  [132/150] au24           phi  35.0  absvR/kin  32.15
+  [133/150] au26           phi  15.0  absvR/kin  12.12
+  [134/150] au26           phi  20.0  absvR/kin  16.26
+  [135/150] au26           phi  25.0  absvR/kin  21.48
+  [136/150] au26           phi  27.0  absvR/kin  23.24
+  [137/150] au26           phi  30.0  absvR/kin  26.36
+  [138/150] au26           phi  35.0  absvR/kin  33.67
+  [139/150] au27           phi  15.0  absvR/kin  13.15
+  [140/150] au27           phi  20.0  absvR/kin  16.72
+  [141/150] au27           phi  25.0  absvR/kin  21.68
+  [142/150] au27           phi  27.0  absvR/kin  24.25
+  [143/150] au27           phi  30.0  absvR/kin  26.63
+  [144/150] au27           phi  35.0  absvR/kin  31.74
+  [145/150] au28           phi  15.0  absvR/kin  13.43
+  [146/150] au28           phi  20.0  absvR/kin  17.62
+  [147/150] au28           phi  25.0  absvR/kin  22.40
+  [148/150] au28           phi  27.0  absvR/kin  24.20
+  [149/150] au28           phi  30.0  absvR/kin  26.53
+  [150/150] au28           phi  35.0  absvR/kin  30.54
+
+wrote results/bar_angle_transfer_12p5.csv: 150 rows, 25 galaxies

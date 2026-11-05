@@ -1,0 +1,32 @@
+  nbody          observed 0.3197   true nan
+  nbody_t2       observed 0.3458   true nan
+  nbody_t2.375   observed 0.3193   true nan
+  nbody_t2.625   observed 0.3297   true nan
+  nbody_t3       observed 0.3356   true nan
+  nbody_t3.375   observed 0.3351   true nan
+  nbody_t3.625   observed 0.3394   true nan
+  nbody_t4       observed 0.3423   true nan
+  nbody_t4.5     observed 0.3317   true nan
+  nbody_t5       observed 0.3368   true nan
+  nbody_t5.5     observed 0.3276   true nan
+  nbody_t6.25    observed 0.3228   true nan
+  au5            observed 0.3015   true 0.2987
+  au9            observed 0.3755   true 0.5003
+  au10           observed 0.3794   true 0.5512
+  au12           observed 0.3007   true 0.3323
+  au14           observed 0.3042   true 0.3352
+  au17           observed 0.3644   true 0.4909
+  au18           observed 0.3193   true 0.3646
+  au20           observed 0.3589   true 0.4361
+  au22           observed 0.3172   true 0.3925
+  au24           observed 0.3478   true 0.5663
+  au26           observed 0.3495   true 0.4515
+  au27           observed 0.3126   true 0.3521
+  au28           observed 0.3350   true 0.4466
+
+Auriga only (13): corr(true A2_max, observed proxy) = +0.89 (p = 0.000)
+  true A2_max spans   0.299 - 0.566  (factor 1.90)
+  observed proxy spans 0.301 - 0.379  (factor 1.26)
+  N-body proxy spans   0.319 - 0.346
+
+wrote results/bar_strength_proxy_check.csv

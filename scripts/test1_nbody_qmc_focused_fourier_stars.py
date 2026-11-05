@@ -153,7 +153,7 @@ def main():
         stars = np.column_stack([f[k][:].astype(np.float64) for k in ("x", "y", "z", "vx", "vy", "vz")])
     rng = np.random.default_rng(SEED)
     boot_w = rng.multinomial(len(stars), np.full(len(stars), 1 / len(stars)), size=N_BOOT).astype(float)
-    times = ssl.snapshot_times()
+    times = None                     # taken from each trajectory (may be thinned)
     rows, cache = [], {}
     for _, p in design.iterrows():
         i = int(p.idx)
@@ -167,7 +167,8 @@ def main():
             if phi not in cache:
                 cache = {phi: data_fit(stars, phi, boot_w)}
             cd, cov, n, ok = cache[phi]
-            cl = library_fit(np.load(traj_path(p.traj_file, p.batch)), times, ok)
+            _tr = np.load(traj_path(p.traj_file, p.batch))
+            cl = library_fit(_tr, ssl.times_for_traj(_tr), ok)
             valid = ok & np.all(np.isfinite(cd), axis=(1, 2)) & np.all(np.isfinite(cl), axis=(1, 2))
             np.savez(saved, ring_edges=RING_EDGES, layer_edges=LAYER_EDGES, terms=TERMS, fields=FIELD_NAMES,
                      coef_data=cd.reshape(NR, NL, 6, NK), coef_lib=cl.reshape(NR, NL, 6, NK),

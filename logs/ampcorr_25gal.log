@@ -1,0 +1,5 @@
+absvR / self:0.4
+  offset vs kinematic amplitude: r = +0.22 (p = 0.2981)
+  leave-one-out systematic: 3.30 deg  ->  3.44 deg with the amplitude term
+  worst galaxy:             9.82  ->  9.55 deg
+saved figures/test2_bar_angle_amplitude_correction.png

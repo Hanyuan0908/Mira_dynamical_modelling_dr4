@@ -71,16 +71,22 @@ def collect(runs, scheme, inflate=False, truth="measured"):
                 col = f"chi2N_{scheme}_{v}"
                 if col in ev:
                     f = float(np.sqrt(ev[col].min()))
+            gal = meta.get("galaxy", "nbody")
+            auriga = str(gal).startswith("au")
             om = float(meta["omega_truth"])
-            if truth != "measured":
-                import json as _j
-                tm = _j.load(open(RESULTS_DIR / r / "run_meta.json")).get("galaxy", "nbody")
-                t_model = 7.0 if tm == "nbody" else float(tm.split("_t")[1])
+            if truth != "measured" and not auriga:
                 col = "pattern_speed_fd" if truth == "tabulated_fd" else "pattern_speed_dehnen"
-                om = tabulated(t_model, col)
+                om = tabulated(7.0 if gal == "nbody" else float(gal.split("_t")[1]), col)
+            # The Auriga haloes are separate z = 0 galaxies, not snapshots of the N-body run, so
+            # there is no simulation table to read a finite-difference pattern speed from: their
+            # truth is our own Dehnen-method measurement (results/auN_ground_truth.json, which is
+            # what omega_truth holds). That is a DIFFERENT truth convention from the N-body points
+            # on the same axes, and the convention is not cosmetic -- PROGRESS 2026-11-02/03 shows
+            # the sf/sfratio ordering reversing between them. Flagged in the legend and the title.
             out.append(dict(run=r, variant=v, truth=om, med=p["p50"],
                             lo=p["p50"] - f * (p["p50"] - p["p16"]), hi=p["p50"] + f * (p["p84"] - p["p50"]),
-                            sf="sf" in meta["variants"], loo=d["loo_rms"], inflation=f))
+                            sf="sf" in meta["variants"], loo=d["loo_rms"], inflation=f,
+                            auriga=auriga, galaxy=gal))
     return out
 
 
@@ -95,8 +101,12 @@ def main():
                     help="scale the error bars by sqrt(chi2_min/N), the usual correction for a model that "
                          "does not fit within its errors; the tempering assumes chi2/N = 1")
     ap.add_argument("--scheme", default=SCHEME_B, help="chi2 scheme to plot (default: scheme B, no sigma m=0)")
+    ap.add_argument("--variants", nargs="+", default=None,
+                    help="library weightings to show (default: all). e.g. --variants sfratio")
     args = ap.parse_args()
     set_style()
+    if args.variants:
+        VARIANTS[:] = [v for v in VARIANTS if v in args.variants]
     pts = collect(args.runs, args.scheme, args.inflate, args.truth)
     if not pts:
         raise SystemExit("no emulator results found")
@@ -120,8 +130,14 @@ def main():
             for p in sel:
                 x = p["truth"] + off[v] + (0.9 if not p["sf"] else 0.0)
                 lo, hi = efun(p)
-                ax.errorbar(x, yfun(p), yerr=[[lo], [hi]], fmt=mk, color=c, ms=7 if p["sf"] else 7,
-                            mfc=c if p["sf"] else "white", mec=c, mew=1.4, lw=1.3, capsize=3, zorder=3)
+                # Auriga: same colour and variant marker, but a dark edge and a larger symbol, so
+                # the two suites are separable without spending the marker shape on it.
+                ax.errorbar(x, yfun(p), yerr=[[lo], [hi]], fmt=mk, color=c,
+                            ms=9 if p.get("auriga") else 7,
+                            mfc=c if p["sf"] else "white",
+                            mec=INK if p.get("auriga") else c,
+                            mew=1.9 if p.get("auriga") else 1.4,
+                            lw=1.3, capsize=3, zorder=4 if p.get("auriga") else 3)
         a1.plot([], [], mk, color=c, label=lab)
 
     for p in pts:
@@ -134,6 +150,11 @@ def main():
     a1.set_aspect("equal")
     a1.set_xlabel(r"true $|\Omega_b|$ [km s$^{-1}$ kpc$^{-1}$]")
     a1.set_ylabel(r"recovered $|\Omega_b|$ (posterior median, 16-84%)")
+    if any(p.get("auriga") for p in pts):
+        a1.plot([], [], "o", color="none", mec=INK, mew=1.9, ms=9,
+                label="Auriga z = 0 (dark edge)")
+        a1.plot([], [], "o", color="none", mec=INK_MUTED, mew=1.4, ms=7,
+                label="N-body snapshots")
     a1.legend(loc="upper left", fontsize=8.5)
     a1.set_title("recovered against true pattern speed", color=INK_2, fontsize=10)
 
@@ -143,9 +164,15 @@ def main():
     a2.set_title("fractional bias (filled = selection mock, open = no selection)", color=INK_2, fontsize=10)
     for v in VARIANTS:
         s = [p for p in pts if p["variant"] == v]
-        if s:
-            m = np.mean([abs(100 * (p["med"] / p["truth"] - 1)) for p in s])
-            a2.plot([], [], STYLE[v][1], color=STYLE[v][0], label=f"{v}: mean |bias| {m:.1f}%")
+        if not s:
+            continue
+        bias = lambda q: np.mean([abs(100 * (x["med"] / x["truth"] - 1)) for x in q])
+        nb = [x for x in s if not x.get("auriga")]
+        au = [x for x in s if x.get("auriga")]
+        lab = f"{v}: mean |bias| {bias(s):.1f}%"
+        if nb and au:        # the two suites do not share a truth convention; quote them apart
+            lab = f"{v}: N-body {bias(nb):.1f}%, Auriga {bias(au):.1f}%"
+        a2.plot([], [], STYLE[v][1], color=STYLE[v][0], label=lab)
     a2.legend(loc="lower right", fontsize=8.5)
 
     sch = "scheme B: sigma ring averages dropped" if args.scheme == SCHEME_B else \
@@ -153,7 +180,14 @@ def main():
     extra = r" | error bars $\times\sqrt{\chi^2_{\min}/N}$" if args.inflate else ""
     extra += {"measured": "", "tabulated": " | truth = simulation table (Dehnen col.)",
               "tabulated_fd": " | truth = simulation table (finite-difference col.)"}[args.truth]
-    fig.suptitle(f"Test 2: pattern-speed recovery at 10% distance error - {sch}{extra}", fontsize=11.5, y=0.98)
+    if any(p.get("auriga") for p in pts) and args.truth != "measured":
+        extra += "; Auriga truth = own Dehnen measurement"
+    sig = sorted({round(float(json.load(open(RESULTS_DIR / r / "run_meta.json"))["sigma_DM"])
+                        * np.log(10) / 5 * 100, 1) for r in args.runs
+                  if (RESULTS_DIR / r / "run_meta.json").exists()})
+    lvl = f"{sig[0]:g}%" if len(sig) == 1 else "/".join(f"{v:g}%" for v in sig)
+    fig.suptitle(f"Test 2: pattern-speed recovery at {lvl} distance error - {sch}{extra}",
+                 fontsize=11.5, y=0.98)
     savefig(fig, f"test2_pattern_speed_recovery{args.tag}")
 
     print(f"\n{'run':22s} {'variant':9s} {'truth':>7s} {'median':>8s} {'bias':>7s} {'16-84%':>15s}")

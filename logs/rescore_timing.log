@@ -1,0 +1,5 @@
+test2_au9_sf_12p5pct: 49,986 stars, sigma_DM 0.2714, nside 32
+  [1/6] idx 129  (0.1 min)
+merged 5 points -> results/test2_au9_sf_12p5pct/evals_sfratio.csv
+  folded 16 sfratio columns into results/test2_au9_sf_12p5pct/evals.csv
+done: 3 points in 0.4 min

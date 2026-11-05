@@ -23,28 +23,51 @@ KEEP_DIRS = {"key_results", "key_results_12p5pct", "test2_schemeB", "test2_schem
 
 # Headline figures, kept at the top level. Exact names.
 HEADLINE = [
-    # campaign summaries
-    "test2_error_level_comparison.png",
-    "test2_error_level_comparison_sfratio.png",
-    "test2_pattern_speed_recovery_schemeB_fdtruth.png",
-    "test2_pattern_speed_recovery_12p5pct_schemeB.png",
-    "test2_snapshot_coverage.png",
+    # the campaign results
+    "test2_pattern_speed_recovery_12p5pct_12pt.png",      # twelve snapshots, N-body only
+    "test2_pattern_speed_recovery_12p5pct_12pt_plus_auriga.png",   # + 13 Auriga, the main result
+    "test2_error_level_comparison_sfratio.png",           # 10% against 12.5%, S estimated
+    "test2_snapshot_coverage.png",                        # where the twelve sit on the track
+    # the emulator audit
+    "emulator_validation/loo_sfratio.png",
+    "emulator_validation/pooled_draws_test2_t7_sf_12p5pct.png",
     # which snapshot, and what the mocks look like
     "nbody_pattern_speed_evolution.png",
     "test2_nbody_mock_selection_vs_dr3_miras_sigmaDM0.217.png",
     "test2_nbody_mock_selection_vs_dr3_miras_sigmaDM0.271.png",
-    # the bar-angle result
+    # the bar-angle result. The calibration is a band over the 13 Auriga with the N-body held
+    # out as a blind check; the vecsum pair is the earlier two-snapshot version, kept because it
+    # is still the cleanest statement of the distance-error drift itself.
+    "test2_bar_angle_auriga_calibration.png",
+    "test2_bar_angle_window_comparison.png",
+    "test2_bar_angle_transfer_12p5.png",
+    "test2_smeared_velocity_maps_auriga_outliers.png",
     "test2_bar_angle_vecsum_drift.png",
     "test2_bar_angle_vecsum_transfer.png",
     # why bar length and strength are weak
     "test1_nbody_qmc_focused_bar_length_strength_degeneracy_logLs_fourier_stars_R0to6_vR_m24_vphi_sigR_sigphi_m024.png",
 ]
 
+# figures that a later run superseded; filed under archive/superseded/ rather than deleted
+SUPERSEDED = [
+    "test2_pattern_speed_recovery_12p5pct_schemeB.png",   # 5 snapshots, all variants, K=1
+    "test2_pattern_speed_recovery_12p5pct_sfratio.png",   # 5 snapshots, K=1
+    "test2_pattern_speed_recovery_schemeB_fdtruth.png",   # the 10% campaign at K=1
+    "test2_error_level_comparison.png",                   # known-S, which we do not use
+    "test2_pattern_speed_recovery_titlecheck.png",        # a throwaway title regression check
+    "test2_bar_angle_amplitude_correction.png",           # bar-strength correction, retracted 2026-11-04
+    "test2_bar_angle_calibration_band.png",               # the 13-galaxy band that used it
+]
+
 # (archive subfolder, regex). First match wins, so order matters.
 RULES = [
-    ("emulator_diagnostics", r"emulator_(slices|loo)_"),
-    ("emulator_diagnostics", r"logl_corner"),
-    ("posteriors",           r"emulator_corner"),
+    ("superseded",           r"_sfratioK1\b|_sfratioK10\b"),   # the K comparison, kept for the record
+    # Corner plots live together and leave-one-out has its own folder. Previously `logl_corner`
+    # and `emulator_loo_` were both swept into emulator_diagnostics, which buried the corners of
+    # the evaluated logL among the slices and made the LOO set impossible to pick out.
+    ("posteriors",           r"emulator_corner|logl_corner"),
+    ("leave_one_out",        r"emulator_loo_"),
+    ("emulator_diagnostics", r"emulator_slices_"),
     ("../mock_validation",   r"mock_selection_vs_dr3_miras|spatial_mock_vs_dr3|mock_spatial|mock_vR|"
                              r"_overview|dr3_mira_|mock_grid"),
     ("bar_angle",            r"bar_angle|estimator_(scan|transfer)|vecsum"),
@@ -82,12 +105,14 @@ def main():
         print(f"restored {n} figures")
         return
 
+    head = {h.split("/")[-1] for h in HEADLINE}
     moves, kept = [], []
     for f in sorted(FIG_DIR.glob("*.png")):
-        if f.name in HEADLINE:
+        if f.name in head:
             kept.append(f.name)
             continue
-        moves.append((f, (arch / classify(f.name) / f.name).resolve()))
+        sub = "superseded" if f.name in SUPERSEDED else classify(f.name)
+        moves.append((f, (arch / sub / f.name).resolve()))
 
     by_sub = {}
     for _, dest in moves:
@@ -107,6 +132,22 @@ def main():
         dest.parent.mkdir(parents=True, exist_ok=True)
         shutil.move(str(src), str(dest))
     print(f"\nmoved {len(moves)} figures into {rel(arch)}")
+
+    # The sweep above only sees the top level, so figures filed before a rule existed stay where
+    # they were put - which is how 56 corner plots and 110 leave-one-out figures ended up under
+    # emulator_diagnostics. Re-apply the rules inside the archive so a rule change reaches them.
+    r = 0
+    for sub in sorted(d for d in arch.iterdir() if d.is_dir()):
+        for f in sorted(sub.glob("*.png")):
+            for dest_name, pat in RULES:
+                if re.search(pat, f.name):
+                    target = (arch / dest_name).resolve()
+                    if target != sub.resolve():
+                        target.mkdir(parents=True, exist_ok=True)
+                        shutil.move(str(f), str(target / f.name))
+                        r += 1
+                    break
+    print(f"re-filed {r} figures already inside {rel(arch)}")
 
 
 if __name__ == "__main__":

@@ -2951,6 +2951,393 @@ Figures: `figures/key_results_12p5pct/` (summary, corner plots per snapshot, REA
 `figures/mock_validation/test2_mock_grid_12.5pct.png`. `figures/` itself was re-filed — see
 `figures/README.md` and `scripts/organise_figures.py`.
 
+## 2026-11-04 — The galaxy set goes from one simulation to 25 galaxies, and the bar-angle systematic is 4.2° (not 2.7°)
+
+Two things happened today: the test set grew from the N-body run to 13 independent Auriga galaxies, and the
+radial window used to sum the m = 2 phase was scanned instead of assumed.
+
+**1. The Auriga set.** `scripts/survey_auriga_bars.py` measures A2_max, the radius of the m = 2 peak and the
+bar radius for all 28 level-4 haloes, for reference; the 15 with MW-frame stars and selection-function mocks
+here are Au2, 5, 9, 10, 12, 13, 14, 17, 18, 20, 22, 24, 26, 27, 28. Of those, Au2 and Au13 are interacting —
+`scripts/check_auriga_interactions.py` reproduces the cut independently, flagging a companion above 5% of the
+host stellar mass inside R200 at 0.175 and 0.060 — in agreement with the interaction classification in
+Fagkoudi et al. (2025). An interaction breaks the steady state and drives its own m = 2, so both are dropped.
+That leaves the 13 in `scripts/galaxies.py:AURIGA`: Au5, 9, 10, 12, 14, 17, 18, 20, 22, 24, 26, 27, 28.
+
+`scripts/measure_auriga_pattern_speed.py` gives their pattern speeds: 16.8–65.1 km/s/kpc, with
+R_CR/R_bar = 1.11–2.38 (11 of 15 below 2.0, i.e. mostly fast bars). Tables `results/auriga_bar_survey.csv`,
+`results/auriga_interactions.csv`, `results/auriga_pattern_speed.csv`.
+
+**2. The window scan.** `scripts/scan_bar_angle_windows.py` caches the per-ring m = 2 coefficients once for
+every (galaxy, bar angle, realisation, estimator) — 25 x 6 x 8 x 2 x 24, `results/bar_angle_ring_cache.npz` —
+then scores 17 window rules over the cache at no further cost. The score is the leave-one-out transfer rms:
+calibrate on each galaxy in turn, infer the other 24, take the rms error. That is the systematic a user incurs
+applying a simulation calibration to a galaxy they did not calibrate on.
+
+⟨|v_R|/v_tot⟩ beats the ⟨v_R⟩ quadrupole for **every one of the 17 rules** (4.18–9.05° against 7.93–45.6°),
+confirming the 2026-11-01 entry on a set that is no longer one galaxy. Best rules, ⟨|v_R|/v_tot⟩:
+
+| rule | slope | LOO mean | LOO worst | time corr |
+|---|---|---|---|---|
+| **`self:0.4`** (rings above 0.4 of their own peak amplitude) | 0.844 | **4.18°** | 12.58° | +0.30 |
+| `self:0.5` | 0.838 | 4.40° | 12.11° | +0.42 |
+| `vR:0.5` (rings chosen from the ⟨v_R⟩ amplitude profile) | 0.821 | 4.91° | 18.66° | **−0.06** |
+| `self:0.7` (what was used before today) | 0.825 | 5.68° | 12.95° | +0.56 |
+| `fixed:1-4` (fixed kpc window) | 0.785 | 7.02° | 30.82° | −0.14 |
+
+So a window scaled to the data's own amplitude is worth ~2.8° over a fixed kpc window, and the threshold
+matters: 0.4 beats the 0.7 in use by 1.5°. Table `results/bar_angle_window_scan.csv`.
+
+**The `time_corr` column in this table is not trustworthy and has been retracted.** It was meant to be the
+correlation of a galaxy's offset with snapshot time across the N-body sequence, but the code took
+`np.arange(len(snaps))[:-1]` against the galaxy list: the index is not the time ordering (the list starts at
+t = 7, then runs t = 2 upward), and `[:-1]` assumed the only non-N-body galaxy was Au18 sitting last, which
+stopped being true once the 13 Auriga haloes were added — so the 25-galaxy column correlated an arbitrary
+index against a mixture of two suites. Fixed in `scan_bar_angle_windows.py` to correlate against the actual
+snapshot time over the N-body galaxies only; **the scan must be re-run before any time_corr number is
+quoted**, and no conclusion about which rule family removes the time-ordered trend should be drawn from the
+numbers in the table above. The LOO columns are unaffected — they never used the ordering.
+
+**3. Retraction of the number quoted from the N-body-only scan.** An earlier run of the same scan over the
+N-body snapshots alone (13 galaxies) gave a best LOO mean of **2.74°**, and that number was quoted. On the
+25-galaxy set it is **4.18°**. The N-body-only figure understated the systematic by ~1.5x, because snapshots
+of one secularly evolving galaxy share its structure and the leave-one-out test leaks across them — exactly
+the galaxy dependence the 2026-11-01 entry identified. **4.18° is the number to quote.** The ranking also
+moves: `vR:0.5` was top on the N-body-only set and is third here, and the time_corr signs flip, so neither the
+ordering nor the trend diagnosis from the N-body-only scan should be carried forward.
+
+**Caveats.** 8 realisations per (galaxy, angle) and 6 angles spanning 15–35°, with shared distance-error seeds
+across angles as before, so the rules at the top differ by less than their own spread — `self:0.4` against
+`self:0.5` (4.18 vs 4.40) is not a real ordering, and choosing finely among the leaders would over-fit these
+25 galaxies. The Auriga bar radii come from the A2(R) profile without a visual check. The blind test in
+`results/bar_angle_blind_test.csv` (13:14, so N-body only, before the Auriga set existed) is superseded on
+the numbers but still shows the shape of the result: the amplitude correction helps ⟨|v_R|/v_tot⟩
+(mean |error| 1.87° to 0.79°) and interval coverage 1/6 to 5/6, while leaving ⟨v_R⟩ no better.
+
+## 2026-11-04 — The 13 Auriga galaxies go into the transfer test: the bar-strength hypothesis fails, and the bias tracks corotation instead
+
+The ⟨|v_R|/v_tot⟩ angle bias looked bar-strength dependent on the N-body sequence plus Au18 (r = −0.73,
+p = 0.007, entry above), and correcting for it narrowed the calibration band from ±1.53° to ±1.10°. The
+N-body run spans almost no bar strength on its own, so the 13 non-interacting barred Auriga galaxies were
+added to test the relation on galaxies that actually differ. **It does not survive.**
+
+**The set-up.** `test_bar_angle_transfer_12p5.py` was generalised from "12 N-body snapshots + Au18" to any
+mixture of the two suites: `t_of`/`label` no longer special-case Au18, pattern speeds come from
+`results/auriga_pattern_speed.csv` for Auriga and the snapshot table for the N-body run, and the two suites
+are drawn apart (viridis circles along the N-body time sequence, warm squares for Auriga, Au18 black).
+Serially the 25 galaxies take about six hours, so `run_transfer_parallel.py` farms the 150
+(galaxy, angle) measurements over a process pool — same seeds, identical table, about four minutes.
+
+**1. Adding Auriga makes the transfer worse, as it should.** Calibration fitted on t = 7, applied to
+everything else:
+
+| estimator / window | 13 galaxies (rms, max) | **25 galaxies (rms, max)** |
+|---|---|---|
+| ⟨v_R⟩ / fixed 1–4 kpc | 3.22°, 11.63° | 5.32°, 18.41° |
+| ⟨v_R⟩ / kinematic window | 4.30°, 8.84° | 8.01°, 31.84° |
+| ⟨\|v_R\|/v_tot⟩ / fixed 1–4 kpc | 4.15°, 9.84° | 6.35°, 23.69° |
+| **⟨\|v_R\|/v_tot⟩ / kinematic window** | **3.05°, 7.91°** | **4.26°, 15.03°** |
+
+⟨|v_R|/v_tot⟩ with the kinematic window stays the best combination, and the ordering of all four is
+unchanged, so the estimator choice is robust. But the numbers rise across the board: snapshots of one
+galaxy share its structure, and the 13-galaxy figures were measuring that, not galaxy-to-galaxy transfer.
+The leave-one-out mean for ⟨|v_R|/v_tot⟩ / kinematic window is 5.68°, which is exactly the `self:0.7` row
+of the independent window scan over the same 25 galaxies — two code paths, same number.
+
+**2. The bar-strength correlation collapses.** Re-running `plot_bar_angle_amplitude_correction.py` on 25
+galaxies:
+
+| | 13 galaxies | **25 galaxies** |
+|---|---|---|
+| offset vs bar-strength proxy | r = **−0.73** (p = 0.007) | r = **+0.22** (p = 0.30) |
+| leave-one-out systematic | 3.55° → **2.81°** with the term | 3.30° → **3.44°** with the term |
+| calibration band half-width | ±1.53° → **±1.10°** | ±1.60° → **±2.08°** |
+
+The sign flips, the significance vanishes, and the correction now makes both the systematic and the band
+*worse*. **This is not a failure of the proxy.** `results/bar_strength_proxy_check.csv` checks it directly:
+across the 13 Auriga galaxies the observed density m = 2 amplitude tracks the true A2_max at r = +0.89
+(p < 0.001). It is compressed — true A2_max spans a factor 1.90 (0.299–0.566), the observed proxy only 1.26
+(0.301–0.379) — but it ranks the galaxies correctly. The offset simply is not a function of bar strength
+across galaxies: on the 13 Auriga alone, r = +0.26 (p = 0.40), and −0.10 with Au5 removed. Au12, Au14 and
+Au5 have the same proxy value to within 0.001 and offsets of +0.9°, −0.0° and −7.6°.
+
+What the earlier r = −0.73 was measuring is the N-body sequence's own evolution: as that one bar grows, its
+strength and its structure change together, and Au18 supplied a single extra point. That is an intra-galaxy
+trend, not a transferable law.
+
+**3. What the bias does track: corotation radius.** Correlating the per-galaxy offset against eight
+candidates over the 13 Auriga galaxies (⟨|v_R|/v_tot⟩, `self:0.4`):
+
+| quantity | Pearson r | p | Spearman ρ |
+|---|---|---|---|
+| **R_CR** | **+0.79** | 0.001 | **+0.92** |
+| pattern speed Ω_p | −0.59 | 0.035 | −0.85 |
+| R_bar | +0.46 | 0.111 | +0.41 |
+| true A2_max (bar strength) | +0.26 | 0.399 | +0.19 |
+
+R_CR and Ω_p are the same statement. The relation is not a leverage artefact: Au20 sits at R_CR = 11.3 kpc,
+3.6σ from the median, but removing it leaves Pearson +0.61 / Spearman +0.90, and removing both Au20 and Au5
+leaves **+0.90 / +0.91**. Spearman stays between +0.90 and +0.93 in every subset. Physically this is the
+more natural axis anyway: ⟨|v_R|/v_tot⟩ traces the radial-motion lobes, whose phase relative to the bar is
+set by which orbit families are populated — that is, by where the resonances sit — not by how strong the
+bar is. The N-body sequence on its own gives only r = +0.47 (p = 0.12) over R_CR = 5.1–8.2 kpc, so the
+relation is visible across galaxies, not within one galaxy's evolution.
+
+**Caveat on using it.** Bar strength was attractive because the same data provides it; R_CR is not directly
+observable and needs Ω_p, which for the Milky Way comes from a separate measurement (this pipeline's own, or
+the literature). Whether a correction in R_CR is usable in practice is a different question from whether the
+dependence is real, and only the second is settled here.
+
+**4. Au5 is a persistent outlier and should probably be dropped.** It is the worst galaxy in every test:
+leave-one-out transfer error 11.62° against 8.67° for the next worst and 3.38° for the mean; offset −7.6°
+against a −1.0 to +2.6 range for the other twelve; and it is the galaxy that drags the corotation
+correlation from +0.98 to +0.79. It also has the weakest bar in the sample, A2_max = 0.299, essentially on
+the bar/no-bar boundary of `survey_auriga_bars.py` — its measured phase in the bottom panels of
+`figures/test2_bar_angle_transfer_12p5.png` is flat and non-monotonic in φ_b, i.e. it is not tracking a bar
+at all. It is in the sample because the selection criterion is non-interaction (Fagkoudi et al. 2025), not
+bar strength. **Not dropped — flagged for a decision**, since excluding it on the basis of the result it
+spoils needs a stated, independent criterion (an A2_max floor would be one).
+
+**5. Ground-truth potentials.** `build_auriga_potential.py --halo N` was run for all 13, following the Au18
+and N-body setups unchanged: spherical Multipole for the dark halo (a triaxial halo would contribute its own
+m = 2, degenerate with the bar), CylSpline with no symmetry for stars and gas, a Plummer black hole at the
+level-4 softening. Output `mock/auN_potential/{dm,stars,gas,bh}.ini` plus `summary.json`; about 3.5 minutes
+per halo. `measure_au18_pattern_speed.py --galaxy auN` then writes `results/auN_ground_truth.json` in the
+same format as `nbody_ground_truth.json`, with the resonance radii computed from the new potential. Cross-
+check on Au5: Ω_p = 45.11 ± 0.57 from the Dehnen Fourier method against 45.113 measured independently in
+`results/auriga_pattern_speed.csv`, and R_CR = 5.39 kpc from the AGAMA potential against 5.30 kpc from the
+particle-based Ω(R).
+
+**Two bugs found and fixed.**
+- `scan_bar_angle_windows.py`: the `time_corr` column correlated `np.arange(len(snaps))[:-1]` against the
+  offsets. The index is not the time ordering (the list starts at t = 7, then runs t = 2 upward) and `[:-1]`
+  assumed the only non-N-body galaxy was Au18 sitting last. Now correlates against the actual snapshot time
+  over the N-body galaxies only. Corrected values are **+0.48 to +0.96 for every rule** — the time-ordered
+  residual is real, universal, and removed by no window rule; the earlier reading that the `vR:*` rules
+  removed it was an artefact of the broken statistic. `self:0.4` has both the lowest systematic (4.18°) and
+  the weakest residual trend (+0.48), so it remains the adopted window.
+- `build_auriga_potential.py`: the "force from the gas outside the CylSpline grid" check built a Multipole
+  with rmin = 1 kpc from particles that all sit beyond 50 kpc, so AGAMA extrapolated inward over a decade
+  and a half with no mass to constrain it — for Au5 it reported −1.27e5 (km/s)² at R = 8 kpc, twice the
+  whole galaxy's v_c² and the wrong sign. Replaced with direct summation. The exported potentials were never
+  affected: the bad object was only ever used for this printed diagnostic. **Au5, Au9, Au10 and Au12 were
+  built before the fix and still carry the old number in their `summary.json`.**
+
+Figures `figures/test2_bar_angle_transfer_12p5.png`, `figures/test2_bar_angle_amplitude_correction.png`,
+`figures/test2_bar_angle_calibration_band.png`, `figures/auN_pattern_speed.png`.
+Tables `results/bar_angle_transfer_12p5.csv` (150 rows), `results/bar_strength_proxy_check.csv`,
+`results/auN_ground_truth.json`.
+
+## 2026-11-05 — THE PIPELINE, written down: the exact configuration a Test 2 run must use
+
+Read this before launching anything. Every choice below is one that was tested, decided and recorded
+somewhere else in this file, and every one of them was then got wrong in the Auriga campaign of
+2026-11-04 by rebuilding the configuration from a run script's defaults instead of from the record.
+Four of five were wrong; the cost was a full overnight cluster run and most of a morning.
+
+**The configuration.**
+
+| | value | why, and where it was decided |
+|---|---|---|
+| design | `results/test1_nbody_qmc_focused/design.csv`, **257 points** | the focused Sobol grid; shared by every galaxy |
+| Ω axis | rescaled by Ω_true / **26.02** (`OMEGA_REF`) | `scaled_design()`; only the Ω box moves, per galaxy |
+| mock | `<gal>_mock_selection_sigmaDM0.271_N50k.hdf5` | 12.5% distance error, σ_DM = 0.125·5/ln10 |
+| χ² scheme | **B** = `fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024` | σ **ring averages dropped**. See below — this is the big one |
+| library weighting | **`sfratio`** = ρ_obs/ρ_lib per (HEALPix **nside 32** × **1 kpc** distance) cell | 2026-11-02/03: 3.1% mean \|Ω_b bias\| at 12.5%, against 4.1% for the true S and 9.3% for none |
+| distance draws | **K = 10**, pooled | `selection.observed_library(n_draw=10)`; K=1 biases χ² high parameter-dependently and costs LOO 1.47 → 0.65 |
+| orbit sampling | **50 Myr** (`--cadence-step 2`, 21 of 41 snapshots over 1 Gyr) | posterior cost < 0.2 km/s/kpc, halves the bytes |
+| truth | N-body: the simulation table's **finite-difference** column. Auriga: our own Dehnen measurement | adopted 2026-11-01; Auriga has no such table |
+
+The emulated column is therefore
+`logLs_fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024_sfratio`, and the scoring is a **re-score**
+(`rescore_empirical_selection.py --estimator ratio --n-draw 10 --cadence-step 2`), which needs only the
+saved trajectories — no orbit integration. `run_test2_posteriors.sh` and `run_auriga_posteriors.sh`
+produce `observed`, `asis` and `sf` on **scheme A** during the search; none of those three is the
+answer, they are controls.
+
+**Scheme A is biased high in every single run, and the mechanism is understood** (user, 2026-11-05):
+*the distance error makes the stars look hotter, and the pattern speed rises to compensate*. Scheme A
+keeps the σ ring averages, which carry that inflation; scheme B drops them. Measured over the twelve
+N-body snapshots at 12.5%, same `sf` weighting:
+
+| | mean bias | mean \|bias\| | higher than B |
+|---|---|---|---|
+| scheme A (σ m = 0 kept) | **+11.4%** | 11.4% | **12 of 12 runs** |
+| scheme B (σ ring averages dropped) | +2.4% | 3.2% | — |
+
+Per-snapshot A−B runs +1.0 to +22.7 points, never negative. Any uniformly positive Ω_b bias of order
+10% is this, and nothing else, until scheme B has been checked.
+
+**Traps.**
+- `run_meta.json` records the **integration** metadata. After a re-score it still says
+  `cadence_step: 1, snapshot_dt_myr: 25.0` even though the `sfratio` columns were scored at 50 Myr.
+  The metadata does not describe the scored column.
+- The variant name `sfratio` does **not** encode K. `test2_t7_sf_12p5pct` carries `sfratio`,
+  `sfratioK1` and `sfratioK10`, and the plain one matches neither (max \|Δ logL\| 7.5 against K1,
+  2.9 against K10). The Auriga `sfratio` columns are K = 10. Resolve before comparing suites.
+- `claim()` uses an `O_EXCL` lock with **no expiry and no stale-lock reclamation**. A killed worker
+  leaves a lock and that design point is skipped for ever — it merges as NaN and the emulator dies on
+  `Input y contains NaN`. Delete the run's `*.lock` before any restart. This cost au9 an hour.
+- `potential_family` and `steady_state_likelihood` used to special-case the literal name `"au18"`;
+  generalised 2026-11-05 to any `au<N>` (`_is_auriga`). Au18 and the N-body paths are provably
+  unchanged: `POT_DIR == galaxy("au18")["pot_dir"]` and `FILES == files("au18")`.
+
+## 2026-11-05 — The seven Auriga galaxies in the correct configuration: Ω_b to 2.3%, and the Ω_b baseline doubled
+
+Batch 1 (Au9, 10, 17, 18, 24, 26, 27) ran overnight on the cluster, 257 points each, then was
+re-scored into the configuration above. `figures/test2_pattern_speed_recovery_12p5pct_12pt_plus_auriga.png`
+overplots them on the twelve N-body snapshots.
+
+| galaxy | Ω_b truth | recovered | bias | φ_b | S | bar_frac | LOO | scheme A / `sf` |
+|---|---|---|---|---|---|---|---|---|
+| Au9 | 36.77 | 36.31 | −1.3% | 19.6 | 1.08 | 0.73 | 0.66 | +6.2% |
+| Au10 | 56.65 | 56.87 | +0.4% | 16.5 | 1.02 | 0.78 | 1.20 | +1.4% |
+| Au17 | 50.95 | 49.09 | −3.7% | 18.2 | 1.25 | 0.59 | 0.67 | +4.0% |
+| Au18 | 36.27 | 36.48 | +0.6% | 23.3 | 1.10 | 0.94 | 0.42 | +11.2% |
+| Au24 | 32.78 | 34.11 | +4.0% | 20.8 | 1.15 | 0.72 | 0.50 | +14.3% |
+| Au26 | 65.14 | 66.17 | +1.6% | 18.9 | 1.12 | 0.75 | 0.74 | +6.4% |
+| Au27 | 39.16 | 41.05 | +4.8% | 21.0 | 1.06 | 0.79 | 0.41 | +10.4% |
+
+- **Ω_b: mean \|bias\| 2.3%, mean bias +0.9%, five high and two low** — against the N-body's 2.8% on the
+  same axes. The method transfers to galaxies it has never seen, and the sign asymmetry of the
+  scheme-A numbers (+7.7%, 7 of 7 high) is gone.
+- **The Ω_b baseline roughly doubles**: the N-body set spans 25–44 km/s/kpc; Au26 at 65.1 recovers to
+  +1.6% and Au10 at 56.7 to +0.4%. Nothing breaks at the fast end.
+- **The emulator is much better behaved**: LOO 0.41–0.74 for five of seven, against 0.88–1.62 on the
+  K = 1 scoring. That is the K = 10 pooling doing what `selection.py` predicted.
+- **φ_b is not fixed and is not an artefact of any of this.** It recovers at 16.5–23.3° against a truth
+  of 27°, mean **−7.3°**, and barely moved under any of the four corrections. It is continuous with the
+  kinematic compression measured on 2026-11-04: the cheap ⟨\|v_R\|/v_tot⟩ estimator gives −4.0° on the
+  same mocks and the full model −9.7°, i.e. **the dynamical model is biased about twice as hard as the
+  estimator it was meant to improve on**, and very consistently (0.9° galaxy-to-galaxy scatter). This
+  is the open problem.
+- **bar_frac is low**: mean 0.76 against a truth of 1. S is mild at 1.11.
+
+**Caveats.** The Auriga truths are our own Dehnen measurements, a different convention from the N-body
+finite-difference column on the same axes, and the convention is not cosmetic (2026-11-02/03 shows it
+reversing the `sf`/`sfratio` ordering). The N-body `sfratio` column's K is unresolved, affecting
+smoothness rather than location. Both are to be cleaned up in a self-consistent re-run. The campaign
+itself was integrated at 25 Myr and thinned to 50 Myr at scoring, rather than integrated thinned.
+
+**The grid maximum, the emulator maximum and the posterior median are three different answers.** Over
+the twelve N-body snapshots: best evaluated point mean \|error\| 1.24 km/s/kpc, emulator maximum 1.53,
+**posterior median 0.88**. The median — an integral over the ridge and the other three parameters — is
+the best conditioned and is what should be quoted; an argmax on a ridge this flat is set by structure
+below the emulator's own noise floor (LOO 0.7–1.3 in logL), which is why a grid point can land on the
+truth by luck while the emulator maximum sits 2 km/s/kpc away. But the spread between the three is a
+real unreported systematic: median (spread)/(68% half-width) = 0.62, and **in 3 of 12 runs the spread
+exceeds the quoted 1σ half-width** (worst, t = 4: three answers spanning 31.6–35.2 against a half-width
+of 2.44). Quote that as a floor on the method's internal consistency.
+
+Scripts added: `run_auriga_posteriors{,_cluster}.sh`, `archive_auriga_runs.sh`,
+`watch_auriga_progress.sh`, `rescore_auriga_sfratio.sh`, `emulate_auriga_schemeB.sh`,
+`watch_rescore.sh`.
+
+## 2026-11-04/05 — Bar angle: what the galaxy-to-galaxy offset depends on (OPEN), and the Auriga-calibrated band
+
+**OPEN QUESTION, to be settled before any bar angle is quoted: which bar property does the
+calibration depend on?** The compression of the measured m = 2 phase differs from galaxy to galaxy
+by up to 15°, and three candidate mechanisms have been tested and refuted. Nothing below should be
+read as a mechanism; the dependence is empirical.
+
+**1. It is not bar strength, and the earlier claim that it was is retracted.** On 12 N-body
+snapshots plus Au18 the per-galaxy offset correlated with the observed m = 2 density amplitude at
+r = −0.73 (p = 0.007), and correcting for it narrowed the band from ±1.53° to ±1.10°. On the
+25-galaxy set that becomes **r = +0.22 (p = 0.30)**, the sign flips, and the correction makes both
+the systematic (3.30° → 3.44°) and the band (±1.60° → ±2.08°) *worse*. This is not a proxy failure:
+the observed amplitude still tracks the true A2_max at r = +0.89 across the 13 Auriga. The original
+r = −0.73 was the N-body run's own bar growth over time, with Au18 as a single extra point — an
+intra-galaxy trend, not a transferable law. *(Retraction of the 2026-11-01 amplitude correction.)*
+
+**2. It is not intrinsic misalignment; it is all in the distance-error drift.** Splitting each
+galaxy's error into the zero-error misalignment of the kinematic quadrupole from the bar axis, and
+the drift the 12.5% smearing adds (`diagnose_bar_angle_outliers.py`):
+
+| | intrinsic | drift | transfer offset |
+|---|---|---|---|
+| Au5 | +2.7° | **+10.9°** (largest of 25) | −7.6° |
+| Au20 | −0.1° | **−1.0°** (only non-positive) | +7.7° |
+| Au14 (control) | +1.1° | +4.7° | −0.0° |
+| 13 Auriga range | −1.0 to +2.7 | −1.0 to +10.9 | −7.6 to +7.7 |
+
+Across the 13, the transfer offset is explained by the drift (r = −0.94, ρ = −0.91) and barely at
+all by the intrinsic misalignment (r = −0.54, ρ = −0.31). Every galaxy's kinematic quadrupole sits
+within a couple of degrees of its bar when distances are perfect — the problem is created by the
+observation, not by the galaxies.
+
+**3. The drift tracks corotation radius, with no mechanism.** Over the 13 Auriga, drift vs R_CR
+gives r = −0.81 (p = 0.0007), ρ = −0.84, robust to dropping either leverage point (Au20 at
+R_CR = 11.3 kpc, or Au5): ρ stays between −0.82 and −0.93 in every subset. It also reproduces
+*within* the single N-body galaxy as its own bar slows, R_CR 5.4 → 8.6 kpc: r = −0.84, ρ = −0.89
+(excluding t = 2). Bar strength over the same 13 gives r = −0.09 (p = 0.76).
+
+Three mechanisms were tested and all fail:
+- **sigma/R azimuthal scrambling.** If smearing of ~1 kpc scrambles azimuth as sigma/R, the drift
+  should track where the signal sits. It does not: R_eff gives r = −0.29 (p = 0.34), and
+  corr(R_CR, R_eff) = +0.20, so R_CR is not proxying for signal radius. Partial correlations:
+  R_CR survives controlling for R_eff (−0.80, p = 0.001), R_eff does not survive controlling for
+  R_CR (−0.21, p = 0.49). The quantitative sigma/R_eff prediction leaves an rms residual of 2.45°
+  against a 2.81° spread, and predicts +4.2° for Au20, which measures −1.0°.
+- **Radial phase twist** across the measurement window: r = −0.06 (p = 0.86).
+- **Position error vs velocity error.** The distance error corrupts v_t = 4.74 mu d as well as
+  position. Isolating them (`diagnose_drift_position_vs_velocity.py`, rescaling the proper motions
+  so the same stars sit in the right place with the wrong velocity and vice versa) shows both
+  contribute comparably (mean |pos| 3.6°, |vel| 4.2°) but **neither alone correlates with R_CR**
+  (−0.36 and +0.12); only the full combination does (−0.78). The decomposition is strongly
+  non-additive — for Au5 the velocity-only drift is −23.8° against a full drift of +11.2°.
+
+**4. It is not the selection function** (user's test, 2026-11-05). Switching the DR3-Mira-like
+selection off and keeping the distance error does not shrink the galaxy-to-galaxy spread — it grows
+slightly, 2.79° → 3.36° (sd), range 12.35° → 13.82° — and the R_CR correlation *strengthens*,
+−0.76 → −0.83. The two arms agree galaxy-by-galaxy at r = +0.95. So the effect lives in the
+smearing acting on each galaxy's own kinematics, not in the selection-galaxy pairing. **This
+supersedes the 2026-11-01 attribution of the transfer offset to "the selection function
+interacting with a different bar"** for this component. Removing the selection *raises* the mean
+drift 5.02° → 6.18°, consistent with (not proof of) outer-disc stars scattering inward: beyond
+corotation the bar-driven m = 2 velocity response flips sign, so contaminants from outside R_CR
+would rotate the measured phase, and the Mira selection suppresses them. **The direct test — tag
+the stars in the window by their true radius relative to R_CR and see whether the phase shift is
+carried by the beyond-corotation population — has not been run.**
+
+**5. The calibration band, from Auriga, with the N-body as a blind check**
+(`plot_bar_angle_auriga_calibration.py`). Because the dependence is on a bar property we cannot
+name, the calibration must be a band over a sample spanning a wide range of bar properties. The 13
+Auriga are separate galaxies in cosmological environments spanning Omega_b 16.8–65.1 km/s/kpc and
+R_CR 4.8–11.3 kpc; the 12 N-body points are one bar at 12 epochs, with every property correlated
+through time. So: calibrate on Auriga, infer the N-body through it, compare with its known truth.
+
+| estimator / window | band | slope | ±phi_b (formal) | blind mean | blind rms |
+|---|---|---|---|---|---|
+| ⟨v_R⟩ / fixed 1–4 kpc | 5.71° | 0.42 | ±6.79° | +1.04° | **3.36°** |
+| ⟨v_R⟩ / kinematic | 4.76° | 0.40 | ±5.96° | −1.80° | 3.58° |
+| ⟨\|v_R\|/v_tot⟩ / fixed | 4.98° | 0.76 | ±3.28° | +2.91° | 3.98° |
+| ⟨\|v_R\|/v_tot⟩ / kinematic | **4.22°** | **0.94** | **±2.25°** | **−3.92°** | 4.70° |
+
+- **The tightest calibration is the worst blind performer.** ⟨|v_R|/v_tot⟩ with the kinematic
+  window has a near-1:1 slope and the narrowest band, so its formal uncertainty is ±2.25° — but its
+  blind error is 4.70° rms, because the N-body snapshots sit as a *family* ~3.9° below the Auriga
+  median rather than scattered through the band. **The band width underestimates the true transfer
+  error by about a factor of two.** The ⟨v_R⟩ panels look better blind only because a slope of 0.4
+  makes their medians coincide by accident; their formal ±6–7° is useless for a measurement.
+- A suite-to-suite offset of this size is what the unnamed bar-property dependence predicts, and is
+  the strongest argument that it must be identified rather than marginalised over.
+- Caveats: Au5 sits along the bottom of both ⟨|v_R|/v_tot⟩ panels and inflates the 16th percentile;
+  a percentile band over 13 galaxies has poorly determined tails. `--drop au5` gives the sensitivity.
+
+**Au5 and Au20 are the two extremes and should be kept in view.** Au5 has the weakest bar in the
+set (A2_max = 0.299, essentially the bar/no-bar boundary of `survey_auriga_bars.py`), the shortest
+(R_bar = 3.0 kpc), the largest drift, and a leave-one-out transfer error of 11.6° against a 3.4°
+mean. Au20 is the only galaxy with corotation beyond the solar circle (11.3 kpc against 4.8–7.2 for
+the rest) and is essentially immune to the smearing. Neither has been dropped: excluding a galaxy
+on the basis of the result it spoils needs an independent criterion, and the non-interaction cut
+(Fagkoudi et al. 2025) is the one in force.
+
+Figures `test2_bar_angle_auriga_calibration.png`, `test2_smeared_velocity_maps_auriga_outliers.png`,
+`test2_bar_angle_amplitude_correction.png`, `test2_bar_angle_calibration_band.png`.
+Tables `bar_angle_auriga_calibration.csv`, `bar_angle_outlier_diagnosis.csv`,
+`bar_angle_drift_mechanism.csv`, `bar_angle_drift_pos_vs_vel.csv`,
+`bar_angle_drift_no_selection.csv`, `bar_strength_proxy_check.csv`.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name

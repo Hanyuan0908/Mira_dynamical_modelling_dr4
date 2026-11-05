@@ -1,0 +1,54 @@
+dark matter
+  Multipole: 0.5 s
+stars
+  CylSpline: 194.1 s
+gas
+  CylSpline: 56.7 s
+black hole
+{
+ "dm": {
+  "N": 6282693,
+  "mass": 1972190445568.0
+ },
+ "stars": {
+  "N": 2013533,
+  "mass": 74443479346.8938,
+  "mass_outside_grid": 0.0
+ },
+ "gas": {
+  "N": 655448,
+  "mass": 43679508866.11328,
+  "mass_outside_grid": 173863381912.6377
+ },
+ "bh": {
+  "mass": 154755104.0,
+  "offset_kpc": 0.0862121729300916,
+  "scaleRadius": 0.369
+ }
+}
+v_c(R=8 kpc) [km/s]: total 213.7; dm 155.0, stars 145.7, gas 18.6, bh 9.1
+gas outside the CylSpline grid: v_c^2 contribution at R = 8 kpc = -1.7 (km/s)^2, i.e. -0.00% of the total
+peak RSS 0.00 GB
+	Command being timed: "/data/hz420-2/astro312/bin/python build_auriga_potential.py --halo 24"
+	User time (seconds): 3481.27
+	System time (seconds): 12.85
+	Percent of CPU this job got: 1280%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 4:32.79
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 1175952
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 129599
+	Voluntary context switches: 19550
+	Involuntary context switches: 1151796
+	Swaps: 0
+	File system inputs: 1864160
+	File system outputs: 2016
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

@@ -50,10 +50,26 @@ def ring_coeffs(w, which, layer=0):
     return c[:, 1], c[:, 2]
 
 
-def phase(w, which):
-    """Amplitude-weighted m=2 phase over 1-4 kpc: the argument of the summed complex coefficients."""
+def phase(w, which, window=(1.0, 4.0)):
+    """Amplitude-weighted m=2 phase: the argument of the summed complex coefficients over `window`.
+
+    The default 1-4 kpc is a fixed window in kpc. The bar is not the same size at every epoch - its
+    density m=2 peaks at 2.4 kpc at t = 2 and 3.4 kpc at t = 7 - so a fixed window reaches ~1.7 bar
+    radii early and ~1.2 late, admitting spiral arms beyond the bar ends in the young snapshots.
+    Passing a window scaled to the bar (see R_PEAK) removes that: the <v_R> phase twist inside
+    0.4-1.2 R_peak is 2.6-4.1 deg at every epoch, against 4.9-20.0 deg over a fixed 1-4 kpc."""
     a2, b2 = ring_coeffs(w, which)
-    m = (Rc > 1) & (Rc < 4) & np.isfinite(a2) & np.isfinite(b2)
+    ok = np.isfinite(a2) & np.isfinite(b2)
+    if isinstance(window, str) and window.startswith("kin"):
+        # Define the bar region from the data's OWN kinematic quadrupole: keep the rings whose m = 2
+        # amplitude exceeds a fraction of its peak. This needs no prior knowledge of the bar length,
+        # adapts to each galaxy, and excludes the weak-signal outskirts where a spiral can twist the
+        # phase. Threshold after the prefix, e.g. "kin0.7".
+        f = float(window[3:]) if len(window) > 3 else 0.7
+        amp = np.where(ok, np.hypot(a2, b2), np.nan)
+        m = ok & (amp > f * np.nanmax(amp))
+    else:
+        m = (Rc > window[0]) & (Rc < window[1]) & ok
     z = np.nansum(a2[m] + 1j * b2[m])
     off = 45.0 if which == "vR" else 0.0
     return float((0.5 * np.degrees(np.angle(z)) - off - BAR_ANGLE_DEG + 90) % 180 - 90)

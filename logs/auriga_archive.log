@@ -1,0 +1,220 @@
+
+2026-11-04 17:35:21: 0 archived this pass, 7 still running or not started; 55 GB free here, 708 GB free on the portable disk
+
+2026-11-04 17:50:21: 0 archived this pass, 7 still running or not started; 54 GB free here, 708 GB free on the portable disk
+
+2026-11-04 18:05:21: 0 archived this pass, 7 still running or not started; 53 GB free here, 708 GB free on the portable disk
+
+2026-11-04 18:20:21: 0 archived this pass, 7 still running or not started; 51 GB free here, 708 GB free on the portable disk
+
+2026-11-04 18:35:21: 0 archived this pass, 7 still running or not started; 50 GB free here, 708 GB free on the portable disk
+
+2026-11-04 18:50:21: 0 archived this pass, 7 still running or not started; 48 GB free here, 708 GB free on the portable disk
+
+2026-11-04 19:05:21: 0 archived this pass, 7 still running or not started; 47 GB free here, 708 GB free on the portable disk
+
+2026-11-04 19:20:21: 0 archived this pass, 7 still running or not started; 45 GB free here, 708 GB free on the portable disk
+
+2026-11-04 19:35:21: 0 archived this pass, 7 still running or not started; 44 GB free here, 708 GB free on the portable disk
+
+=== 2026-11-04 19:50:21  archiving test2_au9_sf_12p5pct ===
+archive  /run/media/hz420/USB/hanyuan/projects/mira_dynamics_dr4/Mira_dynamical_modelling_dr4
+design   257 points
+
+########## test2_au9_sf_12p5pct ##########
+  finished: 257/257 points, 13G
+  copying ...
+  counts   src 771 files / 12846303320 bytes    dst 771 files / 12846303320 bytes
+  verified: counts, bytes, re-scan and sampled hashes all match
+  freed here: 198M left in /data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/runs/test2_au9_sf_12p5pct (was 43G free, now 43G)
+
+=== done; 43G free on the working disk ===
+
+2026-11-04 19:52:32: 1 archived this pass, 6 still running or not started; 43 GB free here, 696 GB free on the portable disk
+
+2026-11-04 20:07:32: 0 archived this pass, 6 still running or not started; 54 GB free here, 696 GB free on the portable disk
+
+2026-11-04 20:22:32: 0 archived this pass, 6 still running or not started; 52 GB free here, 696 GB free on the portable disk
+
+2026-11-04 20:37:32: 0 archived this pass, 6 still running or not started; 51 GB free here, 696 GB free on the portable disk
+
+2026-11-04 20:52:32: 0 archived this pass, 6 still running or not started; 50 GB free here, 696 GB free on the portable disk
+
+2026-11-04 21:07:32: 0 archived this pass, 6 still running or not started; 48 GB free here, 696 GB free on the portable disk
+
+2026-11-04 21:22:32: 0 archived this pass, 6 still running or not started; 47 GB free here, 696 GB free on the portable disk
+
+2026-11-04 21:37:32: 0 archived this pass, 6 still running or not started; 46 GB free here, 696 GB free on the portable disk
+
+2026-11-04 21:52:32: 0 archived this pass, 6 still running or not started; 44 GB free here, 696 GB free on the portable disk
+
+=== 2026-11-04 22:07:32  archiving test2_au10_sf_12p5pct ===
+archive  /run/media/hz420/USB/hanyuan/projects/mira_dynamics_dr4/Mira_dynamical_modelling_dr4
+design   257 points
+
+########## test2_au10_sf_12p5pct ##########
+  finished: 257/257 points, 12G
+  copying ...
+  counts   src 771 files / 12799074944 bytes    dst 771 files / 12799074944 bytes
+  verified: counts, bytes, re-scan and sampled hashes all match
+  freed here: 197M left in /data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/runs/test2_au10_sf_12p5pct (was 43G free, now 43G)
+
+=== done; 43G free on the working disk ===
+
+2026-11-04 22:09:42: 1 archived this pass, 5 still running or not started; 43 GB free here, 684 GB free on the portable disk
+
+2026-11-04 22:24:42: 0 archived this pass, 5 still running or not started; 54 GB free here, 684 GB free on the portable disk
+
+2026-11-04 22:39:43: 0 archived this pass, 5 still running or not started; 52 GB free here, 684 GB free on the portable disk
+
+2026-11-04 22:54:43: 0 archived this pass, 5 still running or not started; 51 GB free here, 684 GB free on the portable disk
+
+2026-11-04 23:09:43: 0 archived this pass, 5 still running or not started; 50 GB free here, 684 GB free on the portable disk
+
+2026-11-04 23:24:43: 0 archived this pass, 5 still running or not started; 49 GB free here, 684 GB free on the portable disk
+
+2026-11-04 23:39:43: 0 archived this pass, 5 still running or not started; 47 GB free here, 684 GB free on the portable disk
+
+2026-11-04 23:54:43: 0 archived this pass, 5 still running or not started; 46 GB free here, 684 GB free on the portable disk
+
+2026-11-05 00:09:43: 0 archived this pass, 5 still running or not started; 44 GB free here, 684 GB free on the portable disk
+
+2026-11-05 00:24:43: 0 archived this pass, 5 still running or not started; 43 GB free here, 684 GB free on the portable disk
+
+=== 2026-11-05 00:39:43  archiving test2_au17_sf_12p5pct ===
+archive  /run/media/hz420/USB/hanyuan/projects/mira_dynamics_dr4/Mira_dynamical_modelling_dr4
+design   257 points
+
+########## test2_au17_sf_12p5pct ##########
+  finished: 257/257 points, 13G
+  copying ...
+  counts   src 771 files / 12858491288 bytes    dst 771 files / 12858491288 bytes
+  verified: counts, bytes, re-scan and sampled hashes all match
+  freed here: 198M left in /data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/runs/test2_au17_sf_12p5pct (was 42G free, now 42G)
+
+=== done; 42G free on the working disk ===
+
+2026-11-05 00:42:00: 1 archived this pass, 4 still running or not started; 42 GB free here, 672 GB free on the portable disk
+
+2026-11-05 00:57:00: 0 archived this pass, 4 still running or not started; 53 GB free here, 672 GB free on the portable disk
+
+2026-11-05 01:12:00: 0 archived this pass, 4 still running or not started; 51 GB free here, 672 GB free on the portable disk
+
+2026-11-05 01:27:00: 0 archived this pass, 4 still running or not started; 50 GB free here, 672 GB free on the portable disk
+
+2026-11-05 01:42:00: 0 archived this pass, 4 still running or not started; 48 GB free here, 672 GB free on the portable disk
+
+2026-11-05 01:57:00: 0 archived this pass, 4 still running or not started; 46 GB free here, 672 GB free on the portable disk
+
+2026-11-05 02:12:00: 0 archived this pass, 4 still running or not started; 45 GB free here, 672 GB free on the portable disk
+
+2026-11-05 02:27:00: 0 archived this pass, 4 still running or not started; 43 GB free here, 672 GB free on the portable disk
+
+=== 2026-11-05 02:42:00  archiving test2_au18_sf_12p5pct ===
+archive  /run/media/hz420/USB/hanyuan/projects/mira_dynamics_dr4/Mira_dynamical_modelling_dr4
+design   257 points
+
+########## test2_au18_sf_12p5pct ##########
+  finished: 257/257 points, 13G
+  copying ...
+  counts   src 771 files / 12932380844 bytes    dst 771 files / 12932380844 bytes
+  verified: counts, bytes, re-scan and sampled hashes all match
+  freed here: 198M left in /data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/runs/test2_au18_sf_12p5pct (was 42G free, now 42G)
+
+=== done; 42G free on the working disk ===
+
+2026-11-05 02:44:08: 1 archived this pass, 3 still running or not started; 42 GB free here, 660 GB free on the portable disk
+
+2026-11-05 02:59:09: 0 archived this pass, 3 still running or not started; 53 GB free here, 660 GB free on the portable disk
+
+2026-11-05 03:14:09: 0 archived this pass, 3 still running or not started; 51 GB free here, 660 GB free on the portable disk
+
+2026-11-05 03:29:09: 0 archived this pass, 3 still running or not started; 50 GB free here, 660 GB free on the portable disk
+
+2026-11-05 03:44:09: 0 archived this pass, 3 still running or not started; 48 GB free here, 660 GB free on the portable disk
+
+2026-11-05 03:59:09: 0 archived this pass, 3 still running or not started; 46 GB free here, 660 GB free on the portable disk
+
+2026-11-05 04:14:09: 0 archived this pass, 3 still running or not started; 45 GB free here, 660 GB free on the portable disk
+
+2026-11-05 04:29:09: 0 archived this pass, 3 still running or not started; 43 GB free here, 660 GB free on the portable disk
+
+=== 2026-11-05 04:44:09  archiving test2_au24_sf_12p5pct ===
+archive  /run/media/hz420/USB/hanyuan/projects/mira_dynamics_dr4/Mira_dynamical_modelling_dr4
+design   257 points
+
+########## test2_au24_sf_12p5pct ##########
+  finished: 257/257 points, 13G
+  copying ...
+  counts   src 771 files / 12869917508 bytes    dst 771 files / 12869917508 bytes
+  verified: counts, bytes, re-scan and sampled hashes all match
+  freed here: 198M left in /data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/runs/test2_au24_sf_12p5pct (was 43G free, now 43G)
+
+=== done; 43G free on the working disk ===
+
+2026-11-05 04:46:14: 1 archived this pass, 2 still running or not started; 43 GB free here, 648 GB free on the portable disk
+
+2026-11-05 05:01:14: 0 archived this pass, 2 still running or not started; 53 GB free here, 648 GB free on the portable disk
+
+2026-11-05 05:16:14: 0 archived this pass, 2 still running or not started; 52 GB free here, 648 GB free on the portable disk
+
+2026-11-05 05:31:14: 0 archived this pass, 2 still running or not started; 51 GB free here, 648 GB free on the portable disk
+
+2026-11-05 05:46:15: 0 archived this pass, 2 still running or not started; 50 GB free here, 648 GB free on the portable disk
+
+2026-11-05 06:01:15: 0 archived this pass, 2 still running or not started; 48 GB free here, 648 GB free on the portable disk
+
+2026-11-05 06:16:15: 0 archived this pass, 2 still running or not started; 47 GB free here, 648 GB free on the portable disk
+
+2026-11-05 06:31:15: 0 archived this pass, 2 still running or not started; 46 GB free here, 648 GB free on the portable disk
+
+2026-11-05 06:46:15: 0 archived this pass, 2 still running or not started; 45 GB free here, 648 GB free on the portable disk
+
+2026-11-05 07:01:15: 0 archived this pass, 2 still running or not started; 44 GB free here, 648 GB free on the portable disk
+
+2026-11-05 07:16:15: 0 archived this pass, 2 still running or not started; 42 GB free here, 648 GB free on the portable disk
+
+=== 2026-11-05 07:31:15  archiving test2_au26_sf_12p5pct ===
+archive  /run/media/hz420/USB/hanyuan/projects/mira_dynamics_dr4/Mira_dynamical_modelling_dr4
+design   257 points
+
+########## test2_au26_sf_12p5pct ##########
+  finished: 257/257 points, 13G
+  copying ...
+  counts   src 771 files / 12834115352 bytes    dst 771 files / 12834115352 bytes
+  verified: counts, bytes, re-scan and sampled hashes all match
+  freed here: 198M left in /data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/runs/test2_au26_sf_12p5pct (was 41G free, now 41G)
+
+=== done; 41G free on the working disk ===
+
+2026-11-05 07:33:26: 1 archived this pass, 1 still running or not started; 41 GB free here, 636 GB free on the portable disk
+
+2026-11-05 07:48:26: 0 archived this pass, 1 still running or not started; 52 GB free here, 636 GB free on the portable disk
+
+2026-11-05 08:03:26: 0 archived this pass, 1 still running or not started; 50 GB free here, 636 GB free on the portable disk
+
+2026-11-05 08:18:26: 0 archived this pass, 1 still running or not started; 49 GB free here, 636 GB free on the portable disk
+
+2026-11-05 08:33:26: 0 archived this pass, 1 still running or not started; 47 GB free here, 636 GB free on the portable disk
+
+2026-11-05 08:48:26: 0 archived this pass, 1 still running or not started; 46 GB free here, 636 GB free on the portable disk
+
+2026-11-05 09:03:26: 0 archived this pass, 1 still running or not started; 44 GB free here, 636 GB free on the portable disk
+
+2026-11-05 09:18:26: 0 archived this pass, 1 still running or not started; 42 GB free here, 636 GB free on the portable disk
+
+=== 2026-11-05 09:33:26  archiving test2_au27_sf_12p5pct ===
+archive  /run/media/hz420/USB/hanyuan/projects/mira_dynamics_dr4/Mira_dynamical_modelling_dr4
+design   257 points
+
+########## test2_au27_sf_12p5pct ##########
+  finished: 257/257 points, 12G
+  copying ...
+  counts   src 771 files / 12828021368 bytes    dst 771 files / 12828021368 bytes
+  verified: counts, bytes, re-scan and sampled hashes all match
+  freed here: 198M left in /data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/runs/test2_au27_sf_12p5pct (was 42G free, now 42G)
+
+=== done; 42G free on the working disk ===
+
+2026-11-05 09:35:39: 1 archived this pass, 0 still running or not started; 42 GB free here, 624 GB free on the portable disk
+all 13 runs archived.

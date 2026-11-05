@@ -23,8 +23,12 @@ Files (written by build_files(galaxy), mirroring the MWPotentialHunter24_*.ini s
         where each component is axisymmetrised with its own expansion type and grid (bulge Multipole,
         disc CylSpline). The spherical DM halo is never rescaled.
 All functions take galaxy="au18" (default) or "nbody".
+All functions take any Auriga halo ("au18", "au5", ...) or any N-body snapshot ("nbody",
+"nbody_t<T>"). Every Auriga halo has the same component set as Au18 (dm, stars, gas, bh) and is
+built the same way; the N-body snapshots share the nbody recipe.
 """
 import json
+import re
 
 import numpy as np
 import agama
@@ -44,9 +48,23 @@ FAMILY = {
 }
 
 
+def _is_auriga(galaxy):
+    return bool(re.fullmatch(r"au\d+", str(galaxy)))
+
+
 def _family(galaxy):
-    """Family recipe for a galaxy name; every nbody snapshot (nbody, nbody_t<T>) shares the nbody one."""
-    return FAMILY[galaxy] if galaxy in FAMILY else FAMILY["nbody"]
+    """Family recipe for a galaxy name.
+
+    Every nbody snapshot (nbody, nbody_t<T>) shares the nbody recipe, and every Auriga halo shares
+    Au18's -- they come out of the same build script with the same components and the same grids.
+    Before this, any au<N> other than au18 fell through to the nbody recipe and went looking for
+    dm_spherical.ini / bulge / disc, which no Auriga halo has.
+    """
+    if galaxy in FAMILY:
+        return FAMILY[galaxy]
+    if _is_auriga(galaxy):
+        return dict(FAMILY["au18"], file_prefix=f"Au{str(galaxy)[2:]}")
+    return FAMILY["nbody"]
 
 
 def files(galaxy="au18"):
@@ -62,8 +80,8 @@ def omega_true(galaxy="au18"):
 
 def _expansion(galaxy, comp):
     """(type, grid parameters without symmetry) of a component's potential expansion."""
-    if galaxy == "au18":
-        prm = dict(CYL_PARAMS)
+    if _is_auriga(galaxy):
+        prm = dict(CYL_PARAMS)      # identical in build_au18_potential and build_auriga_potential
     else:
         from build_nbody_potential import PARAMS
         prm = dict(PARAMS[comp])
@@ -88,7 +106,7 @@ def _concat_ini(paths, out):
 
 def build_files(galaxy="au18"):
     """Create the four family files from the component files of the galaxy's build script."""
-    if galaxy != "au18":
+    if not _is_auriga(galaxy):
         F, pd, fam = files(galaxy), _galaxy(galaxy)["pot_dir"], _family(galaxy)
         axi_paths = []
         for c in fam["bar"]:
@@ -102,14 +120,16 @@ def build_files(galaxy="au18"):
         _concat_ini([pd / f"{c}.ini" for c in fam["fixed"]] + axi_paths, F["axi"])
         _concat_ini([pd / f"{c}.ini" for c in fam["fixed"] + fam["bar"]], F["full"])
         return
-    _concat_ini([POT_DIR / "stars.ini", POT_DIR / "gas.ini"], FILES["baryon_full"])
-    bary = agama.Potential(file=str(FILES["baryon_full"]))
+    # Auriga: one merged mmax-8 CylSpline for stars + gas, dm and bh kept as they are. Identical
+    # to what Au18 has always done -- POT_DIR/FILES were simply the au18 ones spelled out.
+    F, pd = files(galaxy), _galaxy(galaxy)["pot_dir"]
+    _concat_ini([pd / "stars.ini", pd / "gas.ini"], F["baryon_full"])
+    bary = agama.Potential(file=str(F["baryon_full"]))
     grid = {k: v for k, v in CYL_PARAMS.items() if k not in ("type", "symmetry", "mmax")}
     agama.Potential(type="CylSpline", potential=bary, symmetry="axisymmetric", **grid).export(
-        str(FILES["baryon_axi"]))
-    _concat_ini([POT_DIR / "dm.ini", POT_DIR / "bh.ini", FILES["baryon_axi"]], FILES["axi"])
-    _concat_ini([POT_DIR / "dm.ini", POT_DIR / "bh.ini", POT_DIR / "stars.ini", POT_DIR / "gas.ini"],
-                FILES["full"])
+        str(F["baryon_axi"]))
+    _concat_ini([pd / "dm.ini", pd / "bh.ini", F["baryon_axi"]], F["axi"])
+    _concat_ini([pd / "dm.ini", pd / "bh.ini", pd / "stars.ini", pd / "gas.ini"], F["full"])
 
 
 def load_axi(galaxy="au18"):
@@ -152,7 +172,7 @@ def make_static_fast(bar_frac=1.0, S=1.0, phi0=0.0, mmax=4, symmetry="bisymmetri
     turned by phi0) is re-expanded into a single CylSpline; nbody: each bar component (bulge, disc)
     is re-expanded with its own expansion type and grid. The fixed components (DM, BH) are kept as
     they are (pot_dm_bh, if given, replaces them)."""
-    if galaxy != "au18":
+    if not _is_auriga(galaxy):
         pd, fam = _galaxy(galaxy)["pot_dir"], _family(galaxy)
         parts = []
         for c in fam["bar"]:
@@ -167,15 +187,16 @@ def make_static_fast(bar_frac=1.0, S=1.0, phi0=0.0, mmax=4, symmetry="bisymmetri
         if pot_dm_bh is None:
             pot_dm_bh = agama.Potential(*[agama.Potential(str(pd / f"{c}.ini")) for c in fam["fixed"]])
         return agama.Potential(pot_dm_bh, *parts)
-    bary = agama.Potential(agama.Potential(file=str(FILES["baryon_axi"])),
-                           agama.Potential(file=str(FILES["baryon_full"]), scale=[bar_frac * S, S],
+    F, pd = files(galaxy), _galaxy(galaxy)["pot_dir"]
+    bary = agama.Potential(agama.Potential(file=str(F["baryon_axi"])),
+                           agama.Potential(file=str(F["baryon_full"]), scale=[bar_frac * S, S],
                                            rotation=phi0),
-                           agama.Potential(file=str(FILES["baryon_axi"]), scale=[-bar_frac * S, S]))
+                           agama.Potential(file=str(F["baryon_axi"]), scale=[-bar_frac * S, S]))
     grid = grid or {k: v for k, v in CYL_PARAMS.items() if k not in ("type", "symmetry", "mmax")}
     one = agama.Potential(type="CylSpline", potential=bary, mmax=mmax, symmetry=symmetry, **grid)
     if pot_dm_bh is None:
-        pot_dm_bh = agama.Potential(agama.Potential(str(POT_DIR / "dm.ini")),
-                                    agama.Potential(str(POT_DIR / "bh.ini")))
+        pot_dm_bh = agama.Potential(agama.Potential(str(pd / "dm.ini")),
+                                    agama.Potential(str(pd / "bh.ini")))
     return agama.Potential(pot_dm_bh, one)
 
 

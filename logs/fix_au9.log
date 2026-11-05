@@ -1,0 +1,79 @@
+test2_au9_sf_12p5pct: 49,986 stars, sigma_DM 0.2714, nside 32
+  [1/1] idx  86  (0.9 min)
+merged 257 points -> results/test2_au9_sf_12p5pct/evals_sfratio.csv
+  folded 16 sfratio columns into results/test2_au9_sf_12p5pct/evals.csv
+done: 1 points in 0.9 min
+merged 257 points -> results/test2_au9_sf_12p5pct/evals_sfratio.csv
+  folded 16 sfratio columns into results/test2_au9_sf_12p5pct/evals.csv
+{
+ "run": "test2_au9_sf_12p5pct",
+ "column": "logLs_fourier_stars_R0to6_vR_m24_vphi_sigR_sigphi_m024_sfratio",
+ "n_train": 256,
+ "kernel": "34.8**2 * Matern(length_scale=[1.29, 3.01, 0.513, 0.847], nu=2.5) + WhiteKernel(noise_level=0.414)",
+ "radial_cut": [
+  null,
+  null
+ ],
+ "loo_rms": 1.1461329784654914,
+ "loo_points": "top 32",
+ "loo_rms_within_2000_of_max": 1.1461329784654914,
+ "truth_logL_evaluated": -55.52598939628015,
+ "truth_logL_emulated": [
+  -53.84968422127018,
+  1.1369292603182333
+ ],
+ "emulator_max": {
+  "Omega_abs": 38.04363758935382,
+  "phi_b_deg": 15.0,
+  "S": 1.0716626561648004,
+  "bar_frac": 0.7339829422656239
+ },
+ "emulator_max_logL": -45.36249755889254,
+ "best_evaluated": {
+  "Omega_abs": 39.48838156012209,
+  "phi_b_deg": 14.199025245383382,
+  "S": 1.043959406363994,
+  "bar_frac": 0.6902022627308504,
+  "logL": -45.87909025278518
+ },
+ "posterior": {
+  "Omega_abs": {
+   "p16": 37.02089278573396,
+   "p50": 38.88656175255487,
+   "p84": 41.136822931676086
+  },
+  "phi_b_deg": {
+   "p16": 15.352840560074712,
+   "p50": 16.40975431309287,
+   "p84": 18.659436917731156
+  },
+  "S": {
+   "p16": 0.9870577297711607,
+   "p50": 1.07579838210745,
+   "p84": 1.1714207598463027
+  },
+  "bar_frac": {
+   "p16": 0.675246090273565,
+   "p50": 0.7812588845991,
+   "p84": 0.9076376490280672
+  }
+ },
+ "truth": {
+  "Omega_abs": 36.77064709166622,
+  "phi_b_deg": 27.0,
+  "S": 1.0,
+  "bar_frac": 1.0
+ },
+ "truth_offset_in_sigma": {
+  "Omega_abs": -1.0281586838759738,
+  "phi_b_deg": 6.405526735904946,
+  "S": -0.8222731214230566,
+  "bar_frac": 1.8825220380054983
+ }
+}
+saved figures/test2_au9_sf_12p5pct_emulator_slices_logLs_fourier_stars_R0to6_vR_m24_vphi_sigR_sigphi_m024_sfratio.png
+saved figures/test2_au9_sf_12p5pct_emulator_corner_logLs_fourier_stars_R0to6_vR_m24_vphi_sigR_sigphi_m024_sfratio.png
+saved figures/test2_au9_sf_12p5pct_emulator_loo_logLs_fourier_stars_R0to6_vR_m24_vphi_sigR_sigphi_m024_sfratio.png
+256 Sobol points; best evaluated logL - truth logL = +9.6
+emulator max: {'Omega_abs': 38.044, 'phi_b_deg': 15.0, 'S': 1.072, 'bar_frac': 0.734} (logL_max - logL_truth,emulated = +8.5)
+saved figures/test2_au9_sf_12p5pct_logl_corner_logLs_fourier_stars_R0to6_vR_m24_vphi_sigR_sigphi_m024_sfratio.png

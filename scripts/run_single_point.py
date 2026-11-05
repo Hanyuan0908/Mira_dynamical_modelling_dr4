@@ -110,7 +110,8 @@ def main():
     traj_file = out_dir / f"traj_{tag}.npy"
     t1 = time.time()
     if traj_file.exists() and not args.fresh:
-        traj, times = np.load(traj_file), ssl.snapshot_times()
+        traj = np.load(traj_file)
+        times = ssl.times_for_traj(traj)
         t_int = time.time() - t1
         print(f"re-used {rel(traj_file)} ({traj.shape}) in {t_int:.1f} s "
               f"(--fresh to re-integrate)", flush=True)

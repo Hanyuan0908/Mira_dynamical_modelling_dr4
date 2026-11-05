@@ -1,0 +1,49 @@
+200 phase measurements over 25 galaxies
+  20/200
+  40/200
+  60/200
+  80/200
+  100/200
+  120/200
+  140/200
+  160/200
+  180/200
+  200/200
+
+angle budget in the galaxy's native frame, window kin0.4 (truth = 0 by construction)
+
+  galaxy     suite   | absvR intrinsic    drift  = smeared | transfer offset
+  ------------------------------------------------------------------------------
+  nbody_t2.375 nbody   |          -31.14    +9.90     -21.24 |           +0.89
+  nbody_t3   nbody   |          -29.54    +8.27     -21.28 |           +0.31
+  nbody_t3.375 nbody   |          -28.05    +7.74     -20.32 |           -1.00
+  au28       auriga  |          -28.04    +3.90     -24.14 |           +2.58
+  au26       auriga  |          -27.93    +7.51     -20.42 |           -0.05
+  au24       auriga  |          -27.74    +5.96     -21.78 |           +0.53
+  nbody_t3.625 nbody   |          -27.66    +6.06     -21.60 |           +0.81
+  au22       auriga  |          -27.59    +7.68     -19.91 |           -0.85
+  nbody_t5   nbody   |          -27.52    +5.76     -21.75 |           -0.03
+  au9        auriga  |          -27.39    +4.22     -23.16 |           +1.79
+  au27       auriga  |          -27.19    +4.79     -22.40 |           +1.10
+  nbody_t4.5 nbody   |          -27.19    +5.31     -21.87 |           -0.52
+  au20       auriga  |          -27.09    -0.97     -28.07 |           +7.68
+  nbody_t2.625 nbody   |          -26.93    +8.72     -18.21 |           -1.11
+  nbody      nbody   |          -26.87    +5.49     -21.39 |           +0.64
+  nbody_t4   nbody   |          -26.82    +7.40     -19.41 |           -2.14
+  nbody_t6.25 nbody   |          -26.66    +5.36     -21.30 |           +0.78
+  au17       auriga  |          -26.06    +5.85     -20.21 |           -0.85
+  au12       auriga  |          -25.93    +3.96     -21.97 |           +0.86
+  au14       auriga  |          -25.87    +4.74     -21.13 |           -0.01
+  au10       auriga  |          -25.75    +6.40     -19.35 |           -1.03
+  au18       auriga  |          -25.42    +2.75     -22.67 |           +1.90
+  nbody_t5.5 nbody   |          -25.42    +5.54     -19.88 |           +0.00
+  au5        auriga  |          -24.35   +10.90     -13.45 |           -7.60
+  nbody_t2   nbody   |          -22.29    +5.41     -16.87 |           -4.68
+
+  corr(absvR_intrinsic  , transfer offset) over 13 Auriga: r = -0.54 (p = 0.0572), rho = -0.31
+  corr(absvR_drift      , transfer offset) over 13 Auriga: r = -0.94 (p = 0.0000), rho = -0.91
+  corr(absvR_smeared    , transfer offset) over 13 Auriga: r = -0.99 (p = 0.0000), rho = -0.99
+
+  spread over the 13 Auriga: intrinsic -28.0 to -24.3 deg, drift -1.0 to +10.9 deg
+
+wrote results/bar_angle_outlier_diagnosis.csv
