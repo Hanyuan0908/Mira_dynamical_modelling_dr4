@@ -3436,6 +3436,48 @@ A2 is, but it is not the variable: if it were, one relation would describe both 
   - With the wrong bar strength, the pattern stays on the bar axis (the potential's bar traps the orbits) but fades.
   - With the wrong pattern speed, it fades and wobbles.
 
+### Remake with all 1.49 M stars, contours that read the strength, and the background removed
+
+User asked for more stars, then for contours to guide the eye, then whether the large red/blue background is
+physical, then (on the first contour version) "the current contour doesn't read the strength of the pattern well".
+
+- **Outputs** (the ones to show): `figures/animations/vR_quadrupole_correct_vs_wrong_{pattern_speed,bar_strength}_N1493k.{mp4,gif}`,
+  stills `..._N1493k_t{0000,0500,1000}Myr.png`. The 50k versions above are kept as the first version.
+- **Stars.** Every N-body star particle with R < 8 kpc (1,493,610; the pool the 50k mock was drawn from), rotated
+  to 27°, integrated in 15 random chunks of 100k (permutation seed 7) for all three potentials
+  (`--stage integrate`; `~/mira_dr4_runs/animations/traj_pool_<case>_cNN.npy`, 1.47 GB per potential).
+  Map: 0.1 kpc pixels, σ = 0.15 kpc smoothing.
+- **The background.** Measured in the libraries, not guessed:
+  - the ring-averaged ⟨v_R⟩ (m = 0) stays within ±1.6 km/s in the correct potential (50k run), so there is no net
+    in- or outflow;
+  - the large red/blue lobes at 6–8 kpc are an outer m = 2 pattern of 3–7 km/s that turns by 40–60° over 1 Gyr
+    **even in the correct potential**. It is not stationary there; trial-potential mismatch near corotation is the
+    likely cause, but I have not tested that.
+  - Removed for the illustration by cropping at R < 6 kpc, the radial range the likelihood uses.
+- **Contours that read the strength.** Solid red/blue contours at ±10 and ±20 km/s for the current frame, dashed
+  grey contours at the same levels for t = 0 (±20 thicker). A weaker pattern shows as the solid contours shrinking
+  inside the dashed ones: in the half-strength bar the ±20 contour has disappeared by 1 Gyr while its dashed t = 0
+  version is still there. A strip below the maps plots A(t)/A(0) of the 1 < R < 4 kpc quadrupole for both
+  potentials, drawn up to the current frame.
+- **Numbers** (1,493,610 stars; |A(0)| = 17.35 km/s; curves saved to
+  `~/mira_dr4_runs/animations/quadrupole_vs_time_pool.npz`):
+
+  | potential | A/A0 at 0.5 / 1 Gyr | mean A/A0, 0.25–1 Gyr (range) | turn at 0.5 / 1 Gyr | largest turn |
+  |---|---|---|---|---|
+  | correct | 0.94 / 0.91 | 0.93 (0.87–0.99) | +0.1° / +1.4° | +3.2° (50 Myr) |
+  | Ω_b + 27% | 0.68 / 0.64 | 0.73 (0.63–0.86) | −4.5° / +0.1° | −19.3° (100 Myr) |
+  | half-strength bar | 0.68 / 0.73 | 0.67 (0.61–0.73) | +2.4° / +0.6° | +4.3° (50 Myr) |
+
+  - The wrong pattern speed first overshoots (A/A0 = 1.08 at 50 Myr), then collapses to 0.46 at 175 Myr while the
+    pattern swings from −19° (100 Myr) to +15° (225 Myr), then settles at ~0.7 back on the bar axis.
+  - The half-strength bar fades monotonically to 0.61 by 275 Myr and stays on the axis (|turn| ≤ 4.3°).
+  - In the correct potential the amplitude drifts down by 6–9%, so the library is not perfectly stationary even
+    there. The trial family's spherical halo (known ~3% torque mismatch) is a candidate cause, not tested. The gap
+    to either wrong potential is 0.2–0.3.
+  - The 50k run gave 0.96 at 1 Gyr in the correct potential against 0.91 here. In the 50k run the quadrupole is
+    fitted to 15,063 stars (1 < R < 4, |z| < 1) and has a formal error of 1.65 km/s on |A(0)| = 17.26 km/s (10%), so
+    the difference is within its noise; the 1.49 M numbers supersede it.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name

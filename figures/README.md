@@ -36,11 +36,13 @@ running the organiser; it is idempotent, and `--undo` flattens everything back.
 
 | file | what it shows |
 |---|---|
-| `animations/vR_quadrupole_correct_vs_wrong_pattern_speed.{mp4,gif}` | the central idea: bar-frame ⟨v_R⟩ quadrupole of the 50k-star mock integrated for 1 Gyr in the correct potential (left) and with a 27% too fast pattern speed (right) |
-| `animations/vR_quadrupole_correct_vs_wrong_bar_strength.{mp4,gif}` | the same with the bar at half strength (right) |
+| `animations/vR_quadrupole_correct_vs_wrong_pattern_speed_N1493k.{mp4,gif}` | **the one to show.** The central idea: bar-frame ⟨v_R⟩ quadrupole of all 1,493,610 N-body star particles with R < 8 kpc, integrated for 1 Gyr in the correct potential (left) and with a 27% too fast pattern speed (right). R < 6 kpc, solid contours at ±10/±20 km/s for the current frame over dashed ones for t = 0, and a strip with the quadrupole amplitude against time for both potentials |
+| `animations/vR_quadrupole_correct_vs_wrong_bar_strength_N1493k.{mp4,gif}` | the same with the bar at half strength (right) |
+| `animations/vR_quadrupole_correct_vs_wrong_{pattern_speed,bar_strength}.{mp4,gif}` | first version: the 50k-star mock, 0.25 kpc pixels, σ 0.5 kpc smoothing, to R = 8 kpc, no contours or strip |
 | `animations/*_t{0000,0500,1000}Myr.png` | stills at 0, 0.5 and 1 Gyr |
 
-Made by `scripts/make_animation_vR_quadrupole_correct_vs_wrong_potential.py --wrong pattern_speed|bar_strength`.
+Made by `scripts/make_animation_vR_quadrupole_correct_vs_wrong_potential.py --wrong pattern_speed|bar_strength`
+(add `--stars pool --pix 0.1 --smooth 0.15` for the 1.49 M versions, after `--stage integrate`).
 
 ## Campaign deliverables
 
