@@ -32,6 +32,16 @@ running the organiser; it is idempotent, and `--undo` flattens everything back.
 | `mock_validation/` | every mock against the DR3 Miras: `make_mock_selection.py`, `plot_mock_vs_dr3_mira_spatial.py`, `plot_mock_overview.py`. One figure per galaxy per error level, so this grows with every new snapshot - which is why it has its own folder. |
 | `setup_checks/` | per-galaxy potential, density, rotation-curve, force and bar-Fourier checks: `prepare_*_mwframe.py`, `check_au18_potential.py`, `test_potential_family.py` |
 
+## Animations
+
+| file | what it shows |
+|---|---|
+| `animations/vR_quadrupole_correct_vs_wrong_pattern_speed.{mp4,gif}` | the central idea: bar-frame ⟨v_R⟩ quadrupole of the 50k-star mock integrated for 1 Gyr in the correct potential (left) and with a 27% too fast pattern speed (right) |
+| `animations/vR_quadrupole_correct_vs_wrong_bar_strength.{mp4,gif}` | the same with the bar at half strength (right) |
+| `animations/*_t{0000,0500,1000}Myr.png` | stills at 0, 0.5 and 1 Gyr |
+
+Made by `scripts/make_animation_vR_quadrupole_correct_vs_wrong_potential.py --wrong pattern_speed|bar_strength`.
+
 ## Campaign deliverables
 
 | folder | what |

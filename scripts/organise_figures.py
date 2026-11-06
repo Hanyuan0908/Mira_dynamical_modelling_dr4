@@ -19,7 +19,7 @@ import shutil
 from common import FIG_DIR, rel
 
 KEEP_DIRS = {"key_results", "key_results_12p5pct", "test2_schemeB", "test2_schemeB_selection",
-             "mock_validation", "setup_checks", "archive"}
+             "mock_validation", "setup_checks", "archive", "animations"}
 
 # Headline figures, kept at the top level. Exact names.
 HEADLINE = [

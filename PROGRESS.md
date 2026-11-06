@@ -3338,6 +3338,32 @@ Tables `bar_angle_auriga_calibration.csv`, `bar_angle_outlier_diagnosis.csv`,
 `bar_angle_drift_mechanism.csv`, `bar_angle_drift_pos_vs_vel.csv`,
 `bar_angle_drift_no_selection.csv`, `bar_strength_proxy_check.csv`.
 
+## 2026-11-06 — Animations of the central idea: the ⟨v_R⟩ quadrupole stays put only in the correct potential
+
+- Script: `scripts/make_animation_vR_quadrupole_correct_vs_wrong_potential.py --wrong pattern_speed|bar_strength`.
+- Outputs (MP4 1860×990, 6 fps, 8.8 s; GIF; stills at 0, 0.5, 1 Gyr): `figures/animations/vR_quadrupole_correct_vs_wrong_{pattern_speed,bar_strength}.*`.
+- **Set-up.**
+  - The 50k perfect N-body mock, rotated by the true bar angle (27°), integrated for 1 Gyr (41 snapshots) with the
+    current code. Trajectories: `~/mira_dr4_runs/animations/traj_{truth,pattern_speed,bar_strength}.npy`; 180–263 s
+    each.
+  - Left panel: the true potential (|Ω_b| 26.02, S 1, bar_frac 1).
+  - Right panel: |Ω_b| = 33.0 (+27%), or bar_frac = 0.5. Everything else is true.
+  - Same stars in both panels, so the first frame is identical.
+  - Map: bar-frame ⟨v_R⟩, |z| < 1 kpc, folded (x, y) → (−x, −y), 0.25 kpc grid. Sums and counts are each smoothed
+    with a Gaussian (σ = 0.5 kpc) before dividing. One snapshot per frame.
+  - The box in each panel: the m = 2 term of ⟨v_R⟩ in 1 < R < 4 kpc (least squares over the stars), its amplitude
+    relative to t = 0, and its turn since t = 0.
+- **Numbers** (amplitude at 0.5 / 1 Gyr; turn):
+
+  | potential | amplitude at 0.5 / 1 Gyr | turn at 0.5 / 1 Gyr |
+  |---|---|---|
+  | correct | 0.93 / 0.96 | +0.5° / +2.3° |
+  | Ω_b + 27% | 0.66 / 0.59 | −6.1° / +5.4° |
+  | half-strength bar | 0.61 / 0.50 | −1.7° / −1.9° |
+
+  - With the wrong bar strength, the pattern stays on the bar axis (the potential's bar traps the orbits) but fades.
+  - With the wrong pattern speed, it fades and wobbles.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
