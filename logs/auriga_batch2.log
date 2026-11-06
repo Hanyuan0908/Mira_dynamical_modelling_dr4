@@ -15,3 +15,48 @@ environment ok
     54 GB free; 0/257 points already done
     building the trial-potential family for au5 ...
     trial-potential family ready
+merged 257 points -> results/test2_au5_sf_12p5pct/evals.csv
+--- test2_au5_sf_12p5pct search done 2026-11-05 15:12:34 ---
+    47 GB free after test2_au5_sf_12p5pct
+
+########## test2_au12_sf_12p5pct  (au12_mock_selection_sigmaDM0.271_N50k.hdf5, galaxy au12)  2026-11-05 15:12:34 ##########
+    47 GB free; 0/257 points already done
+    building the trial-potential family for au12 ...
+    trial-potential family ready
+merged 257 points -> results/test2_au12_sf_12p5pct/evals.csv
+--- test2_au12_sf_12p5pct search done 2026-11-05 17:03:32 ---
+    47 GB free after test2_au12_sf_12p5pct
+
+########## test2_au14_sf_12p5pct  (au14_mock_selection_sigmaDM0.271_N50k.hdf5, galaxy au14)  2026-11-05 17:03:32 ##########
+    47 GB free; 0/257 points already done
+    building the trial-potential family for au14 ...
+    trial-potential family ready
+merged 257 points -> results/test2_au14_sf_12p5pct/evals.csv
+--- test2_au14_sf_12p5pct search done 2026-11-05 19:17:10 ---
+    47 GB free after test2_au14_sf_12p5pct
+
+########## test2_au20_sf_12p5pct  (au20_mock_selection_sigmaDM0.271_N50k.hdf5, galaxy au20)  2026-11-05 19:17:10 ##########
+    47 GB free; 0/257 points already done
+    building the trial-potential family for au20 ...
+    trial-potential family ready
+merged 257 points -> results/test2_au20_sf_12p5pct/evals.csv
+--- test2_au20_sf_12p5pct search done 2026-11-05 20:51:50 ---
+    46 GB free after test2_au20_sf_12p5pct
+
+########## test2_au22_sf_12p5pct  (au22_mock_selection_sigmaDM0.271_N50k.hdf5, galaxy au22)  2026-11-05 20:51:50 ##########
+    46 GB free; 0/257 points already done
+    building the trial-potential family for au22 ...
+    trial-potential family ready
+merged 257 points -> results/test2_au22_sf_12p5pct/evals.csv
+--- test2_au22_sf_12p5pct search done 2026-11-05 22:58:20 ---
+    46 GB free after test2_au22_sf_12p5pct
+
+########## test2_au28_sf_12p5pct  (au28_mock_selection_sigmaDM0.271_N50k.hdf5, galaxy au28)  2026-11-05 22:58:20 ##########
+    46 GB free; 0/257 points already done
+    building the trial-potential family for au28 ...
+    trial-potential family ready
+merged 257 points -> results/test2_au28_sf_12p5pct/evals.csv
+--- test2_au28_sf_12p5pct search done 2026-11-06 01:24:53 ---
+    46 GB free after test2_au28_sf_12p5pct
+
+=== all done 2026-11-06 01:24:53; 46 GB free on the working disk ===

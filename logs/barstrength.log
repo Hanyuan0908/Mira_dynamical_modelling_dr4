@@ -1,0 +1,42 @@
+19 galaxies, 300 draws per band (~4 min each serial)
+/data/hz420-2/astro312/lib/python3.12/site-packages/sklearn/gaussian_process/kernels.py:450: ConvergenceWarning: The optimal value found for dimension 1 of parameter k1__k2__length_scale is close to the specified upper bound 10.0. Increasing the bound and calling fit again may find a better value.
+  warnings.warn(
+/data/hz420-2/astro312/lib/python3.12/site-packages/sklearn/gaussian_process/kernels.py:450: ConvergenceWarning: The optimal value found for dimension 1 of parameter k1__k2__length_scale is close to the specified upper bound 10.0. Increasing the bound and calling fit again may find a better value.
+  warnings.warn(
+/data/hz420-2/astro312/lib/python3.12/site-packages/sklearn/gaussian_process/kernels.py:450: ConvergenceWarning: The optimal value found for dimension 1 of parameter k1__k2__length_scale is close to the specified upper bound 10.0. Increasing the bound and calling fit again may find a better value.
+  warnings.warn(
+/data/hz420-2/astro312/lib/python3.12/site-packages/sklearn/gaussian_process/kernels.py:450: ConvergenceWarning: The optimal value found for dimension 1 of parameter k1__k2__length_scale is close to the specified upper bound 10.0. Increasing the bound and calling fit again may find a better value.
+  warnings.warn(
+/data/hz420-2/astro312/lib/python3.12/site-packages/sklearn/gaussian_process/kernels.py:450: ConvergenceWarning: The optimal value found for dimension 1 of parameter k1__k2__length_scale is close to the specified upper bound 10.0. Increasing the bound and calling fit again may find a better value.
+  warnings.warn(
+/data/hz420-2/astro312/lib/python3.12/site-packages/sklearn/gaussian_process/kernels.py:450: ConvergenceWarning: The optimal value found for dimension 1 of parameter k1__k2__length_scale is close to the specified upper bound 10.0. Increasing the bound and calling fit again may find a better value.
+  warnings.warn(
+  [ 1/19] nbody_t2   peak A2/A0 truth 0.890, model 0.825 (-7%)
+  [ 2/19] nbody_t2.375 peak A2/A0 truth 0.686, model 0.700 (+2%)
+  [ 3/19] nbody_t2.625 peak A2/A0 truth 0.560, model 0.670 (+20%)
+  [ 4/19] nbody_t3   peak A2/A0 truth 0.653, model 0.639 (-2%)
+  [ 5/19] nbody_t3.375 peak A2/A0 truth 0.621, model 0.625 (+1%)
+  [ 6/19] nbody_t3.625 peak A2/A0 truth 0.645, model 0.694 (+8%)
+/data/hz420-2/astro312/lib/python3.12/site-packages/sklearn/gaussian_process/kernels.py:450: ConvergenceWarning: The optimal value found for dimension 1 of parameter k1__k2__length_scale is close to the specified upper bound 10.0. Increasing the bound and calling fit again may find a better value.
+  warnings.warn(
+/data/hz420-2/astro312/lib/python3.12/site-packages/sklearn/gaussian_process/kernels.py:450: ConvergenceWarning: The optimal value found for dimension 1 of parameter k1__k2__length_scale is close to the specified upper bound 10.0. Increasing the bound and calling fit again may find a better value.
+  warnings.warn(
+/data/hz420-2/astro312/lib/python3.12/site-packages/sklearn/gaussian_process/kernels.py:450: ConvergenceWarning: The optimal value found for dimension 1 of parameter k1__k2__length_scale is close to the specified upper bound 10.0. Increasing the bound and calling fit again may find a better value.
+  warnings.warn(
+  [ 7/19] nbody_t4   peak A2/A0 truth 0.644, model 0.667 (+4%)
+  [ 8/19] nbody_t4.5 peak A2/A0 truth 0.651, model 0.675 (+4%)
+  [ 9/19] nbody_t5   peak A2/A0 truth 0.565, model 0.729 (+29%)
+  [10/19] nbody_t5.5 peak A2/A0 truth 0.553, model 0.609 (+10%)
+  [11/19] nbody_t6.25 peak A2/A0 truth 0.535, model 0.719 (+34%)
+  [12/19] nbody      peak A2/A0 truth 0.550, model 0.577 (+5%)
+/data/hz420-2/astro312/lib/python3.12/site-packages/sklearn/gaussian_process/kernels.py:450: ConvergenceWarning: The optimal value found for dimension 0 of parameter k1__k1__constant_value is close to the specified upper bound 12496.339946163034. Increasing the bound and calling fit again may find a better value.
+  warnings.warn(
+  [13/19] au9        peak A2/A0 truth 0.960, model 0.898 (-6%)
+  [14/19] au10       peak A2/A0 truth 1.095, model 1.030 (-6%)
+  [15/19] au17       peak A2/A0 truth 0.861, model 0.792 (-8%)
+  [16/19] au18       peak A2/A0 truth 0.530, model 0.569 (+7%)
+  [17/19] au24       peak A2/A0 truth 1.233, model 1.253 (+2%)
+  [18/19] au26       peak A2/A0 truth 0.870, model 0.847 (-3%)
+  [19/19] au27       peak A2/A0 truth 0.813, model 0.811 (-0%)
+saved figures/test2_bar_strength_profile_recovery.png
+wrote results/bar_strength_profile_recovery.npz

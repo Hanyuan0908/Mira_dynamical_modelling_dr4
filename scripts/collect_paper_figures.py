@@ -52,6 +52,14 @@ STANDING = [
      "test2_bar_angle_transfer_12p5.png"),
     ("bar_angle", "04_outlier_velocity_maps_au5_au20",
      "test2_smeared_velocity_maps_auriga_outliers.png"),
+    ("bar_angle", "05_bias_vs_distance_error_au18_self03",
+     "test2_bar_angle_bias_vs_distance_error.png"),
+    ("bar_angle", "06_auriga_band_self03",
+     "test2_bar_angle_auriga_band.png"),
+    ("bar_angle", "07_offset_vs_bar_property",
+     "test2_bar_angle_offset_vs_bar_property.png"),
+    ("test2_12p5pct", "07_bar_strength_profile_recovery",
+     "test2_bar_strength_profile_recovery.png"),
     ("emulator_validation", "01_leave_one_out", "emulator_validation/loo_sfratio.png"),
     ("emulator_validation", "02_pooled_draws_K10",
      "emulator_validation/pooled_draws_test2_t7_sf_12p5pct.png"),
@@ -70,11 +78,22 @@ STANDING_GLOBS = [
     ("test2_12p5pct", "corner_sfratio_auriga",
      "test2_{t}_sf_12p5pct_emulator_corner_logLs_"
      "fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024_sfratio.png",
-     ["au9", "au10", "au17", "au18", "au24", "au26", "au27"]),
+     ["au5", "au9", "au10", "au12", "au14", "au17", "au18", "au20", "au22", "au24",
+      "au26", "au27", "au28"]),
     ("emulator_validation", "loo_per_run_auriga",
      "test2_{t}_sf_12p5pct_emulator_loo_logLs_"
      "fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024_sfratio.png",
-     ["au9", "au10", "au17", "au18", "au24", "au26", "au27"]),
+     ["au5", "au9", "au10", "au12", "au14", "au17", "au18", "au20", "au22", "au24",
+      "au26", "au27", "au28"]),
+    # The kinematic prior on phi_b: the same likelihood with phi_b pinned by the <|v_R|/v_tot>
+    # calibration. Blue = flat prior, orange = with the prior, grey = truth. For an Auriga galaxy
+    # the prior is leave-one-out, since the calibration is built from those 13.
+    ("test2_12p5pct", "corner_kinematic_prior",
+     "test2_{t}_sf_12p5pct_corner_kinprior_logLs_"
+     "fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024_sfratio.png",
+     ["t2", "t2.375", "t2.625", "t3", "t3.375", "t3.625", "t4", "t4.5", "t5", "t5.5", "t6.25",
+      "t7", "au5", "au9", "au10", "au12", "au14", "au17", "au18", "au20", "au22", "au24",
+      "au26", "au27", "au28"]),
     ("emulator_validation", "loo_per_run",
      "test2_{t}_sf_12p5pct_emulator_loo_logLs_"
      "fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024_sfratio.png",

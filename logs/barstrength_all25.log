@@ -1,0 +1,50 @@
+25 galaxies, 300 draws per band (~4 min each serial)
+/data/hz420-2/astro312/lib/python3.12/site-packages/sklearn/gaussian_process/kernels.py:450: ConvergenceWarning: The optimal value found for dimension 1 of parameter k1__k2__length_scale is close to the specified upper bound 10.0. Increasing the bound and calling fit again may find a better value.
+  warnings.warn(
+/data/hz420-2/astro312/lib/python3.12/site-packages/sklearn/gaussian_process/kernels.py:450: ConvergenceWarning: The optimal value found for dimension 1 of parameter k1__k2__length_scale is close to the specified upper bound 10.0. Increasing the bound and calling fit again may find a better value.
+  warnings.warn(
+/data/hz420-2/astro312/lib/python3.12/site-packages/sklearn/gaussian_process/kernels.py:450: ConvergenceWarning: The optimal value found for dimension 1 of parameter k1__k2__length_scale is close to the specified upper bound 10.0. Increasing the bound and calling fit again may find a better value.
+  warnings.warn(
+/data/hz420-2/astro312/lib/python3.12/site-packages/sklearn/gaussian_process/kernels.py:450: ConvergenceWarning: The optimal value found for dimension 1 of parameter k1__k2__length_scale is close to the specified upper bound 10.0. Increasing the bound and calling fit again may find a better value.
+  warnings.warn(
+/data/hz420-2/astro312/lib/python3.12/site-packages/sklearn/gaussian_process/kernels.py:450: ConvergenceWarning: The optimal value found for dimension 1 of parameter k1__k2__length_scale is close to the specified upper bound 10.0. Increasing the bound and calling fit again may find a better value.
+  warnings.warn(
+/data/hz420-2/astro312/lib/python3.12/site-packages/sklearn/gaussian_process/kernels.py:450: ConvergenceWarning: The optimal value found for dimension 1 of parameter k1__k2__length_scale is close to the specified upper bound 10.0. Increasing the bound and calling fit again may find a better value.
+  warnings.warn(
+/data/hz420-2/astro312/lib/python3.12/site-packages/sklearn/gaussian_process/kernels.py:450: ConvergenceWarning: The optimal value found for dimension 1 of parameter k1__k2__length_scale is close to the specified upper bound 10.0. Increasing the bound and calling fit again may find a better value.
+  warnings.warn(
+/data/hz420-2/astro312/lib/python3.12/site-packages/sklearn/gaussian_process/kernels.py:450: ConvergenceWarning: The optimal value found for dimension 1 of parameter k1__k2__length_scale is close to the specified upper bound 10.0. Increasing the bound and calling fit again may find a better value.
+  warnings.warn(
+  [ 1/25] nbody_t2   peak A2/A0 truth 0.890, model 0.825 (-7%)
+  [ 2/25] nbody_t2.375 peak A2/A0 truth 0.686, model 0.700 (+2%)
+  [ 3/25] nbody_t2.625 peak A2/A0 truth 0.560, model 0.670 (+20%)
+  [ 4/25] nbody_t3   peak A2/A0 truth 0.653, model 0.639 (-2%)
+  [ 5/25] nbody_t3.375 peak A2/A0 truth 0.621, model 0.625 (+1%)
+  [ 6/25] nbody_t3.625 peak A2/A0 truth 0.645, model 0.694 (+8%)
+  [ 7/25] nbody_t4   peak A2/A0 truth 0.644, model 0.667 (+4%)
+  [ 8/25] nbody_t4.5 peak A2/A0 truth 0.651, model 0.675 (+4%)
+/data/hz420-2/astro312/lib/python3.12/site-packages/sklearn/gaussian_process/kernels.py:450: ConvergenceWarning: The optimal value found for dimension 1 of parameter k1__k2__length_scale is close to the specified upper bound 10.0. Increasing the bound and calling fit again may find a better value.
+  warnings.warn(
+/data/hz420-2/astro312/lib/python3.12/site-packages/sklearn/gaussian_process/kernels.py:450: ConvergenceWarning: The optimal value found for dimension 0 of parameter k1__k1__constant_value is close to the specified upper bound 12496.339946163034. Increasing the bound and calling fit again may find a better value.
+  warnings.warn(
+/data/hz420-2/astro312/lib/python3.12/site-packages/sklearn/gaussian_process/kernels.py:450: ConvergenceWarning: The optimal value found for dimension 1 of parameter k1__k2__length_scale is close to the specified upper bound 10.0. Increasing the bound and calling fit again may find a better value.
+  warnings.warn(
+  [ 9/25] nbody_t5   peak A2/A0 truth 0.565, model 0.729 (+29%)
+  [10/25] nbody_t5.5 peak A2/A0 truth 0.553, model 0.609 (+10%)
+  [11/25] nbody_t6.25 peak A2/A0 truth 0.535, model 0.719 (+34%)
+  [12/25] nbody      peak A2/A0 truth 0.550, model 0.577 (+5%)
+  [13/25] au5        peak A2/A0 truth 0.638, model 0.591 (-7%)
+  [14/25] au9        peak A2/A0 truth 0.960, model 0.898 (-6%)
+  [15/25] au10       peak A2/A0 truth 1.095, model 1.030 (-6%)
+  [16/25] au12       peak A2/A0 truth 0.741, model 0.706 (-5%)
+  [17/25] au14       peak A2/A0 truth 0.829, model 0.786 (-5%)
+  [18/25] au17       peak A2/A0 truth 0.861, model 0.792 (-8%)
+  [19/25] au18       peak A2/A0 truth 0.530, model 0.569 (+7%)
+  [20/25] au20       peak A2/A0 truth 0.930, model 1.003 (+8%)
+  [21/25] au22       peak A2/A0 truth 0.770, model 0.731 (-5%)
+  [22/25] au24       peak A2/A0 truth 1.233, model 1.253 (+2%)
+  [23/25] au26       peak A2/A0 truth 0.870, model 0.847 (-3%)
+  [24/25] au27       peak A2/A0 truth 0.813, model 0.811 (-0%)
+  [25/25] au28       peak A2/A0 truth 1.000, model 0.973 (-3%)
+saved figures/test2_bar_strength_profile_recovery.png
+wrote results/bar_strength_profile_recovery.npz

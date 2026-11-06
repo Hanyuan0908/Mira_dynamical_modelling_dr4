@@ -1,0 +1,18 @@
+{
+  "run": "test2_au14_sf_12p5pct",
+  "mock": "au14_mock_selection_sigmaDM0.271_N50k.hdf5",
+  "galaxy": "au14",
+  "omega_truth": 51.886094246925936,
+  "omega_scale": 1.994085097883395,
+  "variants": [
+    "observed",
+    "asis",
+    "sf"
+  ],
+  "sigma_DM": 0.27143405118953234,
+  "accuracy": 1e-05,
+  "design": "results/test1_nbody_qmc_focused/design.csv",
+  "n_points": 257,
+  "cadence_step": 2,
+  "snapshot_dt_myr": 50.0
+}

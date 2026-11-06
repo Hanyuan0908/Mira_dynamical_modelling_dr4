@@ -3338,6 +3338,78 @@ Tables `bar_angle_auriga_calibration.csv`, `bar_angle_outlier_diagnosis.csv`,
 `bar_angle_drift_mechanism.csv`, `bar_angle_drift_pos_vs_vel.csv`,
 `bar_angle_drift_no_selection.csv`, `bar_strength_proxy_check.csv`.
 
+## 2026-11-05 — A kinematic prior on φ_b breaks the φ_b–bar_frac degeneracy, and bar_frac's bias with it
+
+The corner plots all show the same structure: the dynamical model constrains φ_b weakly, and because
+φ_b and bar_frac are degenerate, the weak angle drags the bar strength with it. But φ_b is also
+measurable *independently* of the model, from the m = 2 phase of ⟨|v_R|/v_tot⟩ — no orbit library,
+no trial potential, just the kinematics — and that measurement is three times tighter than the
+model's own. So feed it in as a prior (user's proposal, 2026-11-05).
+
+**Method** (`plot_corner_with_kinematic_prior.py`). The kinematic angle is measured with the adopted
+window (⟨|v_R|/v_tot⟩, `self:0.3`) and inverted through the Auriga calibration median; σ is the
+band half-width over the slope, ±1.88°. The prior is applied to the finished chain by **importance
+weighting**, w_i = exp(−½((φ_i − φ_kin)/σ_kin)²) — exact, because the target is the same likelihood
+times a bounded prior, and it costs 28 s a galaxy instead of re-sampling. Effective sample size is
+reported: mean 3150 of 12800, minimum 807.
+
+**Circularity is handled.** The calibration is built from the 13 Auriga, so an Auriga galaxy's prior
+is derived **leave-one-out** from the other twelve; the N-body priors use the full calibration and
+are genuinely blind. 19 galaxies have posteriors so far (12 N-body + 7 Auriga of batch 1).
+
+| | \|error\| | bias | width | within 1σ |
+|---|---|---|---|---|
+| **φ_b** | 5.82 → **1.60**° | −5.82 → **−0.40**° | 5.41 → 1.83° | 9/19 → 14/19 |
+| **bar_frac** | 0.160 → **0.137** | −0.143 → **+0.031** | 0.287 → 0.252 | 13/19 → 15/19 |
+| Ω_b | 0.924 → 1.062 | −0.168 → +0.319 | 2.242 → 2.201 | 17/19 → 17/19 |
+| S | 0.077 → 0.081 | +0.029 → +0.032 | 0.172 → 0.148 | 18/19 → 14/19 |
+
+- **φ_b: 3.0× tighter, 3.6× more accurate, and the −5.8° systematic essentially vanishes.** That
+  much is almost tautological — the prior is tighter than the posterior.
+- **The real result is bar_frac.** Its width barely moves (14%) but its **bias collapses by a factor
+  4.6**, −0.143 → +0.031. This is the degeneracy working as the user described: the model was
+  pulling φ_b low, and bar_frac came down the degeneracy with it. Pin φ_b and bar_frac returns to
+  the truth. Visible directly in `t5`: the flat bar_frac histogram peaks near 0.8, the re-weighted
+  one straddles 1.0.
+- **Ω_b and S barely move**, which is the control: the prior is not smuggling information into the
+  parameters it should not touch. Ω_b's \|error\| rises slightly (0.92 → 1.06) and its bias turns
+  mildly positive, so the prior is not free.
+- **The blind case is no worse than the leave-one-out one**: N-body φ_b \|error\| **1.48°** with the
+  full Auriga calibration, Auriga **1.80°** leave-one-out. The calibration does transfer at this
+  level.
+
+**Caveats.**
+- **The prior inherits the calibration's bias.** Au10 and Au17 reach only 23.0° and 24.2° against a
+  truth of 27°, because their *kinematic* angles are low to begin with. A prior cannot repair a
+  galaxy the calibration mis-describes, which is the unidentified-bar-property problem reappearing
+  one level up. It is also why the φ_b \|error\| floors at 1.6° rather than at the ±1.88° the band
+  would suggest for a perfect calibration.
+- **S coverage falls, 18/19 → 14/19.** The S posterior tightens 14% without its median moving, so
+  error bars that were comfortable become marginal. Watch it; n = 19 is too small to act on.
+- Batch 2's six galaxies are not in these numbers; the script takes `--run`, so they drop straight
+  in.
+
+Figures `figures/paper_figures/test2_12p5pct/corner_kinematic_prior/` (19, blue = flat prior,
+orange = kinematic prior, grey = truth). Tables
+`results/test2_<run>/kinematic_prior_logLs_fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024_sfratio.json`.
+
+**Evidence that the offset tracks a bar property** (`plot_bar_angle_offset_vs_bar_property.py`,
+`figures/paper_figures/bar_angle/07_offset_vs_bar_property.png`). Each galaxy's departure from the
+Auriga calibration against three candidates, both suites:
+
+| | Auriga (13) | N-body (12) |
+|---|---|---|
+| R_CR | r = **+0.87** (p = 0.0001), slope **+1.90** deg/kpc | r = +0.53 (p = 0.080), slope **+0.77** deg/kpc |
+| Ω_b | r = −0.63 (p = 0.021) | r = −0.56 (p = 0.061) |
+| A2_max | r = +0.25 (p = 0.41) | r = **−0.65** (p = 0.021) |
+
+The R_CR correlation survives every leverage cut (without Au20 r = +0.67, without Au5 r = +0.99,
+without both r = +0.93; Spearman +0.84 to +0.88 throughout). But **the two suites follow R_CR lines
+differing by a factor 2.5 in slope**, which is exactly why fitting the correction on Auriga and
+applying it to the N-body makes the blind transfer worse (1.80 → 2.40° rms). And **bar strength
+correlates with opposite signs in the two suites** (+0.25 against −0.65) — the cleanest statement of
+why the 2026-11-01 bar-strength correction was a mirage. R_CR is closer to the real variable than
+A2 is, but it is not the variable: if it were, one relation would describe both suites.
 ## 2026-11-06 — Animations of the central idea: the ⟨v_R⟩ quadrupole stays put only in the correct potential
 
 - Script: `scripts/make_animation_vR_quadrupole_correct_vs_wrong_potential.py --wrong pattern_speed|bar_strength`.

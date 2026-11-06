@@ -40,6 +40,10 @@ HEADLINE = [
     # is still the cleanest statement of the distance-error drift itself.
     "test2_bar_angle_auriga_calibration.png",
     "test2_bar_angle_window_comparison.png",
+    "test2_bar_angle_auriga_band.png",
+    "test2_bar_angle_bias_vs_distance_error.png",
+    "test2_bar_angle_offset_vs_bar_property.png",
+    "test2_bar_strength_profile_recovery.png",
     "test2_bar_angle_transfer_12p5.png",
     "test2_smeared_velocity_maps_auriga_outliers.png",
     "test2_bar_angle_vecsum_drift.png",
@@ -65,7 +69,7 @@ RULES = [
     # Corner plots live together and leave-one-out has its own folder. Previously `logl_corner`
     # and `emulator_loo_` were both swept into emulator_diagnostics, which buried the corners of
     # the evaluated logL among the slices and made the LOO set impossible to pick out.
-    ("posteriors",           r"emulator_corner|logl_corner"),
+    ("posteriors",           r"emulator_corner|logl_corner|corner_kinprior"),
     ("leave_one_out",        r"emulator_loo_"),
     ("emulator_diagnostics", r"emulator_slices_"),
     ("../mock_validation",   r"mock_selection_vs_dr3_miras|spatial_mock_vs_dr3|mock_spatial|mock_vR|"
