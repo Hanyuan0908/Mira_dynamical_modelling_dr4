@@ -3477,6 +3477,201 @@ physical, then (on the first contour version) "the current contour doesn't read 
   - The 50k run gave 0.96 at 1 Gyr in the correct potential against 0.91 here. In the 50k run the quadrupole is
     fitted to 15,063 stars (1 < R < 4, |z| < 1) and has a formal error of 1.65 km/s on |A(0)| = 17.26 km/s (10%), so
     the difference is within its noise; the 1.49 M numbers supersede it.
+## 2026-11-06 — Auriga complete: all 13 galaxies, Ω_b to 3.4%, and the baseline out to 65 km/s/kpc
+
+Batch 2 (Au5, 12, 14, 20, 22, 28) finished on the second cluster and was re-scored into the adopted
+configuration, so all 13 Auriga galaxies now have scheme B + sfratio + K = 10 posteriors. This
+supersedes the seven-galaxy entry of 2026-11-05 on every number.
+
+| galaxy | Ω_b truth | recovered | bias | φ_b | S | bar_frac | LOO |
+|---|---|---|---|---|---|---|---|
+| Au5 | 45.11 | 46.68 | +3.5% | 23.2 | 1.04 | 0.90 | 0.38 |
+| Au9 | 36.77 | 36.31 | −1.3% | 19.6 | 1.08 | 0.73 | 0.66 |
+| Au10 | 56.65 | 56.87 | +0.4% | 16.5 | 1.02 | 0.78 | 1.20 |
+| Au12 | 40.06 | 42.95 | +7.2% | 21.6 | 1.14 | 0.82 | 0.46 |
+| Au14 | 51.89 | 55.51 | +7.0% | 20.2 | 1.04 | 0.79 | 0.41 |
+| Au17 | 50.95 | 49.09 | −3.7% | 18.2 | 1.25 | 0.59 | 0.67 |
+| Au18 | 36.27 | 36.48 | +0.6% | 23.3 | 1.10 | 0.94 | 0.42 |
+| Au20 | 16.76 | 15.58 | −7.0% | 25.9 | 1.07 | 0.95 | 0.37 |
+| Au22 | 49.00 | 48.68 | −0.6% | 18.9 | 0.97 | 0.77 | 0.68 |
+| Au24 | 32.78 | 34.11 | +4.0% | 20.8 | 1.15 | 0.72 | 0.50 |
+| Au26 | 65.14 | 66.17 | +1.6% | 18.9 | 1.12 | 0.75 | 0.74 |
+| Au27 | 39.16 | 41.05 | +4.8% | 21.0 | 1.06 | 0.79 | 0.41 |
+| Au28 | 43.26 | 42.11 | −2.7% | 19.1 | 1.04 | 0.75 | 0.78 |
+
+- **Ω_b: mean |bias| 3.4%, mean bias +1.1%, 8 high and 5 low** — against the N-body's 2.8% on the
+  same axes. The 2.3% quoted from the first seven was small-sample luck; this is the number.
+- **The Ω_b baseline runs 16.8–65.1 km/s/kpc**, against the N-body's 25–44. Nothing breaks at
+  either end: Au20 at 16.8 is the worst at −7.0% and has the widest error bar, Au26 at 65.1 gives
+  +1.6%.
+- **Au20 recovers φ_b = 25.9°**, much the closest to the truth of 27° of any galaxy — it is the one
+  whose kinematic phase barely drifts under distance smearing, so the model is not fighting a
+  compressed angle. The overall φ_b mean is 20.5°, still −6.5° low.
+- bar_frac mean 0.79, S mean 1.08 (truth 1 for both).
+
+Figure `figures/paper_figures/test2_12p5pct/06_pattern_speed_recovery_12pt_plus_13_auriga.png`.
+
+## 2026-11-06 — Bar strength as a profile: A2/A0(R) recovered from the posterior, and where the Milky Way sits
+
+`bar_frac` is an amplitude on a difference of two potentials, so it has no monopole and therefore no
+mass; there is no "bar mass" to read off it, and the bar strength it does set is entangled with S.
+The way round it (user, 2026-11-06) is not to interpret the parameter at all but to **rebuild the
+trial potential at each posterior draw and measure the thing directly**.
+
+`plot_bar_strength_profile_recovery.py` does that: 300 draws per galaxy, A2/A0 of the midplane
+density on a 0.3–8 kpc grid. The profile depends only on (S, bar_frac) — φ_b rotates the stars and
+Ω_b is a pattern speed, neither changes it — and the truth is the family at (1, 1), which is
+identically the galaxy's own potential. 300 draws pins the 16–84 band edges to ~7% of the posterior
+width (quantile SE ≈ 1.3σ/√n) at 0.35 s a draw.
+
+Over the 25 galaxies: **peak A2/A0 recovered to 8% mean |error| (+3% bias), and the truth lies
+inside the 16–84 band over 81% of 1–6 kpc** — mildly conservative, which is the right direction.
+The shapes track, including the secondary bump from spiral structure beyond the bar end in
+t3.625, t6.25 and Au18. The weakest bars are overestimated (t5 +29%, t6.25 +34% against ≤10% for
+the rest), and the Auriga galaxies are recovered better than the N-body ones.
+
+**The φ_b prior does not help this observable**: coverage 81% → 80% and the band slightly wider,
+0.123 → 0.136. Pinning φ_b moves bar_frac along the degeneracy without sharpening the physical
+strength. Useful negative — the prior's value is in φ_b and bar_frac's bias, not here.
+
+**The Milky Way is typical in strength but not in shape** (`plot_portail17_bar_strength.py`).
+AGAMA's `Portail17.ini` is a full MW model (v_c(8 kpc) = 241 km/s, M(<20 kpc) = 1.7e11), so its
+midplane density includes halo and disc exactly as the mocks do and A2/A0 is diluted the same way —
+no rescaling needed. Its peak A2/A0 = **0.68 is the 48th percentile** of the 25 (median 0.686,
+range 0.53–1.23). But it peaks at **0.7 kpc** where the simulations peak at 1–3, it is the
+strongest of all inside 0.5 kpc, and beyond 5 kpc it falls below **every one** of the 25
+(0.004 at 7.5 kpc against a median of 0.114).
+
+The central difference is only partly a missing round component. Decomposing: Portail17's barred
+CylSpline is 99% of the midplane density at R = 0.3 and its halo contributes A2/A0 = 0.000, so
+nothing dilutes it; the N-body there is 70% bulge, 24% disc, 6% DM, and the bulge's own A2/A0 is
+0.036. But removing every round component still leaves the N-body disc alone at A2/A0 = 0.058
+against 0.47 — an eightfold difference. So the bars themselves differ: the Portail+17 quadrupole
+switches on by ~0.3 kpc, the simulated ones by ~1 kpc. *Caveats: the M2M model is least constrained
+at its centre, and the real nuclear stellar disc and cluster inside ~0.2 kpc are not in it and
+would bring its A2/A0 down.* The sharp outer truncation is at least partly that it is a smooth
+equilibrium model with no live spiral arms.
+
+Figures `paper_figures/test2_12p5pct/07_bar_strength_profile_recovery.png`,
+`figures/test2_portail17_bar_strength.png`. Tables `bar_strength_profile_recovery.npz`,
+`portail17_bar_strength.csv`.
+
+## 2026-11-07 — TEST 3: a per-star distance error, modelled as uniform. No bias.
+
+Every mock before this gave every star exactly 12.5%, and the model assumes that. The real Mira
+sample does not work that way: each star has its own distance error, roughly Gaussian about the
+mean. This tests what that mismatch costs (user, 2026-11-06).
+
+**Set-up.** `make_mock_selection.py --sigma-dm-scatter 0.0543` scatters each star by its own draw
+σ_i ~ N(0.2714, 0.0543) mag = **12.5% ± 2.5%** fractional; verified in the files at 0.272 ± 0.054,
+individual stars spanning ~1.6% to 24%. The per-star values go in the existing `DM_err` column,
+which was always per-star in the format and merely filled with a constant. The file's `sigma_DM`
+attribute still records the **nominal 0.2714**, and that is the single number
+`selection.load_tables` hands the model — so the orbit library is smeared uniformly at 12.5% and
+the ρ_obs/ρ_lib weighting is built on the same assumption. Nothing else differs from the fiducial
+run of the same galaxy: same design, scheme B, sfratio, K = 10, 50 Myr.
+
+13 galaxies on two clusters, spanning Ω_b 16.8–65.1: t3, t5.5, t7, Au18, Au26 (batch 1) and Au20,
+Au24, Au12, Au5, Au17, Au10, t4.5, t2 (batch 2).
+
+| galaxy | Ω_b truth | fiducial | per-star | shift |
+|---|---|---|---|---|
+| Au20 | 16.76 | −7.0% | −10.6% | −3.6% |
+| t7 | 26.02 | −4.5% | −5.6% | −1.1% |
+| t5.5 | 28.84 | −7.2% | −5.7% | +1.5% |
+| t4.5 | 32.39 | +1.8% | −1.5% | −3.3% |
+| Au24 | 32.78 | +4.0% | +3.8% | −0.2% |
+| Au18 | 36.27 | +0.6% | +1.4% | +0.8% |
+| t3 | 39.53 | −1.1% | +1.3% | +2.3% |
+| Au12 | 40.06 | +7.2% | +5.7% | −1.5% |
+| t2 | 44.25 | −4.8% | −2.2% | +2.7% |
+| Au5 | 45.11 | +3.5% | +4.0% | +0.5% |
+| Au17 | 50.95 | −3.7% | −3.9% | −0.2% |
+| Au10 | 56.65 | +0.4% | +1.7% | +1.3% |
+| Au26 | 65.14 | +1.6% | +0.9% | −0.7% |
+
+- **Ω_b: mean |bias| 3.65% → 3.70%, mean shift −0.11%, 6 up and 7 down.** No coherent direction.
+- **The other three move by 0.05–0.12σ**: φ_b 21.34 → 20.87 (−0.05σ), S 1.078 → 1.054 (−0.11σ),
+  bar_frac 0.822 → 0.839 (+0.12σ). All far inside their own error bars.
+- **Conclusion: assuming a uniform 12.5% when the data is 12.5% ± 2.5% per star costs nothing
+  measurable.**
+
+**Caveat, stated before the test was run and still standing.** The two mocks use different
+distance-error draws, so the 1.86% rms per-galaxy scatter is what re-drawing alone would produce,
+independent of whether the errors are uniform. A sub-2% effect is not separable from the draw with
+one realisation per galaxy. What is firm is the absence of a coherent shift. Pinning the noise
+down would need a repeat at a different `--seed-err`; on this evidence it is not worth the time.
+
+Figure `paper_figures/scatter_test/01_pattern_speed_fiducial_vs_per_star.png`, corner plots in
+`paper_figures/scatter_test/corner_sfratio/` and `.../corner_kinematic_prior/` (13 each).
+Table `results/scatter_test_comparison.csv`. Scripts `run_scatter_test_cluster{,2}.sh`,
+`postprocess_scatter_test.sh`, `plot_scatter_test_comparison.py`.
+
+## 2026-11-07 — The kinematic φ_b prior was measured on 8 realisations, not 1. Corrected, everywhere.
+
+The prior's measured angle was being read from the ring cache, which averages **8** distance-error
+realisations of each galaxy. You only ever get one realisation of the real Galaxy, so that was
+quietly optimistic — and for the Test 3 runs it was simply wrong, since the cache was built from
+the *fiducial* mocks and would have described data that was never modelled.
+
+`plot_corner_with_kinematic_prior.py --measure-from-mock` now measures the ⟨|v_R|/v_tot⟩ phase on
+the run's own mock, one dataset, as for real data. The calibration it is inverted through is
+unchanged: still the external Auriga band. All 38 corners (25 fiducial + 13 Test 3) were
+regenerated this way so everything is measured identically.
+
+| | φ_b \|error\| | bar_frac bias |
+|---|---|---|
+| fiducial (25) | 5.74 → **1.98°** | −0.150 → **+0.001** |
+| per-star (13) | 6.13 → **3.37°** | −0.161 → **−0.002** |
+
+- **Retraction:** the 1.60° quoted on 2026-11-05 becomes **1.98°**. The 0.38° difference was the
+  8-realisation averaging flattering the prior.
+- **The headline survives and is cleaner**: bar_frac's bias collapses to ~0.00 in both arms. The
+  degeneracy-breaking works identically whether or not the distance errors are uniform.
+- **The prior is less precise under per-star errors**, 3.37° against 1.98°: a single-realisation
+  kinematic angle is noisier when the stars have heterogeneous distance quality. The pattern speed
+  is unaffected either way.
+
+## 2026-11-07 — Dynamical bar length (Petersen et al. 2021): machinery found, cuts still OPEN
+
+The photometric length is not what a dynamicist means by the bar; Petersen, Weinberg & Katz (2021)
+argue for the radial extent of the orbits actually trapped by it. That is computable from what this
+project already fits — the trial potential's shape is set by (S, bar_frac) and the frame by Ω_b —
+so a posterior sample gives a potential and a pattern speed and the length follows. **Not
+finished**; recording what was established so the next attempt does not repeat it.
+
+**Two AGAMA conventions, verified numerically and worth not rediscovering.** A circular orbit in an
+axisymmetric potential must keep r fixed, and a star whose angular speed equals the pattern speed
+must sit at a fixed azimuth in the rotating frame. Those two tests give:
+- `agama.orbit(..., Omega=)` takes the initial conditions in the **INERTIAL** frame;
+- it returns the trajectory in the **ROTATING** frame.
+Passing rotating-frame velocities instead sends orbits plunging to the centre and reports no
+trapped orbits at all — which is exactly what happened first.
+
+**Use the saved library, not a synthetic launch grid** (user, 2026-11-07). `traj_NNN.npy` is
+(50325, 41, 6) float32, 50 MB a design point, **already in the bar frame** and integrated with the
+pipeline's own scheme (`ssl.integrate`, accuracy 1e-6). 257 design points a galaxy, each with its
+emulator logL, so the posterior weighting is free and there are no launch conditions to tune. This
+removes the invented initial conditions that caused the trouble.
+
+**The two things that block it.**
+1. *The cuts.* An azimuth-winding test (unwrap 2φ, trapped if it stays within 2π) is too crude: it
+   first admitted near-radial plungers out past corotation (L_dyn/R_CR ≈ 1.5, physically
+   impossible) and then rejected everything once tightened. The literature classifies by orbital
+   **frequency** in the bar frame. `/data/hz420/OSARGs/x1_orbits_obs.py` has the machinery — FFT
+   periodogram peak (`fourier_periodogram` + `find_peaks`) of x, y, z and R in the rotating frame,
+   each also as the complex signal x + i·v to give a *signed* frequency — and
+   `bar_dynamics/x1_orbits_obs_omega34.pkl` holds 33,394 orbits × 31 columns of output. **The x1
+   selection cuts themselves are in none of the .py files and no notebook references the pickle.**
+   Portail et al. (2015) classify bulge orbits by frequency ratios in the bar frame and are the
+   right reference; the numerical tolerances still need to come from there or from the user.
+2. *Time resolution.* The library is 1 Gyr at 41 snapshots. The OSARGs frequencies were measured
+   over ~2 Gyr at 1000 samples and are quantised at 0.4995/Gyr = 1/T. Ours would be ~1/Gyr, twice
+   as coarse, and for the fast bars the sampling is marginal: nbody (Ω_b = 26) gives 4.2 bar
+   periods at 9.4 samples/period, **Au26 (Ω_b = 65) gives 10.6 periods at only 3.8 samples** —
+   Nyquist sits on top of the bar frequency. Libration-vs-circulation would survive that; a
+   frequency-ratio criterion would not, at the fast end. Re-integrating the library at finer
+   cadence is cheap per point but is no longer free.
 
 ## Figure index (Test 1b, N-body, perfect mock)
 

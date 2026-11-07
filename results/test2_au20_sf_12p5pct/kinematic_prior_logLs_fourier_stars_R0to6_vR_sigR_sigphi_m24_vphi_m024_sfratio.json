@@ -5,13 +5,14 @@
   "phi_kin": 35.0,
   "sigma_kin": 1.675684559941614,
   "prior_info": {
-    "measured": 31.924771202732256,
+    "measured": 34.72883082299383,
     "calibrators": 12,
     "leave_one_out": true,
     "band": 2.932164651588978,
     "slope": 0.8749154589367177,
     "rule": "self:0.3",
-    "est": "absvR"
+    "est": "absvR",
+    "measured_from": "au20_mock_selection_sigmaDM0.271_N50k.hdf5"
   },
   "ess": 2574.4785160206,
   "truth": {

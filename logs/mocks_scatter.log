@@ -1,0 +1,21 @@
+saved figures/mock_validation/test2_nbody_t3_mock_selection_vs_dr3_miras_sigmaDM0.271.png
+wrote mock/nbody_t3_mock_selection_sigmaDM0.271_N50k_scat0.054.hdf5: 50,021 stars (expected 50,000); particles with S > 1 (capped): 0.00%; sky-map correlation mock vs target 0.997
+  distance median: Miras 8.02, mock 8.03 kpc; R median: Miras 3.33, mock 3.34 kpc; |b| median: Miras 3.39, mock 3.39 deg
+  true |z| > 1 kpc: 13.3%; comp: disc 87.3%
+saved figures/mock_validation/test2_nbody_t5.5_mock_selection_vs_dr3_miras_sigmaDM0.271.png
+wrote mock/nbody_t5.5_mock_selection_sigmaDM0.271_N50k_scat0.054.hdf5: 50,049 stars (expected 50,000); particles with S > 1 (capped): 0.00%; sky-map correlation mock vs target 0.997
+  distance median: Miras 8.02, mock 8.02 kpc; R median: Miras 3.33, mock 3.33 kpc; |b| median: Miras 3.39, mock 3.40 deg
+  true |z| > 1 kpc: 14.3%; comp: disc 87.9%
+saved figures/mock_validation/test2_nbody_mock_selection_vs_dr3_miras_sigmaDM0.271.png
+wrote mock/nbody_mock_selection_sigmaDM0.271_N50k_scat0.054.hdf5: 50,333 stars (expected 50,000); particles with S > 1 (capped): 0.00%; sky-map correlation mock vs target 0.997
+  distance median: Miras 8.02, mock 8.02 kpc; R median: Miras 3.33, mock 3.31 kpc; |b| median: Miras 3.39, mock 3.40 deg
+  true |z| > 1 kpc: 14.6%; comp: disc 88.0%
+saved figures/mock_validation/test2_au18_mock_selection_vs_dr3_miras_sigmaDM0.271.png
+wrote mock/au18_mock_selection_sigmaDM0.271_N50k_scat0.054.hdf5: 50,264 stars (expected 50,000); particles with S > 1 (capped): 0.00%; sky-map correlation mock vs target 0.997
+  distance median: Miras 8.02, mock 8.03 kpc; R median: Miras 3.33, mock 3.31 kpc; |b| median: Miras 3.39, mock 3.43 deg
+  true |z| > 1 kpc: 15.4%; comp: disc 100.0%
+saved figures/mock_validation/test2_au26_mock_selection_vs_dr3_miras_sigmaDM0.271.png
+wrote mock/au26_mock_selection_sigmaDM0.271_N50k_scat0.054.hdf5: 49,855 stars (expected 50,000); particles with S > 1 (capped): 0.00%; sky-map correlation mock vs target 0.997
+  distance median: Miras 8.02, mock 8.04 kpc; R median: Miras 3.33, mock 3.31 kpc; |b| median: Miras 3.39, mock 3.39 deg
+  true |z| > 1 kpc: 15.3%; comp: disc 100.0%
+MOCKS_DONE

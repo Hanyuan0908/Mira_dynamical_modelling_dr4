@@ -44,6 +44,7 @@ HEADLINE = [
     "test2_bar_angle_bias_vs_distance_error.png",
     "test2_bar_angle_offset_vs_bar_property.png",
     "test2_bar_strength_profile_recovery.png",
+    "test2_scatter_test_pattern_speed.png",
     "test2_bar_angle_transfer_12p5.png",
     "test2_smeared_velocity_maps_auriga_outliers.png",
     "test2_bar_angle_vecsum_drift.png",

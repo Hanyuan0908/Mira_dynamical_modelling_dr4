@@ -1,0 +1,18 @@
+{
+  "run": "test2_t4.5_sf_12p5pct_scat",
+  "mock": "nbody_t4.5_mock_selection_sigmaDM0.271_N50k_scat0.054.hdf5",
+  "galaxy": "nbody_t4.5",
+  "omega_truth": 32.39450722638753,
+  "omega_scale": 1.2449849049341866,
+  "variants": [
+    "observed",
+    "asis",
+    "sf"
+  ],
+  "sigma_DM": 0.27143405118953234,
+  "accuracy": 1e-05,
+  "design": "results/test1_nbody_qmc_focused/design.csv",
+  "n_points": 257,
+  "cadence_step": 2,
+  "snapshot_dt_myr": 50.0
+}

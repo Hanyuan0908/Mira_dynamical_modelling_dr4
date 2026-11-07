@@ -60,6 +60,8 @@ STANDING = [
      "test2_bar_angle_offset_vs_bar_property.png"),
     ("test2_12p5pct", "07_bar_strength_profile_recovery",
      "test2_bar_strength_profile_recovery.png"),
+    ("scatter_test", "01_pattern_speed_fiducial_vs_per_star",
+     "test2_scatter_test_pattern_speed.png"),
     ("emulator_validation", "01_leave_one_out", "emulator_validation/loo_sfratio.png"),
     ("emulator_validation", "02_pooled_draws_K10",
      "emulator_validation/pooled_draws_test2_t7_sf_12p5pct.png"),
@@ -94,6 +96,18 @@ STANDING_GLOBS = [
      ["t2", "t2.375", "t2.625", "t3", "t3.375", "t3.625", "t4", "t4.5", "t5", "t5.5", "t6.25",
       "t7", "au5", "au9", "au10", "au12", "au14", "au17", "au18", "au20", "au22", "au24",
       "au26", "au27", "au28"]),
+    # Per-star distance error (12.5% +- 2.5%) modelled as uniform 12.5%: same scheme B +
+    # sfratio + K = 10 treatment as the fiducial runs, so the corners are directly comparable.
+    ("scatter_test", "corner_sfratio",
+     "test2_{t}_sf_12p5pct_scat_emulator_corner_logLs_"
+     "fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024_sfratio.png",
+     ["t3", "t5.5", "t7", "au18", "au26", "au20", "au24", "au12", "au5", "au17",
+      "au10", "t4.5", "t2"]),
+    ("scatter_test", "corner_kinematic_prior",
+     "test2_{t}_sf_12p5pct_scat_corner_kinprior_logLs_"
+     "fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024_sfratio.png",
+     ["t3", "t5.5", "t7", "au18", "au26", "au20", "au24", "au12", "au5", "au17",
+      "au10", "t4.5", "t2"]),
     ("emulator_validation", "loo_per_run",
      "test2_{t}_sf_12p5pct_emulator_loo_logLs_"
      "fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024_sfratio.png",

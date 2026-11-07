@@ -1,0 +1,49 @@
+saved figures/mock_validation/test2_au20_mock_selection_vs_dr3_miras_sigmaDM0.271.png
+wrote mock/au20_mock_selection_sigmaDM0.271_N50k_scat0.054.hdf5: 50,157 stars (expected 50,000); particles with S > 1 (capped): 0.06%; sky-map correlation mock vs target 0.997
+  distance median: Miras 8.02, mock 8.04 kpc; R median: Miras 3.33, mock 3.31 kpc; |b| median: Miras 3.39, mock 3.41 deg
+  true |z| > 1 kpc: 16.8%; comp: disc 100.0%
+saved figures/mock_validation/test2_au24_mock_selection_vs_dr3_miras_sigmaDM0.271.png
+wrote mock/au24_mock_selection_sigmaDM0.271_N50k_scat0.054.hdf5: 50,222 stars (expected 50,000); particles with S > 1 (capped): 0.01%; sky-map correlation mock vs target 0.998
+  distance median: Miras 8.02, mock 8.02 kpc; R median: Miras 3.33, mock 3.33 kpc; |b| median: Miras 3.39, mock 3.38 deg
+  true |z| > 1 kpc: 16.4%; comp: disc 100.0%
+saved figures/mock_validation/test2_au9_mock_selection_vs_dr3_miras_sigmaDM0.271.png
+wrote mock/au9_mock_selection_sigmaDM0.271_N50k_scat0.054.hdf5: 50,212 stars (expected 50,000); particles with S > 1 (capped): 0.00%; sky-map correlation mock vs target 0.997
+  distance median: Miras 8.02, mock 8.04 kpc; R median: Miras 3.33, mock 3.32 kpc; |b| median: Miras 3.39, mock 3.37 deg
+  true |z| > 1 kpc: 15.6%; comp: disc 100.0%
+saved figures/mock_validation/test2_au27_mock_selection_vs_dr3_miras_sigmaDM0.271.png
+wrote mock/au27_mock_selection_sigmaDM0.271_N50k_scat0.054.hdf5: 49,896 stars (expected 50,000); particles with S > 1 (capped): 0.00%; sky-map correlation mock vs target 0.997
+  distance median: Miras 8.02, mock 8.01 kpc; R median: Miras 3.33, mock 3.33 kpc; |b| median: Miras 3.39, mock 3.38 deg
+  true |z| > 1 kpc: 16.3%; comp: disc 100.0%
+saved figures/mock_validation/test2_au12_mock_selection_vs_dr3_miras_sigmaDM0.271.png
+wrote mock/au12_mock_selection_sigmaDM0.271_N50k_scat0.054.hdf5: 49,979 stars (expected 50,000); particles with S > 1 (capped): 0.00%; sky-map correlation mock vs target 0.997
+  distance median: Miras 8.02, mock 8.04 kpc; R median: Miras 3.33, mock 3.31 kpc; |b| median: Miras 3.39, mock 3.38 deg
+  true |z| > 1 kpc: 16.2%; comp: disc 100.0%
+saved figures/mock_validation/test2_au5_mock_selection_vs_dr3_miras_sigmaDM0.271.png
+wrote mock/au5_mock_selection_sigmaDM0.271_N50k_scat0.054.hdf5: 50,046 stars (expected 50,000); particles with S > 1 (capped): 0.00%; sky-map correlation mock vs target 0.997
+  distance median: Miras 8.02, mock 8.04 kpc; R median: Miras 3.33, mock 3.33 kpc; |b| median: Miras 3.39, mock 3.36 deg
+  true |z| > 1 kpc: 15.6%; comp: disc 100.0%
+saved figures/mock_validation/test2_au17_mock_selection_vs_dr3_miras_sigmaDM0.271.png
+wrote mock/au17_mock_selection_sigmaDM0.271_N50k_scat0.054.hdf5: 50,053 stars (expected 50,000); particles with S > 1 (capped): 0.02%; sky-map correlation mock vs target 0.997
+  distance median: Miras 8.02, mock 8.03 kpc; R median: Miras 3.33, mock 3.30 kpc; |b| median: Miras 3.39, mock 3.41 deg
+  true |z| > 1 kpc: 15.7%; comp: disc 100.0%
+saved figures/mock_validation/test2_au10_mock_selection_vs_dr3_miras_sigmaDM0.271.png
+wrote mock/au10_mock_selection_sigmaDM0.271_N50k_scat0.054.hdf5: 49,835 stars (expected 50,000); particles with S > 1 (capped): 0.03%; sky-map correlation mock vs target 0.997
+  distance median: Miras 8.02, mock 8.02 kpc; R median: Miras 3.33, mock 3.33 kpc; |b| median: Miras 3.39, mock 3.38 deg
+  true |z| > 1 kpc: 15.6%; comp: disc 100.0%
+saved figures/mock_validation/test2_nbody_t6.25_mock_selection_vs_dr3_miras_sigmaDM0.271.png
+wrote mock/nbody_t6.25_mock_selection_sigmaDM0.271_N50k_scat0.054.hdf5: 50,102 stars (expected 50,000); particles with S > 1 (capped): 0.00%; sky-map correlation mock vs target 0.997
+  distance median: Miras 8.02, mock 8.04 kpc; R median: Miras 3.33, mock 3.33 kpc; |b| median: Miras 3.39, mock 3.42 deg
+  true |z| > 1 kpc: 14.8%; comp: disc 87.9%
+saved figures/mock_validation/test2_nbody_t4.5_mock_selection_vs_dr3_miras_sigmaDM0.271.png
+wrote mock/nbody_t4.5_mock_selection_sigmaDM0.271_N50k_scat0.054.hdf5: 50,233 stars (expected 50,000); particles with S > 1 (capped): 0.00%; sky-map correlation mock vs target 0.998
+  distance median: Miras 8.02, mock 8.05 kpc; R median: Miras 3.33, mock 3.33 kpc; |b| median: Miras 3.39, mock 3.41 deg
+  true |z| > 1 kpc: 14.1%; comp: disc 87.7%
+saved figures/mock_validation/test2_nbody_t3.625_mock_selection_vs_dr3_miras_sigmaDM0.271.png
+wrote mock/nbody_t3.625_mock_selection_sigmaDM0.271_N50k_scat0.054.hdf5: 50,146 stars (expected 50,000); particles with S > 1 (capped): 0.01%; sky-map correlation mock vs target 0.997
+  distance median: Miras 8.02, mock 8.05 kpc; R median: Miras 3.33, mock 3.35 kpc; |b| median: Miras 3.39, mock 3.38 deg
+  true |z| > 1 kpc: 13.4%; comp: disc 87.7%
+saved figures/mock_validation/test2_nbody_t2_mock_selection_vs_dr3_miras_sigmaDM0.271.png
+wrote mock/nbody_t2_mock_selection_sigmaDM0.271_N50k_scat0.054.hdf5: 50,261 stars (expected 50,000); particles with S > 1 (capped): 0.01%; sky-map correlation mock vs target 0.997
+  distance median: Miras 8.02, mock 8.02 kpc; R median: Miras 3.33, mock 3.34 kpc; |b| median: Miras 3.39, mock 3.38 deg
+  true |z| > 1 kpc: 13.1%; comp: disc 87.0%
+MOCKS12_DONE

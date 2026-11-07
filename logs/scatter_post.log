@@ -1,0 +1,334 @@
+2026-11-06 13:48:15  0/17 complete; 51 GB free
+2026-11-06 13:58:15  0/17 complete; 50 GB free
+2026-11-06 14:08:15  0/17 complete; 49 GB free
+2026-11-06 14:18:15  0/17 complete; 48 GB free
+2026-11-06 14:28:15  0/17 complete; 47 GB free
+2026-11-06 14:38:15  0/17 complete; 46 GB free
+2026-11-06 14:48:15  0/17 complete; 45 GB free
+2026-11-06 14:58:15  0/17 complete; 44 GB free
+2026-11-06 15:08:15  0/17 complete; 43 GB free
+2026-11-06 15:18:15  0/17 complete; 42 GB free
+
+########## test2_au20_sf_12p5pct_scat  2026-11-06 15:28:16 ##########
+    21 snapshots -> --cadence-step 1
+    scored 257/257
+    posterior ok
+archive  /run/media/hz420/USB/hanyuan/projects/mira_dynamics_dr4/Mira_dynamical_modelling_dr4
+design   257 points
+
+########## test2_au20_sf_12p5pct_scat ##########
+  finished: 257/257 points, 6.4G
+  copying ...
+  counts   src 1285 files / 6759612988 bytes    dst 1285 files / 6759612988 bytes
+  verified: counts, bytes, re-scan and sampled hashes all match
+  freed here: 255M left in /data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/runs/test2_au20_sf_12p5pct_scat (was 38G free, now 38G)
+
+=== done; 38G free on the working disk ===
+    38 GB free
+2026-11-06 15:52:20  1/17 complete; 38 GB free
+2026-11-06 16:02:20  1/17 complete; 44 GB free
+
+########## test2_t3_sf_12p5pct_scat  2026-11-06 16:12:20 ##########
+    21 snapshots -> --cadence-step 1
+    scored 257/257
+    posterior ok
+archive  /run/media/hz420/USB/hanyuan/projects/mira_dynamics_dr4/Mira_dynamical_modelling_dr4
+design   257 points
+
+########## test2_t3_sf_12p5pct_scat ##########
+  finished: 257/257 points, 6.4G
+  copying ...
+  counts   src 1285 files / 6741717564 bytes    dst 1285 files / 6741717564 bytes
+  verified: counts, bytes, re-scan and sampled hashes all match
+  freed here: 255M left in /data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/runs/test2_t3_sf_12p5pct_scat (was 41G free, now 41G)
+
+=== done; 41G free on the working disk ===
+    41 GB free
+2026-11-06 16:33:51  2/17 complete; 41 GB free
+2026-11-06 16:43:51  2/17 complete; 46 GB free
+2026-11-06 16:53:51  2/17 complete; 45 GB free
+2026-11-06 17:03:51  2/17 complete; 44 GB free
+2026-11-06 17:13:52  2/17 complete; 43 GB free
+
+########## test2_au24_sf_12p5pct_scat  2026-11-06 17:23:52 ##########
+    21 snapshots -> --cadence-step 1
+    scored 257/257
+    posterior ok
+archive  /run/media/hz420/USB/hanyuan/projects/mira_dynamics_dr4/Mira_dynamical_modelling_dr4
+design   257 points
+
+########## test2_au24_sf_12p5pct_scat ##########
+  finished: 257/257 points, 6.4G
+  copying ...
+  counts   src 1285 files / 6768165948 bytes    dst 1285 files / 6768165948 bytes
+  verified: counts, bytes, re-scan and sampled hashes all match
+  freed here: 255M left in /data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/runs/test2_au24_sf_12p5pct_scat (was 40G free, now 40G)
+
+=== done; 40G free on the working disk ===
+    40 GB free
+2026-11-06 17:44:26  3/17 complete; 40 GB free
+2026-11-06 17:54:26  3/17 complete; 45 GB free
+2026-11-06 18:04:27  3/17 complete; 44 GB free
+2026-11-06 18:14:27  3/17 complete; 43 GB free
+2026-11-06 18:24:27  3/17 complete; 42 GB free
+2026-11-06 18:34:27  3/17 complete; 41 GB free
+2026-11-06 18:44:27  3/17 complete; 40 GB free
+
+########## test2_t5.5_sf_12p5pct_scat  2026-11-06 18:54:27 ##########
+    21 snapshots -> --cadence-step 1
+    scored 257/257
+    posterior ok
+archive  /run/media/hz420/USB/hanyuan/projects/mira_dynamics_dr4/Mira_dynamical_modelling_dr4
+design   257 points
+
+########## test2_t5.5_sf_12p5pct_scat ##########
+  finished: 257/257 points, 6.4G
+  copying ...
+  counts   src 1285 files / 6745401916 bytes    dst 1285 files / 6745401916 bytes
+  verified: counts, bytes, re-scan and sampled hashes all match
+  freed here: 255M left in /data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/runs/test2_t5.5_sf_12p5pct_scat (was 37G free, now 37G)
+
+=== done; 37G free on the working disk ===
+    37 GB free
+
+########## test2_au12_sf_12p5pct_scat  2026-11-06 19:15:08 ##########
+    21 snapshots -> --cadence-step 1
+    scored 257/257
+    posterior ok
+archive  /run/media/hz420/USB/hanyuan/projects/mira_dynamics_dr4/Mira_dynamical_modelling_dr4
+design   257 points
+
+########## test2_au12_sf_12p5pct_scat ##########
+  finished: 257/257 points, 6.4G
+  copying ...
+  counts   src 1285 files / 6736191036 bytes    dst 1285 files / 6736191036 bytes
+  verified: counts, bytes, re-scan and sampled hashes all match
+  freed here: 255M left in /data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/runs/test2_au12_sf_12p5pct_scat (was 42G free, now 42G)
+
+=== done; 42G free on the working disk ===
+    42 GB free
+2026-11-06 19:35:00  5/17 complete; 42 GB free
+2026-11-06 19:45:00  5/17 complete; 47 GB free
+2026-11-06 19:55:00  5/17 complete; 46 GB free
+2026-11-06 20:05:00  5/17 complete; 45 GB free
+2026-11-06 20:15:00  5/17 complete; 44 GB free
+2026-11-06 20:25:00  5/17 complete; 43 GB free
+2026-11-06 20:35:00  5/17 complete; 42 GB free
+2026-11-06 20:45:00  5/17 complete; 41 GB free
+2026-11-06 20:55:00  5/17 complete; 40 GB free
+2026-11-06 21:05:00  5/17 complete; 39 GB free
+
+########## test2_au5_sf_12p5pct_scat  2026-11-06 21:15:00 ##########
+    21 snapshots -> --cadence-step 1
+    scored 257/257
+    posterior ok
+archive  /run/media/hz420/USB/hanyuan/projects/mira_dynamics_dr4/Mira_dynamical_modelling_dr4
+design   257 points
+
+########## test2_au5_sf_12p5pct_scat ##########
+  finished: 257/257 points, 6.4G
+  copying ...
+  counts   src 1285 files / 6745007164 bytes    dst 1285 files / 6745007164 bytes
+  verified: counts, bytes, re-scan and sampled hashes all match
+  freed here: 255M left in /data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/runs/test2_au5_sf_12p5pct_scat (was 37G free, now 37G)
+
+=== done; 37G free on the working disk ===
+    37 GB free
+2026-11-06 21:35:08  6/17 complete; 37 GB free
+
+########## test2_t7_sf_12p5pct_scat  2026-11-06 21:45:08 ##########
+    21 snapshots -> --cadence-step 1
+    scored 257/257
+    posterior ok
+archive  /run/media/hz420/USB/hanyuan/projects/mira_dynamics_dr4/Mira_dynamical_modelling_dr4
+design   257 points
+
+########## test2_t7_sf_12p5pct_scat ##########
+  finished: 257/257 points, 6.4G
+  copying ...
+  counts   src 1285 files / 6782771772 bytes    dst 1285 files / 6782771772 bytes
+  verified: counts, bytes, re-scan and sampled hashes all match
+  freed here: 255M left in /data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/runs/test2_t7_sf_12p5pct_scat (was 40G free, now 40G)
+
+=== done; 40G free on the working disk ===
+    40 GB free
+2026-11-06 22:06:04  7/17 complete; 40 GB free
+2026-11-06 22:16:04  7/17 complete; 45 GB free
+2026-11-06 22:26:04  7/17 complete; 44 GB free
+2026-11-06 22:36:04  7/17 complete; 43 GB free
+2026-11-06 22:46:04  7/17 complete; 42 GB free
+2026-11-06 22:56:05  7/17 complete; 41 GB free
+2026-11-06 23:06:05  7/17 complete; 40 GB free
+2026-11-06 23:16:05  7/17 complete; 39 GB free
+
+########## test2_au17_sf_12p5pct_scat  2026-11-06 23:26:05 ##########
+    21 snapshots -> --cadence-step 1
+    scored 257/257
+    posterior ok
+archive  /run/media/hz420/USB/hanyuan/projects/mira_dynamics_dr4/Mira_dynamical_modelling_dr4
+design   257 points
+
+########## test2_au17_sf_12p5pct_scat ##########
+  finished: 257/257 points, 6.4G
+  copying ...
+  counts   src 1285 files / 6745928252 bytes    dst 1285 files / 6745928252 bytes
+  verified: counts, bytes, re-scan and sampled hashes all match
+  freed here: 255M left in /data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/runs/test2_au17_sf_12p5pct_scat (was 36G free, now 36G)
+
+=== done; 36G free on the working disk ===
+    36 GB free
+2026-11-06 23:46:29  8/17 complete; 36 GB free
+
+########## test2_au18_sf_12p5pct_scat  2026-11-06 23:56:29 ##########
+    21 snapshots -> --cadence-step 1
+    scored 257/257
+    posterior ok
+archive  /run/media/hz420/USB/hanyuan/projects/mira_dynamics_dr4/Mira_dynamical_modelling_dr4
+design   257 points
+
+########## test2_au18_sf_12p5pct_scat ##########
+  finished: 257/257 points, 6.4G
+  copying ...
+  counts   src 1285 files / 6773692476 bytes    dst 1285 files / 6773692476 bytes
+  verified: counts, bytes, re-scan and sampled hashes all match
+  freed here: 255M left in /data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/runs/test2_au18_sf_12p5pct_scat (was 39G free, now 43G)
+
+=== done; 43G free on the working disk ===
+    43 GB free
+2026-11-07 00:17:52  9/17 complete; 43 GB free
+2026-11-07 00:27:52  9/17 complete; 45 GB free
+2026-11-07 00:37:52  9/17 complete; 43 GB free
+2026-11-07 00:47:52  9/17 complete; 43 GB free
+2026-11-07 00:57:52  9/17 complete; 42 GB free
+2026-11-07 01:07:52  9/17 complete; 41 GB free
+2026-11-07 01:17:52  9/17 complete; 40 GB free
+2026-11-07 01:27:52  9/17 complete; 39 GB free
+2026-11-07 01:37:52  9/17 complete; 38 GB free
+
+########## test2_au10_sf_12p5pct_scat  2026-11-07 01:47:52 ##########
+    21 snapshots -> --cadence-step 1
+    scored 257/257
+    posterior ok
+archive  /run/media/hz420/USB/hanyuan/projects/mira_dynamics_dr4/Mira_dynamical_modelling_dr4
+design   257 points
+
+########## test2_au10_sf_12p5pct_scat ##########
+  finished: 257/257 points, 6.3G
+  copying ...
+  counts   src 1285 files / 6717242940 bytes    dst 1285 files / 6717242940 bytes
+  verified: counts, bytes, re-scan and sampled hashes all match
+  freed here: 254M left in /data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/runs/test2_au10_sf_12p5pct_scat (was 36G free, now 36G)
+
+=== done; 36G free on the working disk ===
+    36 GB free
+2026-11-07 02:08:45  10/17 complete; 36 GB free
+
+########## test2_au26_sf_12p5pct_scat  2026-11-07 02:18:46 ##########
+    21 snapshots -> --cadence-step 1
+    scored 257/257
+    posterior ok
+archive  /run/media/hz420/USB/hanyuan/projects/mira_dynamics_dr4/Mira_dynamical_modelling_dr4
+design   257 points
+
+########## test2_au26_sf_12p5pct_scat ##########
+  finished: 257/257 points, 6.3G
+  copying ...
+  counts   src 1285 files / 6719874620 bytes    dst 1285 files / 6719874620 bytes
+  verified: counts, bytes, re-scan and sampled hashes all match
+  freed here: 255M left in /data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/runs/test2_au26_sf_12p5pct_scat (was 41G free, now 41G)
+
+=== done; 41G free on the working disk ===
+    41 GB free
+2026-11-07 02:39:23  11/17 complete; 41 GB free
+2026-11-07 02:49:23  11/17 complete; 46 GB free
+2026-11-07 02:59:23  11/17 complete; 46 GB free
+2026-11-07 03:09:23  11/17 complete; 46 GB free
+2026-11-07 03:19:23  11/17 complete; 45 GB free
+2026-11-07 03:29:23  11/17 complete; 45 GB free
+2026-11-07 03:39:23  11/17 complete; 44 GB free
+2026-11-07 03:49:23  11/17 complete; 44 GB free
+2026-11-07 03:59:23  11/17 complete; 44 GB free
+2026-11-07 04:09:23  11/17 complete; 43 GB free
+2026-11-07 04:19:23  11/17 complete; 43 GB free
+
+########## test2_t4.5_sf_12p5pct_scat  2026-11-07 04:29:23 ##########
+    21 snapshots -> --cadence-step 1
+    scored 257/257
+    posterior ok
+archive  /run/media/hz420/USB/hanyuan/projects/mira_dynamics_dr4/Mira_dynamical_modelling_dr4
+design   257 points
+
+########## test2_t4.5_sf_12p5pct_scat ##########
+  finished: 257/257 points, 6.4G
+  copying ...
+  counts   src 1285 files / 6769613372 bytes    dst 1285 files / 6769613372 bytes
+  verified: counts, bytes, re-scan and sampled hashes all match
+  freed here: 255M left in /data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/runs/test2_t4.5_sf_12p5pct_scat (was 42G free, now 42G)
+
+=== done; 42G free on the working disk ===
+    42 GB free
+2026-11-07 04:50:56  12/17 complete; 42 GB free
+2026-11-07 05:00:56  12/17 complete; 47 GB free
+2026-11-07 05:10:56  12/17 complete; 47 GB free
+2026-11-07 05:20:57  12/17 complete; 47 GB free
+2026-11-07 05:30:57  12/17 complete; 46 GB free
+2026-11-07 05:40:57  12/17 complete; 46 GB free
+2026-11-07 05:50:57  12/17 complete; 45 GB free
+2026-11-07 06:00:57  12/17 complete; 45 GB free
+2026-11-07 06:10:57  12/17 complete; 45 GB free
+2026-11-07 06:20:57  12/17 complete; 44 GB free
+2026-11-07 06:30:57  12/17 complete; 44 GB free
+2026-11-07 06:40:57  12/17 complete; 43 GB free
+2026-11-07 06:50:57  12/17 complete; 43 GB free
+2026-11-07 07:00:57  12/17 complete; 43 GB free
+
+########## test2_t2_sf_12p5pct_scat  2026-11-07 07:10:57 ##########
+    21 snapshots -> --cadence-step 1
+    scored 257/257
+    posterior ok
+archive  /run/media/hz420/USB/hanyuan/projects/mira_dynamics_dr4/Mira_dynamical_modelling_dr4
+design   257 points
+
+########## test2_t2_sf_12p5pct_scat ##########
+  finished: 257/257 points, 6.4G
+  copying ...
+  counts   src 1285 files / 6773297724 bytes    dst 1285 files / 6773297724 bytes
+  verified: counts, bytes, re-scan and sampled hashes all match
+  freed here: 255M left in /data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/runs/test2_t2_sf_12p5pct_scat (was 42G free, now 42G)
+
+=== done; 42G free on the working disk ===
+    42 GB free
+2026-11-07 07:32:14  13/17 complete; 42 GB free
+2026-11-07 07:42:14  13/17 complete; 48 GB free
+2026-11-07 07:52:14  13/17 complete; 48 GB free
+2026-11-07 08:02:14  13/17 complete; 48 GB free
+2026-11-07 08:12:15  13/17 complete; 48 GB free
+2026-11-07 08:22:15  13/17 complete; 48 GB free
+2026-11-07 08:32:15  13/17 complete; 48 GB free
+2026-11-07 08:42:15  13/17 complete; 48 GB free
+2026-11-07 08:52:15  13/17 complete; 48 GB free
+2026-11-07 09:02:15  13/17 complete; 48 GB free
+2026-11-07 09:12:15  13/17 complete; 48 GB free
+2026-11-07 09:22:15  13/17 complete; 48 GB free
+2026-11-07 09:32:15  13/17 complete; 48 GB free
+2026-11-07 09:42:15  13/17 complete; 48 GB free
+2026-11-07 09:52:15  13/17 complete; 48 GB free
+2026-11-07 10:02:15  13/17 complete; 48 GB free
+2026-11-07 10:12:15  13/17 complete; 48 GB free
+2026-11-07 10:22:15  13/17 complete; 48 GB free
+2026-11-07 10:32:15  13/17 complete; 48 GB free
+2026-11-07 10:42:15  13/17 complete; 48 GB free
+2026-11-07 10:52:15  13/17 complete; 48 GB free
+2026-11-07 11:02:15  13/17 complete; 48 GB free
+2026-11-07 11:12:15  13/17 complete; 48 GB free
+2026-11-07 11:22:15  13/17 complete; 48 GB free
+2026-11-07 11:32:15  13/17 complete; 48 GB free
+2026-11-07 11:42:15  13/17 complete; 48 GB free
+2026-11-07 11:52:15  13/17 complete; 48 GB free
+2026-11-07 12:02:15  13/17 complete; 48 GB free
+2026-11-07 12:12:15  13/17 complete; 48 GB free
+2026-11-07 12:22:15  13/17 complete; 48 GB free
+2026-11-07 12:32:15  13/17 complete; 48 GB free
+2026-11-07 12:42:15  13/17 complete; 48 GB free
+2026-11-07 12:52:15  13/17 complete; 48 GB free
+2026-11-07 13:02:15  13/17 complete; 48 GB free

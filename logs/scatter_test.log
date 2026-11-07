@@ -1,0 +1,26 @@
+nohup: ignoring input
+per-star distance-error test: 5 galaxies, cadence 2, 11 x 8
+environment ok
+    5 mocks present, DM_err is per-star, sigma_DM attribute is the nominal 0.2714
+
+########## test2_t3_sf_12p5pct_scat  (nbody_t3)  2026-11-06 13:26:56 ##########
+merged 257 points -> results/test2_t3_sf_12p5pct_scat/evals.csv
+    done 2026-11-06 16:07:37; 43 GB free
+
+########## test2_t5.5_sf_12p5pct_scat  (nbody_t5.5)  2026-11-06 16:07:37 ##########
+merged 257 points -> results/test2_t5.5_sf_12p5pct_scat/evals.csv
+    done 2026-11-06 18:49:29; 40 GB free
+
+########## test2_t7_sf_12p5pct_scat  (nbody)  2026-11-06 18:49:29 ##########
+merged 257 points -> results/test2_t7_sf_12p5pct_scat/evals.csv
+    done 2026-11-06 21:31:34; 37 GB free
+
+########## test2_au18_sf_12p5pct_scat  (au18)  2026-11-06 21:31:34 ##########
+merged 257 points -> results/test2_au18_sf_12p5pct_scat/evals.csv
+    done 2026-11-06 23:31:14; 37 GB free
+
+########## test2_au26_sf_12p5pct_scat  (au26)  2026-11-06 23:31:14 ##########
+merged 257 points -> results/test2_au26_sf_12p5pct_scat/evals.csv
+    done 2026-11-07 02:05:24; 36 GB free
+
+=== all 5 searches done 2026-11-07 02:05:24 ===

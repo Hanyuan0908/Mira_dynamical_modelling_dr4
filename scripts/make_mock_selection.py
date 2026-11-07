@@ -66,6 +66,13 @@ def main():
     ap.add_argument("--sigma-dm", type=float, default=None, help="distance-modulus error [mag]")
     ap.add_argument("--frac", type=float, default=0.075,
                     help="fractional distance error (default 0.075; ignored if --sigma-dm is given)")
+    ap.add_argument("--sigma-dm-scatter", type=float, default=0.0, metavar="S",
+                    help="star-to-star dispersion of sigma_DM [mag]. The real Mira sample does "
+                         "not have one distance error: each star has its own, roughly Gaussian "
+                         "about the mean. With S > 0 each star is scattered by its own draw "
+                         "sigma_i ~ N(sigma_DM, S), but the file's sigma_DM attribute still "
+                         "records the NOMINAL value, so a model that reads it assumes a uniform "
+                         "error - which is the mismatch this is built to test.")
     ap.add_argument("--n", type=int, default=50000)
     ap.add_argument("--seed-err", type=int, default=SEED_ERR, help="distance-error draw")
     ap.add_argument("--seed-sel", type=int, default=SEED_SEL, help="Bernoulli selection draw")
@@ -78,6 +85,8 @@ def main():
     g = galaxy(args.galaxy)
     # non-default seeds get their own file, so repeat realisations do not overwrite the fiducial one
     tag = "" if (args.seed_err, args.seed_sel) == (SEED_ERR, SEED_SEL) else f"_s{args.seed_err}"
+    if args.sigma_dm_scatter > 0:
+        tag += f"_scat{args.sigma_dm_scatter:.3f}"
     out = MOCK_DIR / f"{g['prefix']}_mock_selection_sigmaDM{args.sigma_dm:.3f}_N{args.n // 1000}k{tag}.hdf5"
 
     with h5py.File(g["stars"], "r") as f:
@@ -87,7 +96,15 @@ def main():
         cols["comp"] = f["comp"][:] if "comp" in f else np.zeros(len(cols["x"]), np.int8)
     obs_true = observe.to_galactic(*(cols[k] for k in ("x", "y", "z", "vx", "vy", "vz")))
     rng = np.random.default_rng(args.seed_err)
-    d_obs = observe.scatter_distance_modulus(obs_true["d"], args.sigma_dm, rng)
+    if args.sigma_dm_scatter > 0:
+        # one error per star, not one for the sample. Clipped at a tenth of the nominal so a
+        # far tail draw cannot give a star an implausibly good distance (at 0.271 +- 0.054 the
+        # floor is 5 sigma away, so it never bites; it is there for larger scatters).
+        sig_star = np.clip(rng.normal(args.sigma_dm, args.sigma_dm_scatter, len(obs_true["d"])),
+                           0.1 * args.sigma_dm, None)
+    else:
+        sig_star = np.full(len(obs_true["d"]), args.sigma_dm)
+    d_obs = observe.scatter_distance_modulus(obs_true["d"], sig_star, rng)
     x, y, z, vx, vy, vz = observe.to_galactocentric(obs_true["l"], obs_true["b"], d_obs, obs_true["pml"],
                                                     obs_true["pmb"], obs_true["vlos"])
     R_obs = np.hypot(x, y)
@@ -120,7 +137,7 @@ def main():
             f[k] = obs_true[k][idx]
         f["DM_true"] = 5 * np.log10(obs_true["d"][idx] * 100.0)
         f["DM_obs"] = 5 * np.log10(d_obs[idx] * 100.0)
-        f["DM_err"] = np.full(len(idx), args.sigma_dm)
+        f["DM_err"] = sig_star[idx]          # per-star when --sigma-dm-scatter is used
         f["star_index"], f["comp"], f["mass"] = idx, cols["comp"][idx], cols["mass"][idx]
         f["S_sky"], f["dist_edges"], f["S_dist"], f["R_edges"], f["S_R"] = s_sky, edges, s_dist, r_edges, s_R
         f.attrs.update(dict(
@@ -129,7 +146,10 @@ def main():
                         "S_sky[HEALPix(l, b)] * S_dist[d_obs bin] * S_R[R_obs bin] for observed R < 8 kpc, kept with probability "
                         "min(S, 1). Observed values under the usual names, true values as <name>_true.",
             source=g["stars"].name, galaxy=args.galaxy, snapshot_time=g.get("time", float("nan")),
-            sigma_DM=args.sigma_dm,
+            # the NOMINAL error. With a per-star scatter the data does not have this error;
+            # a model reading this attribute is deliberately assuming a uniform one.
+            sigma_DM=args.sigma_dm, sigma_DM_scatter=args.sigma_dm_scatter,
+            sigma_DM_per_star=bool(args.sigma_dm_scatter > 0),
             frac_distance_error=np.log(10) / 5 * args.sigma_dm, n_expected=args.n, n=len(idx),
             healpix_nside=NSIDE, healpix_nest=False, d_bin_kpc=D_BIN, R_bin_kpc=R_BIN, R_max_obs=R_MAX, sigma_DM_cut_target=SIGMA_DM_CUT,
             n_target_miras=len(tgt), seed_distance_error=args.seed_err, seed_selection=args.seed_sel,

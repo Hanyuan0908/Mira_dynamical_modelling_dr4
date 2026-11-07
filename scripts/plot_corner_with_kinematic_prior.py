@@ -41,7 +41,26 @@ SCHEME_B = "fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024"
 NATIVE_ANGLE = 27.0                 # every mock is built with its bar at BAR_ANGLE_DEG
 
 
-def kinematic_prior(run_galaxy, rule="self:0.3", est="absvR"):
+def measure_from_mock(mock_name, rule="self:0.3", est="absvR"):
+    """Measured bar angle from a mock's own observed stars - one dataset, as for real data.
+
+    The ring cache holds angles measured on the FIDUCIAL uniform-error mocks. A run whose data is
+    a different mock (e.g. the per-star distance-error test) must be measured on that mock, or the
+    prior describes data that was never modelled. The calibration it is inverted through stays the
+    external Auriga relation either way.
+    """
+    import h5py
+    from common import MOCK_DIR
+    from bar_angle_vecsum_verification import phase
+    with h5py.File(MOCK_DIR / mock_name, "r") as f:
+        w = np.column_stack([f[k][:].astype(np.float64)
+                             for k in ("x", "y", "z", "vx", "vy", "vz")])
+    win = f"kin{rule.split(':')[1]}" if rule.startswith("self:") else rule
+    # phase() returns the bar axis, which is MINUS the angle from the Sun-GC line
+    return -float(phase(w, est, win))
+
+
+def kinematic_prior(run_galaxy, rule="self:0.3", est="absvR", measured=None):
     """(phi_kin, sigma_kin) for one galaxy, from the Auriga calibration band.
 
     Auriga galaxies get a leave-one-out calibration so the prior is not derived from themselves.
@@ -62,7 +81,8 @@ def kinematic_prior(run_galaxy, rule="self:0.3", est="absvR"):
     med = np.nanmedian(A, 0)
     width = float(np.mean(np.nanpercentile(A, 84, 0) - np.nanpercentile(A, 16, 0)))
     slope = float(np.polyfit(ang, med, 1)[0])
-    meas = float(P[snaps.index(run_galaxy)][list(ang).index(NATIVE_ANGLE)])
+    meas = float(P[snaps.index(run_galaxy)][list(ang).index(NATIVE_ANGLE)]) if measured is None \
+        else float(measured)
     inv = (np.interp(meas, med[::-1], ang[::-1]) if med[0] > med[-1]
            else np.interp(meas, med, ang))
     return float(inv), float(0.5 * width / slope), dict(
@@ -78,13 +98,20 @@ def main():
     ap.add_argument("--rule", default="self:0.3")
     ap.add_argument("--est", default="absvR")
     ap.add_argument("--loo-top", type=int, default=32)
+    ap.add_argument("--measure-from-mock", action="store_true",
+                    help="measure the kinematic angle on this run's own mock instead of taking it "
+                         "from the ring cache (required for any run whose data is not the "
+                         "fiducial uniform-error mock)")
     args = ap.parse_args()
     set_style()
 
     run = ge.use_run(args.run)
     TRUTH, pre = run["truth"], run["prefix"]
     meta = json.load(open(RESULTS_DIR / args.run / "run_meta.json"))
-    phi_kin, sig_kin, info = kinematic_prior(meta["galaxy"], args.rule, args.est)
+    meas = measure_from_mock(meta["mock"], args.rule, args.est) if args.measure_from_mock else None
+    phi_kin, sig_kin, info = kinematic_prior(meta["galaxy"], args.rule, args.est, measured=meas)
+    if meas is not None:
+        info["measured_from"] = meta["mock"]
     print(f"  {args.run}: galaxy {meta['galaxy']}")
     print(f"    kinematic angle {info['measured']:.2f} deg measured -> phi_b = {phi_kin:.2f} "
           f"+- {sig_kin:.2f} deg  ({'leave-one-out, ' if info['leave_one_out'] else ''}"

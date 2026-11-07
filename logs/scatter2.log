@@ -1,0 +1,39 @@
+nohup: ignoring input
+cleared 11 stale lock(s) with no completed point beside them
+per-star distance-error test, batch 2: 8 galaxies, cadence 2 (50 Myr), 11 x 8
+environment ok
+    mocks per-star, sigma_DM nominal, ground truths and trial potentials all present
+
+########## test2_au20_sf_12p5pct_scat  (au20)  2026-11-06 13:56:56 ##########
+merged 257 points -> results/test2_au20_sf_12p5pct_scat/evals.csv
+    done 2026-11-06 15:24:07; 41 GB free
+
+########## test2_au24_sf_12p5pct_scat  (au24)  2026-11-06 15:24:07 ##########
+merged 257 points -> results/test2_au24_sf_12p5pct_scat/evals.csv
+    done 2026-11-06 17:22:40; 42 GB free
+
+########## test2_au12_sf_12p5pct_scat  (au12)  2026-11-06 17:22:40 ##########
+merged 257 points -> results/test2_au12_sf_12p5pct_scat/evals.csv
+    done 2026-11-06 19:09:57; 38 GB free
+
+########## test2_au5_sf_12p5pct_scat  (au5)  2026-11-06 19:09:57 ##########
+merged 257 points -> results/test2_au5_sf_12p5pct_scat/evals.csv
+    done 2026-11-06 21:07:09; 39 GB free
+
+########## test2_au17_sf_12p5pct_scat  (au17)  2026-11-06 21:07:09 ##########
+merged 257 points -> results/test2_au17_sf_12p5pct_scat/evals.csv
+    done 2026-11-06 23:25:29; 38 GB free
+
+########## test2_au10_sf_12p5pct_scat  (au10)  2026-11-06 23:25:29 ##########
+merged 257 points -> results/test2_au10_sf_12p5pct_scat/evals.csv
+    done 2026-11-07 01:40:58; 38 GB free
+
+########## test2_t4.5_sf_12p5pct_scat  (nbody_t4.5)  2026-11-07 01:40:58 ##########
+merged 257 points -> results/test2_t4.5_sf_12p5pct_scat/evals.csv
+    done 2026-11-07 04:22:02; 43 GB free
+
+########## test2_t2_sf_12p5pct_scat  (nbody_t2)  2026-11-07 04:22:02 ##########
+merged 257 points -> results/test2_t2_sf_12p5pct_scat/evals.csv
+    done 2026-11-07 07:07:51; 42 GB free
+
+=== all searches done 2026-11-07 07:07:51 ===
