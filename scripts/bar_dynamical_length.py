@@ -59,8 +59,14 @@ def lengths(path, min_x1):
                p90_R_apo_mean=float(np.percentile(Rm, 90)),
                med_R_apo=float(np.median(Ra)),
                axis_ratio=float(np.median(g("y_max")[sel] / g("x_max")[sel])))
-    for k in ("Omega_abs", "phi_b_deg", "S", "bar_frac"):
-        out[k] = float(d[k])
+    # integrate_orbit_frequencies.py stores the four parameters by name; the pipeline's own
+    # freq_NNN.npz (test2b --freq-snap) stores them as a `params` array in the same order.
+    if "params" in d.files:
+        for k, v in zip(("Omega_abs", "phi_b_deg", "S", "bar_frac"), np.asarray(d["params"])):
+            out[k] = float(v)
+    else:
+        for k in ("Omega_abs", "phi_b_deg", "S", "bar_frac"):
+            out[k] = float(d[k])
     return out
 
 

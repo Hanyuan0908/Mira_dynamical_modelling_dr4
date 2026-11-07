@@ -3833,6 +3833,41 @@ Scripts `integrate_orbit_frequencies.py`, `run_bar_dynamics_cluster.sh`, `watch_
 `plot_corner_with_kinematic_prior.weighted_posterior()` factored out so the draws and the corner
 plots come from one chain (verified: the Au26 JSON is identical before and after the refactor).
 
+## 2026-11-07 — Everything in one pass on t = 7, and two controls that say --freq-snap is free
+
+`run_t7_freq_local.sh`: the ordinary 257-point search on the t = 7 mock Miras at 12.5%, with
+`--freq-snap 1001` added so the five bar-frame frequencies come out of the same integration, and
+`--cadence-step 2` so the stored trajectory stays 50 Myr (user, 2026-11-07: no new ingredient, just
+the old code plus the frequency code). Search -> merge -> re-score (sfratio, K = 10) -> scheme B
+emulator -> kinematic-prior corner, unattended. Measured 148 s integrate + 2 s score per point.
+
+**Two controls, because the first comparison looked alarming and the alarm was mine.** Point 000 of
+the new run disagreed with `test2_t7_sf_12p5pct` by up to 7.8% in chi2, which would have meant
+either that `--freq-snap` perturbs the fit or that the code had regressed since November. Both were
+tested at the same design point:
+
+| control | against | max relative difference |
+|---|---|---|
+| cadence 2, `--freq-snap` **off** | the new run | **8.3e-15** (and `coef_lib_sf` 6.0e-12) |
+| cadence 1, `--freq-snap` on | the original campaign | **2.9e-13** (`coef_lib_sf` 5.3e-09) |
+
+So `--freq-snap` moves nothing, and today's code reproduces the November campaign. The 7.8% is the
+**cadence**: 30 library snapshots then against 15 now. (Not bitwise in either case — AGAMA's adaptive
+integrator is not reproducible to the last bit across runs — but 1e-13 is round-off.)
+
+**THE TRAP THAT CAUSED IT, hit twice in ten minutes: `run_meta.json` lies about the cadence.** It
+says `cadence_step: 2, snapshot_dt_myr: 50.0` for `test2_t7_sf_12p5pct`, but that run's saved
+trajectory is **(50218, 41, 6)** — 41 snapshots, 25 Myr. The code thins *before* saving, so a
+cadence-2 search would have written 21. The file is rewritten by later invocations (a `--merge` at a
+different cadence) and does not describe the integration; this is already recorded for 2026-11-05 and
+was ignored anyway. **Read `np.load(traj_000.npy).shape[1]`, never the metadata.** Reading it once
+led to "the cadence explains it" being wrongly retracted, and reading it again led to a wrongly
+claimed code regression.
+
+Consequence for the comparison: the search-time scheme-A columns of the two runs are NOT comparable
+(25 vs 50 Myr libraries), but the re-scored `sfratio` column is — 21 snapshots at the same times in
+both — and that is the column the posterior uses.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
