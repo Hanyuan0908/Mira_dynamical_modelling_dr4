@@ -3673,6 +3673,166 @@ removes the invented initial conditions that caused the trouble.
    frequency-ratio criterion would not, at the fast end. Re-integrating the library at finer
    cadence is cheap per point but is no longer free.
 
+## 2026-11-07 — The x1 cut is Zhang et al. (2024)'s own, and the library CANNOT supply it: cadence, not baseline
+
+Two things settled, one of them a correction to the entry above.
+
+**The cut was never missing — it is in the paper, not the code.** Zhang et al. (2024, arXiv:2406.06678),
+which is this group's own LPV paper and the source of the `/data/hz420/OSARGs` machinery, classifies an
+orbit as bar-supporting by
+
+    Omega_R / Omega_x = 2 +- 0.2    with    r_apo < 7 kpc
+
+(~90% of those also satisfy Omega_x/Omega_y ~ 1; x1v1 "bananas" are Omega_z/Omega_x = 2 and brezels
+5:3). The dynamical length is then the extent of the orbits that pass, R_x1 ~ 3.8 kpc for the MW,
+against Rb ~ 4.0 kpc from the kinematic <|v_R|/v_tot> = 0.3 threshold in the same paper. The
+numerical tolerance is the one thing that was never written down in `measure_Rfreq.py`,
+`orbital_integration_MC.py` or `x1_orbits_obs.py` — those compute the four ratios
+(`Omega_*_withv`, i.e. the signed complex-signal frequencies) and stop. *Unverified:* a page summary
+also gave an 11 Gyr integration time for that paper; `x1_orbits_obs.py` on disk uses `time=2`
+(1.96 Gyr) evaluated at 2000 points, dt ~ 1 Myr, and that is the number the test below needs.
+
+**Correction: the blocker is the sampling CADENCE, not the time baseline.** The entry above blamed
+frequency resolution (1 Gyr gives df = 1/Gyr, "twice as coarse" as OSARGs). That is the wrong
+diagnosis and would have sent the next attempt off to integrate for longer, which does not help.
+`diagnose_x1_frequency_sampling.py` integrates one set of 600 orbits once at 2 Gyr / 1 Myr in the
+galaxy's own potential, then re-measures the frequencies on thinnings of that *identical*
+trajectory, so only the sampling differs:
+
+| sampling | f_Nyq | df | x1 recovered | median \|d(Omega_R/Omega_x)\| | Omega_R aliased |
+|---|---|---|---|---|---|
+| reference 2 Gyr / 1 Myr | 500/Gyr | 0.50 | — | — | 0% |
+| **baseline only** 1 Gyr / 1 Myr | 500/Gyr | 1.00 | **139/167, 209/226, 125/140** | **0.06–0.09** | 0% |
+| **cadence only** 2 Gyr / 25 Myr | 20/Gyr | 0.50 | **35/167, 67/226, 49/140** | **0.41–0.48** | 73–95% |
+| library as saved 1 Gyr / 25 Myr | 20/Gyr | 1.00 | 25/167, 63/226, 38/140 | 0.80, 0.40, 0.94 | 73–95% |
+| library as scored 1 Gyr / 50 Myr | 10/Gyr | 1.00 | 21/167, 30/226, 26/140 | 0.99–1.17 | 96–99% |
+
+(three numbers per cell = nbody / Au20 / Au26.) **Halving the baseline costs almost nothing**
+(83–93% of the x1 set survives, median ratio error 0.06–0.09, well inside the +-0.2 tolerance);
+**coarsening the cadence destroys it** (21–41% survive, ratio error 2–2.5x the whole tolerance),
+and it does so even with a *better* df than the reference.
+
+**Why, with numbers.** The frequencies are far higher than the library samples. Over the x1 set:
+
+| galaxy | Omega_b | Omega_x median | Omega_R median | Omega_R 99th | aliased at 25 Myr | at 50 Myr |
+|---|---|---|---|---|---|---|
+| nbody | 26.0 | 20.0/Gyr | 41.5/Gyr | 299 | 88% | 98% |
+| Au20 | 16.8 | 14.2/Gyr | 28.5/Gyr | 70 | 73% | 96% |
+| Au26 | 65.1 | 44.2/Gyr | 88.5/Gyr | 142 | 95% | 99% |
+
+Omega_R is by construction ~2 Omega_x, so it is the radial frequency that aliases first, and the
+library's Nyquist (20/Gyr at 25 Myr, 10/Gyr at 50 Myr) sits *below the median* Omega_R in every
+galaxy. **The saved trajectories cannot be re-used for this, at any pattern speed — this is not a
+fast-bar problem.** Five samples per radial period at the 99th percentile needs dt = 0.7 Myr
+(nbody), 2.9 (Au20), 1.4 (Au26).
+
+**What it would cost instead.** A fresh integration, but a cheap one: the length needs the stars in
+a handful of posterior potentials, not the 257-point design. AGAMA's `trajsize` sets output
+sampling only, so the force evaluations are unchanged; the cost is bytes and the frequency loop.
+Measured here: 120–300 orbits/s for 2 Gyr at 1 Myr on 8 threads. 10k stars x ~30 potentials x 25
+galaxies is of order an hour on 12 workers. Nothing needs to be stored if the frequencies are
+computed streaming.
+
+**Still open, and a user/paper call:** how the length is read off the trapped set. The maximum
+R_apo is one orbit and is visibly noisy here (nbody 5.69 kpc at reference, 5.92/6.75 under the two
+library thinnings); a high percentile would be steadier. Zhang et al. (2024) quote the extent of
+the spatial distribution, which is not the same statistic.
+
+Script `diagnose_x1_frequency_sampling.py`, table `results/x1_frequency_sampling.csv`.
+
+## 2026-11-07 — Re-integration for the dynamical length: frequencies cost +12%, and the trajectory is bitwise unchanged
+
+The library cannot supply the frequencies (entry above), so they get re-integrated. Two things were
+measured first, because both decide the design.
+
+**Dense output is nearly free, and provably harmless.** AGAMA's `trajsize` sets only how often the
+interpolator is sampled; the force evaluations are unchanged. On 5000 orbits, 8 threads:
+
+| | integrate | AGAMA output |
+|---|---|---|
+| 1 Gyr, trajsize 41 (the pipeline today) | 20.27 s | 0.005 GB |
+| 1 Gyr, trajsize 1001 (dt = 1 Myr) | **20.70 s (+2%)** | 0.112 GB |
+| 2 Gyr, trajsize 2001 | 40.70 s (+101%) | 0.224 GB |
+
+plus 0.40 ms/orbit for five frequencies — 20 s against ~207 s of integration for a 50k point, so
+**+2% integration, +10% FFT, ~+12% all in**, and nothing dense is stored. And sampling at 1001 then
+thinning by 25 gives a trajectory **bitwise identical** to integrating at trajsize 41: on 800 Au26
+orbits in a (0.8, 1.1) potential, `max |diff| = 0.000e+00`, `np.array_equal` True. So recording
+frequencies cannot move a single fitted number. 1 Gyr is enough — the test above gives 83–93%
+x1 recovery at +-0.06–0.09 — so the baseline does not change either.
+
+**What is being run.** `integrate_orbit_frequencies.py`, two modes per galaxy:
+- *truth*: the family at (bar_frac, S) = (1, 1) with the tabulated Omega_b, which is identically the
+  galaxy's own potential, integrating **original snapshot particles — no distance error, no
+  selection function** (user, 2026-11-07). This is the true dynamical length.
+- *draws*: `N_DRAW = 30` potentials from the posterior **re-weighted by the kinematic phi_b prior**,
+  each integrating the run's own mock stars **as observed**, which is the analogue of what Zhang et
+  al. (2024) integrate for the real Miras.
+
+Star pool is R < 8 kpc in both, so a truth-model difference is the potential and not which stars
+were available. Five frequencies are stored (Omega_x, y, z, R from the complex signal
+coordinate + i velocity, as Zhang et al. use for the ratios, plus Omega_phi from the unit vector
+(x + iy)/R since phi wraps), with the bare-coordinate versions of x, y, z, R as well, and
+r_apo / R_apo / x_max / y_max / z_max.
+
+**It needs no trajectories.** The emulator reads `results/<run>/evals.csv`, the prior reads the ring
+cache, the stars read `mock/`. The cluster never touches `runs/` — 83 GB that previous campaigns had
+to ship. Output is ~0.5 MB a draw.
+
+**First sanity check passes on physics, not just on plumbing.** Au26 truth, 3000 particles: the x1
+set has median y_max/x_max = **0.52** (elongated along the bar, which is what makes an orbit
+bar-supporting) against **0.96** for everything else, and 39.8% of snapshot particles classify as x1
+against 18.9% of the distance-smeared, selection-weighted mock stars in a posterior potential.
+
+**The length statistic is still a choice, and the max is now known to be unusable.** The maximum
+R_apo of the x1 set lands at 6.95 kpc for Au26 — i.e. pinned by the `r_apo < 7` cut itself, not by
+the bar. Percentiles of the same set: p99 4.35, p95 3.42, p90 2.90, median 1.51 kpc. Zhang et al.
+quote the extent of the spatial distribution (R_x1 ~ 3.8 kpc for the MW); a high percentile is the
+steady analogue. **To be decided before the comparison plot is made.**
+
+**Why fresh posterior draws and not the design points** (user's question, 2026-11-07). Re-using
+the 257 Sobol points weighted by their own posterior weight is valid importance sampling — the
+design is uniform over the box, so w_i is just the posterior density — but the effective sample size
+says it is too thin. Over the 25 galaxies, ESS of the 257 points under the posterior is **median
+14.2 (range 7.1–84.7)**, and under the posterior *times the kinematic phi_b prior*, which is the one
+we use, **median 7.2 (range 3.3–26.3)**: for t5.5 and Au10 a 16–84 band would rest on 3–5 potentials.
+It is also not cheaper — the points carrying 99% of the weight number **median 67 (range 13–180)**,
+against 30 fresh draws. So: fresh draws now.
+
+The idea pays off in the other direction though. With `--freq-snap` on, a normal 257-point search
+produces frequencies at **every design point for free**, and then L_dyn(theta) can be emulated over
+the design exactly as logL is and evaluated at posterior draws with no integration at all. It should
+be an easier function to emulate than logL: the trial potential's shape depends only on (S,
+bar_frac), Omega_b only sets the frame, and phi_b only rotates which stars are launched where.
+
+**Stored per star** (17 columns): the nine frequencies, `r_apo`, `R_apo`, `R_apo_mean` (mean over the
+individual apocentre passages, steadier than the max for an unclosed orbit), `n_apo`, `x_max`,
+`y_max`, `z_max`, `R_ini`. The 1 Myr trajectory is **never written** — it lives in a 2000-orbit chunk
+(96 MB) and is discarded. Keeping it would be 240 MB a draw, 180 GB for the campaign, against ~500 MB
+for everything actually saved. `n_apo` over the Au26 x1 set is median 92, minimum 11, so even the
+worst-sampled trapped orbit covers 11 radial periods in the 1 Gyr — the baseline is ample.
+
+**The pipeline can now record this itself**: `test2b_qmc_distance_error_run.py --freq-snap 1001`
+integrates once densely, writes `freq_NNN.npz` beside the trajectory, and saves the usual 41-snapshot
+trajectory unchanged. Off by default so nothing already run is affected.
+
+**TRAP, hit for the SECOND time: `potential_family.omega_true` is not the pipeline's truth.** It
+reads `results/<galaxy>_ground_truth.json`, which exists for all 13 Auriga and for `nbody` (t7) but
+**not for the other 11 N-body snapshots** — their pattern speed is in
+`nbody_pattern_speed_evolution.csv`. `integrate_orbit_frequencies.py` used it, so on the first
+launch (2026-11-07 15:00) those 11 truth integrations raised `FileNotFoundError`, wrote nothing, and
+pass 1 reported "14/25 done" and moved on. The 2026-11-05 entry records the identical mistake in a
+preflight. **Use `test2b_qmc_distance_error_run.truth_omega(name)` — the function the pipeline
+actually scores against — and in any preflight CALL it rather than checking that its file exists;
+checking files is what let this pass silently both times.** Both are now fixed and the comment in
+each names both dates. The draws were unaffected (they take Omega_b from the posterior chain), so
+only ~17 min of idle worker time was lost; the 11 truths were refilled on the workstation while the
+cluster carried on with pass 2.
+
+Scripts `integrate_orbit_frequencies.py`, `run_bar_dynamics_cluster.sh`, `watch_bar_dynamics.sh`;
+`plot_corner_with_kinematic_prior.weighted_posterior()` factored out so the draws and the corner
+plots come from one chain (verified: the Au26 JSON is identical before and after the refactor).
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name

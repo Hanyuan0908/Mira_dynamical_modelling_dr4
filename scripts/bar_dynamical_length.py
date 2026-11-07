@@ -1,164 +1,155 @@
-"""Dynamical bar length from trapped x1 orbits, following Petersen et al. (2021).
+"""Dynamical bar length from x1 orbits, recovered against the truth.
 
-The photometric length (the radius where the density m = 2 amplitude falls off) is not what a
-dynamicist means by the bar. Petersen, Weinberg & Katz (2021) argue for the DYNAMICAL length: the
-radial extent of the orbits actually trapped by the bar, which is a property of the potential and
-pattern speed rather than of the light.
+The photometric length is not what a dynamicist means by the bar: Petersen, Weinberg & Katz (2021)
+argue for the radial extent of the orbits actually TRAPPED by it, which is a property of the
+potential and pattern speed rather than of the light. Zhang et al. (2024, arXiv:2406.06678) make
+that operational with a frequency-ratio cut in the bar frame,
 
-That is directly computable from what this project already fits. The trial potential's shape is
-set by (S, bar_frac) and the frame by Omega_b, so a posterior sample gives a potential and a
-pattern speed, and the dynamical length follows from integrating orbits in it - no new mock, no
-re-scoring, no orbit library. The truth is the family at (bar_frac, S) = (1, 1) with the galaxy's
-true Omega_b, which is identically the galaxy's own potential.
+    Omega_R / Omega_x = 2 +- 0.2    and    r_apo < 7 kpc,
 
-Method. Orbits are launched from the bar major axis (the trial potential always puts the bar along
-x) over a grid of radii and a range of speeds about circular, and integrated in the frame rotating
-at Omega_b. An orbit is bar-supporting if its azimuth LIBRATES rather than circulates: 2*phi stays
-within 2*pi instead of winding. The dynamical length is the largest apocentre among the trapped
-orbits.
+and read the length off the extent of the orbits that pass (R_x1 ~ 3.8 kpc for the Milky Way).
 
-Two AGAMA conventions matter and both were verified numerically before use (a circular orbit in an
-axisymmetric potential must keep r fixed, and a star whose angular speed equals the pattern speed
-must sit at a fixed azimuth in the rotating frame):
-  * agama.orbit(..., Omega=) takes the initial conditions in the INERTIAL frame;
-  * it returns the trajectory in the ROTATING frame.
-Passing rotating-frame velocities instead sends orbits plunging to the centre and reports no
-trapped orbits at all.
+This reads the tables written by `integrate_orbit_frequencies.py` - one per truth potential and one
+per posterior draw - applies that cut, and compares. The truth is the galaxy's own potential at
+(bar_frac, S) = (1, 1) with the tabulated Omega_b, integrating ORIGINAL SNAPSHOT PARTICLES (no
+distance error, no selection function); the model is N draws from the posterior re-weighted by the
+kinematic phi_b prior, integrating the mock stars AS OBSERVED.
 
-Usage: python bar_dynamical_length.py [--n-draw 120] [--workers 8]
+WHICH STATISTIC IS THE LENGTH is a choice, and the maximum is not it: the largest R_apo in the x1
+set lands on the r_apo < 7 kpc cut itself (6.95 kpc for Au26), so it measures the cut, not the bar.
+Every candidate is computed and tabulated; `--stat` picks the one that is plotted. p95 of R_apo is
+the default as the steadiest analogue of "the extent of the x1 orbits".
+
+Usage: python bar_dynamical_length.py [--stat p95_R_apo] [--min-x1 50]
 Figure: figures/test2_bar_dynamical_length.png
 Table:  results/bar_dynamical_length.csv
 """
 import argparse
 import json
-from concurrent.futures import ProcessPoolExecutor
 
 import numpy as np
-import agama
-import emcee
+import pandas as pd
 import matplotlib.pyplot as plt
-from scipy.optimize import minimize
 
 from common import RESULTS_DIR, set_style, savefig, rel, INK, INK_2, INK_MUTED, ACCENT, BLUE_RAMP
-import steady_state_likelihood as ssl
-import potential_family as pf
-import test1_gp_emulator as ge
-from plot_corner_with_kinematic_prior import SCHEME_B
 
-N_R, N_V, T_BAR, N_SAMP = 44, 15, 6, 400
-V_FAC = (0.35, 1.45)
+IN_DIR = RESULTS_DIR / "bar_dynamics"
+RATIO, TOL, R_APO_MAX = 2.0, 0.2, 7.0          # Zhang et al. (2024)
+STATS = ["max_R_apo", "p99_R_apo", "p95_R_apo", "p90_R_apo",
+         "p95_R_apo_mean", "p90_R_apo_mean", "med_R_apo"]
 
 
-def dynamical_length(galaxy, bar_frac, S, Omega):
-    """Largest apocentre among orbits trapped by the bar. Omega in AGAMA's sign convention."""
-    p = ssl.bar_aligned_potential(bar_frac, S, galaxy)
-    R = np.linspace(0.3, 14.0, N_R)
-    vc = np.sqrt(np.maximum(-p.force(np.column_stack([R, 0 * R, 0 * R]))[:, 0] * R, 0))
-    fac = np.linspace(*V_FAC, N_V)
-    # INERTIAL ICs, co-rotating sense (sign of Omega); the integrator handles the frame
-    ic = np.array([[r, 0, 0, 0, np.sign(Omega) * f * v, 0] for r, v in zip(R, vc) for f in fac])
-    orb = agama.orbit(potential=p, ic=ic, time=abs(2 * np.pi / Omega) * T_BAR,
-                      trajsize=N_SAMP, Omega=Omega)
-    best = 0.0
-    for i in range(len(ic)):
-        xy = np.asarray(orb[i][1])[:, :2]
-        ph = np.unwrap(2 * np.arctan2(xy[:, 1], xy[:, 0]))
-        if np.ptp(ph) < 2 * np.pi:                       # librates -> trapped by the bar
-            best = max(best, float(np.hypot(*xy.T).max()))
-    return best
-
-
-def one(job):
-    run, galaxy, column, n_draw = job
-    ge.use_run(run)
-    df, _ = ge.load_table(column, None, None)
-    tr = df[df.kind == "qmc"]
-    u, y = ge.to_unit(tr), tr["logL"].values
-    emu = ge.Emulator(u, y)
-    best = None
-    for x0 in np.vstack([u[np.argsort(-y)[:8]], np.random.default_rng(0).random((24, 4))]):
-        r = minimize(lambda q: -emu.predict(q)[0], x0, bounds=[(0, 1)] * 4, method="L-BFGS-B")
-        if best is None or r.fun < best.fun:
-            best = r
-    sam = emcee.EnsembleSampler(
-        32, 4, lambda q: -np.inf if np.any(q < 0) | np.any(q > 1) else emu.predict(q)[0])
-    sam.random_state = np.random.RandomState(2).get_state()
-    sam.run_mcmc(np.clip(best.x + 1e-3 * np.random.default_rng(1).standard_normal((32, 4)), 0, 1),
-                 3000, progress=False)
-    post = ge.from_unit(sam.get_chain(discard=1000, thin=5, flat=True))
-    idx = np.random.default_rng(5).choice(len(post), n_draw, replace=True)
-    # Omega_abs is the magnitude; the family's true pattern speed is negative (clockwise)
-    L = np.array([dynamical_length(galaxy, post[i, 3], post[i, 2], -post[i, 0]) for i in idx])
-    Ltrue = dynamical_length(galaxy, 1.0, 1.0, pf.omega_true(galaxy))
-    q = np.percentile(L[L > 0], [16, 50, 84]) if (L > 0).any() else [np.nan] * 3
-    return dict(run=run, galaxy=galaxy, L_true=Ltrue, L16=q[0], L50=q[1], L84=q[2],
-                n_valid=int((L > 0).sum()), n_draw=n_draw)
+def lengths(path, min_x1):
+    """Every candidate length statistic for one frequency table, plus the x1 count."""
+    d = np.load(path, allow_pickle=True)
+    c, T = list(d["cols"]), d["table"]
+    g = lambda k: T[:, c.index(k)]
+    with np.errstate(invalid="ignore", divide="ignore"):
+        r = g("Omega_R_withv") / g("Omega_x_withv")
+    sel = (np.abs(r - RATIO) <= TOL) & (g("r_apo") < R_APO_MAX)
+    if sel.sum() < min_x1:
+        return None
+    Ra, Rm = g("R_apo")[sel], g("R_apo_mean")[sel]
+    out = dict(n_x1=int(sel.sum()), f_x1=float(sel.mean()),
+               max_R_apo=float(Ra.max()),
+               p99_R_apo=float(np.percentile(Ra, 99)),
+               p95_R_apo=float(np.percentile(Ra, 95)),
+               p90_R_apo=float(np.percentile(Ra, 90)),
+               p95_R_apo_mean=float(np.percentile(Rm, 95)),
+               p90_R_apo_mean=float(np.percentile(Rm, 90)),
+               med_R_apo=float(np.median(Ra)),
+               axis_ratio=float(np.median(g("y_max")[sel] / g("x_max")[sel])))
+    for k in ("Omega_abs", "phi_b_deg", "S", "bar_frac"):
+        out[k] = float(d[k])
+    return out
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--n-draw", type=int, default=120)
-    ap.add_argument("--workers", type=int, default=8)
-    ap.add_argument("--column", default=f"logLs_{SCHEME_B}_sfratio")
-    ap.add_argument("--tags", nargs="+", default=None)
+    ap.add_argument("--stat", default="p95_R_apo", choices=STATS)
+    ap.add_argument("--min-x1", type=int, default=50,
+                    help="skip a table with fewer trapped orbits than this")
     args = ap.parse_args()
     set_style()
-    tags = args.tags or ["t2", "t2.375", "t2.625", "t3", "t3.375", "t3.625", "t4", "t4.5", "t5",
-                         "t5.5", "t6.25", "t7", "au5", "au9", "au10", "au12", "au14", "au17",
-                         "au18", "au20", "au22", "au24", "au26", "au27", "au28"]
-    jobs = []
-    for t in tags:
-        run = f"test2_{t}_sf_12p5pct"
-        meta = RESULTS_DIR / run / "run_meta.json"
-        if not (RESULTS_DIR / run / f"emulator_results_{args.column}.json").exists():
-            print(f"  skip {t}: no posterior")
-            continue
-        jobs.append((run, json.load(open(meta))["galaxy"], args.column, args.n_draw))
-    print(f"{len(jobs)} galaxies, {args.n_draw} draws each", flush=True)
 
-    import pandas as pd
     rows = []
-    with ProcessPoolExecutor(args.workers) as ex:
-        for k, r in enumerate(ex.map(one, jobs), 1):
-            rows.append(r)
-            print(f"  [{k:2d}/{len(jobs)}] {r['galaxy']:10s} L_dyn truth {r['L_true']:5.2f}  "
-                  f"model {r['L50']:5.2f} (+{r['L84']-r['L50']:.2f}/-{r['L50']-r['L16']:.2f})",
-                  flush=True)
-    D = pd.DataFrame(rows)
-    D["bias"] = 100 * (D.L50 / D.L_true - 1)
+    for td in sorted(IN_DIR.glob("truth_*.npz")):
+        gal = td.name[len("truth_"):-len(".npz")]
+        t = lengths(td, args.min_x1)
+        if t is None:
+            print(f"  skip {gal}: truth has too few x1 orbits")
+            continue
+        run = next((d for d in IN_DIR.glob("test2_*")
+                    if json.load(open(RESULTS_DIR / d.name / "run_meta.json"))["galaxy"] == gal),
+                   None)
+        draws = [lengths(f, args.min_x1) for f in sorted(run.glob("draw_*.npz"))] if run else []
+        draws = [x for x in draws if x is not None]
+        if not draws:
+            print(f"  {gal}: truth only, no draws yet")
+            continue
+        v = np.array([x[args.stat] for x in draws])
+        q = np.percentile(v, [16, 50, 84])
+        rows.append(dict(galaxy=gal, run=run.name, n_draw=len(draws),
+                         L_true=t[args.stat], L16=q[0], L50=q[1], L84=q[2],
+                         bias=100 * (q[1] / t[args.stat] - 1),
+                         n_x1_true=t["n_x1"], f_x1_true=t["f_x1"],
+                         f_x1_model=float(np.mean([x["f_x1"] for x in draws])),
+                         axis_ratio_true=t["axis_ratio"],
+                         **{f"true_{s}": t[s] for s in STATS}))
+    if not rows:
+        raise SystemExit("no galaxy has both a truth and draws yet")
+    D = pd.DataFrame(rows).sort_values("L_true")
     D.to_csv(RESULTS_DIR / "bar_dynamical_length.csv", index=False)
 
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(12.4, 5.5), gridspec_kw=dict(wspace=0.26))
-    au = D.galaxy.str.startswith("au")
-    lim = (0.85 * D.L_true.min(), 1.15 * D.L_true.max())
+    au = D.galaxy.str.startswith("au").values
+    lim = (0.85 * min(D.L_true.min(), D.L16.min()), 1.15 * max(D.L_true.max(), D.L84.max()))
     a1.plot(lim, lim, "--", color=INK, lw=1.1, zorder=1, label="perfect recovery")
     for m, c, mk, lab in ((au, ACCENT, "s", "Auriga"), (~au, BLUE_RAMP[5], "o", "N-body")):
+        if not m.any():
+            continue
         a1.errorbar(D.L_true[m], D.L50[m], yerr=[(D.L50 - D.L16)[m], (D.L84 - D.L50)[m]],
                     fmt=mk, ms=7, color=c, mec=INK, mew=0.8, capsize=3, lw=1.2, zorder=4, label=lab)
     a1.set_xlim(*lim); a1.set_ylim(*lim); a1.set_aspect("equal")
-    a1.set_xlabel("true dynamical bar length [kpc]")
-    a1.set_ylabel("recovered dynamical bar length [kpc]")
+    a1.set_xlabel(f"true dynamical bar length [kpc]  ({args.stat})")
+    a1.set_ylabel("recovered dynamical bar length (16-84%) [kpc]")
     a1.legend(loc="upper left", fontsize=9)
-    a1.set_title(f"{len(D)} galaxies, trapped-orbit length", color=INK_2, fontsize=10)
+    a1.set_title(f"{len(D)} galaxies, {int(D.n_draw.min())}-{int(D.n_draw.max())} draws each",
+                 color=INK_2, fontsize=10)
 
     a2.axhline(0, color=INK, lw=1.1, ls="--", zorder=1)
-    for m, c, mk in ((au, ACCENT, "s"), (~au, BLUE_RAMP[5], "o")):
-        a2.plot(D.L_true[m], D.bias[m], mk, ms=8, color=c, mec=INK, mew=0.8, zorder=4)
+    rms = float(np.sqrt((D.bias ** 2).mean()))
+    a2.axhspan(-rms, rms, color=BLUE_RAMP[1], alpha=0.5, lw=0, zorder=0, label=f"rms {rms:.1f}%")
     for _, r in D.iterrows():
-        a2.annotate(r.galaxy.replace("nbody_", "").replace("nbody", "t7"),
-                    (r.L_true, r.bias), xytext=(0, 9), textcoords="offset points",
-                    ha="center", fontsize=7, color=INK_2)
-    a2.set_xlabel("true dynamical bar length [kpc]")
+        c = ACCENT if r.galaxy.startswith("au") else BLUE_RAMP[5]
+        a2.plot(r.L_true, r.bias, "s" if r.galaxy.startswith("au") else "o", ms=8, color=c,
+                mec=INK, mew=0.8, zorder=4)
+        a2.annotate(r.galaxy.replace("nbody_", "").replace("nbody", "t7"), (r.L_true, r.bias),
+                    xytext=(0, 9), textcoords="offset points", ha="center", fontsize=7.5,
+                    color=INK_2)
+    a2.set_xlabel(f"true dynamical bar length [kpc]  ({args.stat})")
     a2.set_ylabel("bias in dynamical length [%]")
-    a2.set_title(f"mean bias {D.bias.mean():+.1f}%, mean |bias| {D.bias.abs().mean():.1f}%",
+    a2.legend(loc="lower right", fontsize=9)
+    a2.set_title(f"mean {D.bias.mean():+.1f}%, mean |bias| {D.bias.abs().mean():.1f}%",
                  color=INK_2, fontsize=10)
-    fig.suptitle("Dynamical bar length from trapped x1 orbits (Petersen et al. 2021), "
-                 "recovered against truth", color=INK, y=0.98, fontsize=12)
+    fig.suptitle("Dynamical bar length from trapped x1 orbits "
+                 r"($\Omega_R/\Omega_x = 2 \pm 0.2$, $r_{\rm apo} < 7$ kpc; Zhang et al. 2024), "
+                 "recovered against truth", color=INK, y=0.98, fontsize=11.5)
     fig.tight_layout()
     savefig(fig, "test2_bar_dynamical_length")
-    print(f"\n  mean bias {D.bias.mean():+.1f}%, mean |bias| {D.bias.abs().mean():.1f}%")
-    print(f"wrote {rel(RESULTS_DIR / 'bar_dynamical_length.csv')}")
+
+    print(f"  {'galaxy':8s} {'n_x1':>6s} {'truth':>6s} {'model':>6s} {'bias':>7s}  "
+          f"{'f_x1 true/model':>16s}")
+    for _, r in D.iterrows():
+        print(f"  {r.galaxy:8s} {int(r.n_x1_true):6d} {r.L_true:6.2f} {r.L50:6.2f} "
+              f"{r.bias:+6.1f}%  {100*r.f_x1_true:7.1f}% /{100*r.f_x1_model:6.1f}%")
+    print(f"\n  mean bias {D.bias.mean():+.1f}%, mean |bias| {D.bias.abs().mean():.1f}%, rms {rms:.1f}%")
+    print("\n  how the choice of statistic moves the truth (kpc):")
+    print("  " + " ".join(f"{s:>15s}" for s in ["galaxy"] + STATS))
+    for _, r in D.iterrows():
+        print("  " + f"{r.galaxy:>15s}" + " ".join(f"{r['true_' + s]:15.2f}" for s in STATS))
+    print(f"\nwrote {rel(RESULTS_DIR / 'bar_dynamical_length.csv')}")
 
 
 if __name__ == "__main__":

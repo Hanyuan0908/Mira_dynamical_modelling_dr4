@@ -90,6 +90,38 @@ def kinematic_prior(run_galaxy, rule="self:0.3", est="absvR", measured=None):
         rule=rule, est=est)
 
 
+def weighted_posterior(column, phi_kin, sig_kin):
+    """(chain, importance weights, effective sample size) for the run already selected by ge.use_run.
+
+    The chain is the plain emulator posterior; the kinematic prior enters only as the weight
+    w_i = exp(-0.5 ((phi_i - phi_kin)/sigma_kin)^2), which is exact because the target is the same
+    likelihood times a bounded prior. Seeds are fixed so that every caller - the corner plot and
+    anything that draws potentials from it - sees the identical chain.
+    """
+    from scipy.optimize import minimize
+    df, _ = ge.load_table(column, None, None)
+    tr = df[df.kind == "qmc"]
+    u, y = ge.to_unit(tr), tr["logL"].values
+    emu = ge.Emulator(u, y)
+
+    def logpost(q):
+        return -np.inf if np.any(q < 0) | np.any(q > 1) else emu.predict(q)[0]
+
+    best = None
+    for x0 in np.vstack([u[np.argsort(-y)[:8]], np.random.default_rng(0).random((24, 4))]):
+        r = minimize(lambda q: -emu.predict(q)[0], x0, bounds=[(0, 1)] * 4, method="L-BFGS-B")
+        if best is None or r.fun < best.fun:
+            best = r
+    nw = 32
+    p0 = np.clip(best.x + 1e-3 * np.random.default_rng(1).standard_normal((nw, 4)), 0, 1)
+    s = emcee.EnsembleSampler(nw, 4, logpost)
+    s.random_state = np.random.RandomState(2).get_state()
+    s.run_mcmc(p0, 3000, progress=False)
+    post = ge.from_unit(s.get_chain(discard=1000, thin=5, flat=True))
+    w = np.exp(-0.5 * ((post[:, 1] - phi_kin) / sig_kin) ** 2)
+    return post, w, float(w.sum() ** 2 / np.sum(w ** 2))
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -117,29 +149,7 @@ def main():
           f"+- {sig_kin:.2f} deg  ({'leave-one-out, ' if info['leave_one_out'] else ''}"
           f"{info['calibrators']} calibrators)")
 
-    df, tag = ge.load_table(args.column, None, None)
-    tr = df[df.kind == "qmc"]
-    u, y = ge.to_unit(tr), tr["logL"].values
-    emu = ge.Emulator(u, y)
-
-    def logpost(q):
-        return -np.inf if np.any(q < 0) | np.any(q > 1) else emu.predict(q)[0]
-    from scipy.optimize import minimize
-    best = None
-    for x0 in np.vstack([u[np.argsort(-y)[:8]], np.random.default_rng(0).random((24, 4))]):
-        r = minimize(lambda q: -emu.predict(q)[0], x0, bounds=[(0, 1)] * 4, method="L-BFGS-B")
-        if best is None or r.fun < best.fun:
-            best = r
-    nw = 32
-    p0 = np.clip(best.x + 1e-3 * np.random.default_rng(1).standard_normal((nw, 4)), 0, 1)
-    s = emcee.EnsembleSampler(nw, 4, logpost)
-    s.random_state = np.random.RandomState(2).get_state()
-    s.run_mcmc(p0, 3000, progress=False)
-    post = ge.from_unit(s.get_chain(discard=1000, thin=5, flat=True))
-
-    # the prior enters as an importance weight; the likelihood is untouched
-    w = np.exp(-0.5 * ((post[:, 1] - phi_kin) / sig_kin) ** 2)
-    ess = float(w.sum() ** 2 / np.sum(w ** 2))
+    post, w, ess = weighted_posterior(args.column, phi_kin, sig_kin)
     print(f"    chain {len(post)} samples -> effective {ess:.0f} under the prior")
 
     def pct(a, weights=None):

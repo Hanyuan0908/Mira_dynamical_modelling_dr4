@@ -1,0 +1,36 @@
+nohup: ignoring input
+dynamical bar length: 25 galaxies, 30 draws x 10000 stars + truth x 50000,
+  1 Gyr at 1 Myr, 11 workers x 8 threads
+environment ok
+    25 galaxies: posterior, evals, mock and snapshot particles all present
+
+########## pass 1/2: truth potentials, snapshot particles  2026-11-07 14:59:51 ##########
+    truths: 14/25 done  2026-11-07 15:16:30
+
+########## pass 2/2: posterior draws (kinematic phi_b prior)  2026-11-07 15:16:30 ##########
+
+--- test2_t2_sf_12p5pct  (0/30 already)  2026-11-07 15:16:30
+    30/30 draws  2026-11-07 15:23:31
+
+--- test2_t2.375_sf_12p5pct  (0/30 already)  2026-11-07 15:23:31
+    30/30 draws  2026-11-07 15:30:40
+
+--- test2_t2.625_sf_12p5pct  (0/30 already)  2026-11-07 15:30:40
+    30/30 draws  2026-11-07 15:38:05
+
+--- test2_t3_sf_12p5pct  (0/30 already)  2026-11-07 15:38:05
+    30/30 draws  2026-11-07 15:45:14
+
+--- test2_t3.375_sf_12p5pct  (0/30 already)  2026-11-07 15:45:14
+    30/30 draws  2026-11-07 15:52:29
+
+--- test2_t3.625_sf_12p5pct  (0/30 already)  2026-11-07 15:52:29
+    30/30 draws  2026-11-07 15:59:31
+
+--- test2_t4_sf_12p5pct  (0/30 already)  2026-11-07 15:59:31
+    30/30 draws  2026-11-07 16:06:54
+
+--- test2_t4.5_sf_12p5pct  (0/30 already)  2026-11-07 16:06:54
+    30/30 draws  2026-11-07 16:14:07
+
+--- test2_t5_sf_12p5pct  (0/30 already)  2026-11-07 16:14:07

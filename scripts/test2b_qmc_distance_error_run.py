@@ -147,6 +147,13 @@ def main():
     ap.add_argument("--stride", type=int, default=1, help="run every stride-th design point")
     ap.add_argument("--offset", type=int, default=0, help="this worker's residue, 0 .. stride-1")
     ap.add_argument("--no-traj", action="store_true", help="do not save trajectories")
+    ap.add_argument("--freq-snap", type=int, default=0, metavar="N",
+                    help="also record the five bar-frame orbital frequencies per star, by sampling "
+                         "the SAME integration at N points over the 1 Gyr instead of "
+                         f"{ssl.N_SNAP} (use 1001 for dt = 1 Myr, the cadence the x1 cut needs; "
+                         "N - 1 must be a multiple of 40). The saved trajectory is bitwise "
+                         "unchanged - trajsize only sets how often the interpolator is sampled - "
+                         "so this cannot move any fitted number. Costs ~2%% integration + ~10%% FFT")
     ap.add_argument("--time-budget-h", type=float, default=None, help="stop cleanly after this many hours")
     ap.add_argument("--merge", action="store_true", help="only rebuild evals.csv from the per-point files")
     ap.add_argument("--cadence-step", type=int, default=1, metavar="K",
@@ -240,7 +247,17 @@ def main():
                                  f"{len(times)} (step {args.cadence_step}) or {len(times_full)}")
         else:
             pot = ssl.bar_aligned_potential(p.bar_frac, p.S, args.galaxy)
-            _, traj = ssl.integrate(pot, ssl.rotate_z(w_mw, np.radians(p.phi_b_deg)), -abs(p.Omega_abs))
+            ic = ssl.rotate_z(w_mw, np.radians(p.phi_b_deg))
+            if args.freq_snap:
+                from integrate_orbit_frequencies import dense_pass, COLS as FREQ_COLS
+                traj, freq = dense_pass(pot, ic, p.Omega_abs, n_snap=args.freq_snap,
+                                        thin_to=ssl.N_SNAP)
+                np.savez_compressed(out_dir / f"freq_{i:03d}.npz", table=freq,
+                                    cols=np.array(FREQ_COLS), n_snap=args.freq_snap,
+                                    params=np.array([p.Omega_abs, p.phi_b_deg, p.S, p.bar_frac]))
+                del freq
+            else:
+                _, traj = ssl.integrate(pot, ic, -abs(p.Omega_abs))
             t_int = time.time() - t1
             if args.cadence_step != 1:              # thin before scoring AND before saving, so the
                 traj = np.ascontiguousarray(traj[:, ::args.cadence_step])   # stored file matches the fit
