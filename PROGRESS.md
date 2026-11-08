@@ -3868,6 +3868,69 @@ Consequence for the comparison: the search-time scheme-A columns of the two runs
 (25 vs 50 Myr libraries), but the re-scored `sfratio` column is — 21 snapshots at the same times in
 both — and that is the column the posterior uses.
 
+## 2026-11-08 — Dynamical bar length on all 25, and the single-pass run validated
+
+**The single-pass experiment works.** `test2_t7_sf_12p5pct_freq` ran the ordinary 257-point search
+on the t = 7 mock Miras at 12.5% with `--freq-snap 1001` and `--cadence-step 2`, producing in ONE
+integration the 50 Myr trajectory, the chi2 for the fit, and the five bar-frame frequencies for all
+50,218 stars. Against the original campaign on the same mock:
+
+| | truth | original (searched at 25 Myr) | single-pass (50 Myr + frequencies) |
+|---|---|---|---|
+| \|Omega_b\| | 26.017 | 24.833 +0.892/-0.830 | **24.777** +0.890/-0.818 |
+| phi_b | 27.0 | 23.210 +6.72/-5.68 | **23.009** +6.76/-5.50 |
+| S | 1.0 | 1.087 +0.270/-0.191 | **1.097** +0.251/-0.191 |
+| bar_frac | 1.0 | 0.784 +0.530/-0.244 | **0.763** +0.530/-0.227 |
+
+Omega_b bias -4.55% -> -4.76%, a shift of **0.21%**, about an eighth of the posterior half-width and
+consistent with the known 50-vs-25 Myr cadence cost. **So every future run can carry the frequencies
+for +2% integration and ~10% FFT, and the dynamical length comes free at all 257 design points - no
+separate campaign.**
+
+**Dynamical length, all 25 galaxies** (`bar_dynamical_length.csv`, figure
+`paper_figures/test2_12p5pct/08_bar_dynamical_length_recovery.png`). Zhang et al. (2024) cut,
+p95 of R_apo over the trapped set:
+
+**mean bias +9.5%, mean \|bias\| 9.5%, rms 10.4%, and 25 of 25 POSITIVE.** Truth spans 2.80-5.58 kpc
+(Au5 shortest, Au20 longest), recovered 3.11-6.21. Auriga (+5.4 to +19.3%) behaves like the N-body
+epochs (+3.1 to +16.6%), so this is not one simulation's correlated snapshots.
+
+Against the other recovered quantities it is much the worst, and uniquely one-sided:
+
+| quantity | mean \|bias\| | sign |
+|---|---|---|
+| Omega_b | 3.1% | balanced (-0.20% mean) |
+| peak A2/A0 | 6.2% | balanced (-3.2% mean) |
+| **L_dyn (p95)** | **9.5%** | **one-sided, 25/25 high** |
+
+**Most of it is the OBSERVATION, not the fitted potential.** Design point 000 of the single-pass run
+sits exactly at truth parameters, so it gives the truth potential applied to the *observed* stars for
+free. Same potential, two star samples:
+
+| | n_x1 | f_x1 | p95 | p90 |
+|---|---|---|---|---|
+| snapshot particles, no error/selection | 18364 | 36.7% | 5.05 | 4.41 |
+| mock Miras, 12.5% error + selection | 13623 | 27.1% | **5.41** | **5.03** |
+
+**+7.0% in p95 with the potential held exactly at truth**, which is the bulk of the +9.5%. Distance
+smearing plus the Mira selection drop roughly half the trapped orbits (truth f_x1 23-48%, model
+12-40%) and the survivors are biased outward. *Consequence: comparing a model length against a
+snapshot-particle truth measures method and observation together. The fair comparison is against
+truth-potential-on-observed-stars; that needs one short integration per galaxy (~20 min for all 25),
+not a re-run.* NOT YET DONE.
+
+**max_R_apo is dead as a statistic**: 21 of 25 truths sit within 0.2 kpc of the r_apo < 7 kpc cut, so
+it measures the cut. p95 spans a real 2.80-5.58 kpc range and is what is plotted; `--stat` switches
+to any of seven candidates without re-running.
+
+**TRAP: never edit a shell script while it is running.** `run_t7_freq_local.sh` was edited at 16:52
+(a comment fix) while executing. `sh` reads a script incrementally by byte offset, so when the shell
+returned after the 8 h search it resumed at a stale position and died with `unexpected EOF`. The
+search itself had completed and merged; only the re-score handover was lost, ~1 h idle. `bash -n`
+after the edit passed, because the file on disk was valid - it cannot see that a running shell's
+offset has been invalidated. **Copy the script, edit the copy, launch that.** Recovered with
+`finish_t7_freq.sh`.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name

@@ -62,6 +62,8 @@ STANDING = [
      "test2_bar_strength_profile_recovery.png"),
     ("scatter_test", "01_pattern_speed_fiducial_vs_per_star",
      "test2_scatter_test_pattern_speed.png"),
+    ("test2_12p5pct", "08_bar_dynamical_length_recovery",
+     "test2_bar_dynamical_length.png"),
     ("emulator_validation", "01_leave_one_out", "emulator_validation/loo_sfratio.png"),
     ("emulator_validation", "02_pooled_draws_K10",
      "emulator_validation/pooled_draws_test2_t7_sf_12p5pct.png"),
