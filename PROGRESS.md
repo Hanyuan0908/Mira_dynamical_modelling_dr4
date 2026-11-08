@@ -3931,6 +3931,69 @@ after the edit passed, because the file on disk was valid - it cannot see that a
 offset has been invalidated. **Copy the script, edit the copy, launch that.** Recovered with
 `finish_t7_freq.sh`.
 
+## 2026-11-08 — Why the dynamical length is biased: it is the SELECTION FUNCTION, not the smearing
+
+The +9.5% one-sided bias (entry above) needed a cause. User's test, 2026-11-08: make a mock with
+distance smearing but no selection function and see whether it is biased the same way. The mocks for
+the full 2x2 already existed, including a selection-only one at sigma_DM = 0, so all four cells were
+run. **Every cell integrates the same t = 7 truth potential** (bar_frac = 1, S = 1,
+Omega_b = 26.017, phi_b = 27) — only the observation changes.
+
+| star sample | n_x1 | f_x1 | p95 | bias | p90 | bias |
+|---|---|---|---|---|---|---|
+| snapshot particles (reference) | 18364 | 36.7% | 5.05 | — | 4.41 | — |
+| no error, **no selection** | 18077 | 36.2% | 4.98 | −1.4% | 4.35 | −1.2% |
+| no error, **selection** | 15933 | 31.9% | 5.41 | **+7.0%** | 5.03 | **+14.2%** |
+| 12.5% error, **no selection** | 15866 | 32.6% | 5.07 | **+0.5%** | 4.49 | **+1.8%** |
+| 12.5% error, **selection** | 13604 | 27.2% | 5.41 | +7.0% | 5.03 | +14.1% |
+
+Relative to the error-free unselected mock:
+
+| | p95 | p90 | p99.5 |
+|---|---|---|---|
+| selection alone | **+8.5%** | **+15.7%** | +2.3% |
+| smearing alone | +1.8% | +3.1% | +0.6% |
+| both | +8.5% | +15.5% | — |
+
+**The smearing is almost innocent; the selection does essentially all of it**, and the two together
+give what selection alone gives (interaction −1.9%). This **corrects the 2026-11-08 attribution
+above**, which said "distance smearing plus the Mira selection … drop roughly half the trapped
+orbits" and implied the smearing was a major part. Both reduce the trapped count about equally
+(f_x1 36% → 32% either way) — but only the selection moves the *length*. Losing orbits is not the
+mechanism; losing **which** orbits is.
+
+*Hypothesis, not claim:* the DR3-Mira selection is distance- and sky-dependent and under-weights the
+inner Galaxy, where the small tightly-closed x1 orbits live, so the surviving set is biased outward.
+It hitting p90 harder than p95 (+15.7% vs +8.5%) fits — a deficit of short orbits moves the middle
+of the distribution more than its tail. Untested: weight the trapped set by 1/S(l, b, d), reusing
+the rho_obs/rho_lib machinery already in the likelihood, and see whether the bias closes.
+
+**p99.5 instead of p95** (user, 2026-11-08: the literature's usual choice). It removes most of the
+selection systematic — **+2.3% against +8.5%** — exactly as a tail-only statistic should if the
+selection suppresses inner orbits. But the 25-galaxy recovery gets much WORSE:
+**mean +13.6%, mean |bias| 15.9%, rms 25.2%**, against p95's +9.5 / 9.5 / 10.4. Outliers are
+extreme (au5 **+82.8%**, t2.375 +57.3%, au10 +47.2%, au26 **−22.7%**). Two reasons:
+
+1. *Small numbers.* At n_x1 ≈ 1400 the 99.5th percentile is the top ~6 orbits. Bootstrap sd on one
+   draw 2.3%, and the draw-to-draw half-width rises 4.3% → 6.4%.
+2. *It collides with the `r_apo < 7 kpc` cut.* The model's p99.5 exceeds 6.5 kpc in **4 of 25**
+   galaxies (0 of 25 at p95), so `max_R_apo`'s failure mode creeps back — the statistic starts
+   measuring the cut. It does so **asymmetrically**, because the model's trapped sets are smaller
+   and more extended than the truth's, which is what produces the +40–80% outliers: their truth
+   p99.5 sits at 3.4–4.6 kpc while the model's piles up at 6.0–6.8.
+
+*Reasoning, not established:* p99.5 works in the literature because those analyses are not fighting
+a strong selection function and are not imposing a 7 kpc apocentre cut on bars 3–5 kpc long. Here
+the cut is only ~1.3x the longest true length, so the tail has no headroom.
+
+**Two ways forward, neither needing new integrations:** raise the `r_apo` cut so p99.5 has room (it
+is a parameter of the classification, not physics), or keep p95 and correct the selection with a
+1/S(l, b, d) weight. The second attacks the +8.5% directly. UNDECIDED.
+
+Scripts: `integrate_orbit_frequencies.py --truth --mock-file NAME --tag TAG` integrates any mock's
+observed stars in the true potential, which is what makes this decomposition cheap.
+`bar_dynamical_length.py --stat` now offers p99.5 as well. Tables `truth_nbody_{noerr,err}_{nosel,sel}.npz`.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name

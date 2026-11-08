@@ -181,6 +181,12 @@ def main():
     ap.add_argument("--run")
     ap.add_argument("--galaxy")
     ap.add_argument("--truth", action="store_true", help="true potential, snapshot particles")
+    ap.add_argument("--mock-file", default=None, metavar="NAME",
+                    help="with --truth: integrate this mock's OBSERVED stars in the true potential "
+                         "instead of the snapshot particles. Holding the potential exactly at truth "
+                         "and varying only how the galaxy was observed isolates what the "
+                         "observation alone does to the measured length.")
+    ap.add_argument("--tag", default=None, help="output suffix for --mock-file runs")
     ap.add_argument("--column", default=f"logLs_{SCHEME_B}_sfratio")
     ap.add_argument("--n-draw", type=int, default=30)
     ap.add_argument("--n-star", type=int, default=10000)
@@ -197,19 +203,25 @@ def main():
 
     if args.truth:
         gal = args.galaxy or (json.load(open(RESULTS_DIR / args.run / "run_meta.json"))["galaxy"])
-        out = OUT_DIR / f"truth_{gal}.npz"
+        out = OUT_DIR / (f"truth_{gal}_{args.tag}.npz" if args.tag else f"truth_{gal}.npz")
         if out.exists():
             print(f"  {rel(out)} exists; nothing to do")
             return
         Om = abs(truth_omega(gal))
-        w = snapshot_stars(gal, args.rmax, args.n_star, rng)
-        print(f"truth {gal}: Omega_b {Om:.2f}, {len(w):,} snapshot particles with R < {args.rmax:g} "
-              f"kpc, no distance error, no selection", flush=True)
+        if args.mock_file:
+            w = mock_stars(args.mock_file, args.rmax, args.n_star, rng)
+            print(f"truth {gal}: Omega_b {Om:.2f}, {len(w):,} OBSERVED stars from "
+                  f"{args.mock_file} with R_obs < {args.rmax:g} kpc", flush=True)
+        else:
+            w = snapshot_stars(gal, args.rmax, args.n_star, rng)
+            print(f"truth {gal}: Omega_b {Om:.2f}, {len(w):,} snapshot particles with "
+                  f"R < {args.rmax:g} kpc, no distance error, no selection", flush=True)
         ic = ssl.rotate_z(w, np.deg2rad(BAR_ANGLE_DEG))
         tab = run_one(gal, ic, 1.0, 1.0, Om, label="truth")
         np.savez_compressed(out, table=tab, cols=np.array(COLS), galaxy=gal, Omega_abs=Om,
                             bar_frac=1.0, S=1.0, phi_b_deg=BAR_ANGLE_DEG, n_star=len(w),
-                            rmax=args.rmax, kind="truth", T_Gyr=T_GYR, n_snap=N_SNAP)
+                            rmax=args.rmax, kind="truth", T_Gyr=T_GYR, n_snap=N_SNAP,
+                            stars=args.mock_file or "snapshot particles")
         print(f"wrote {rel(out)}")
         return
 

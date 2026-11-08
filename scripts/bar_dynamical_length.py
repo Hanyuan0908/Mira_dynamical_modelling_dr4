@@ -35,8 +35,8 @@ from common import RESULTS_DIR, set_style, savefig, rel, INK, INK_2, INK_MUTED, 
 
 IN_DIR = RESULTS_DIR / "bar_dynamics"
 RATIO, TOL, R_APO_MAX = 2.0, 0.2, 7.0          # Zhang et al. (2024)
-STATS = ["max_R_apo", "p99_R_apo", "p95_R_apo", "p90_R_apo",
-         "p95_R_apo_mean", "p90_R_apo_mean", "med_R_apo"]
+STATS = ["max_R_apo", "p99.5_R_apo", "p99_R_apo", "p95_R_apo", "p90_R_apo",
+         "p99.5_R_apo_mean", "p95_R_apo_mean", "p90_R_apo_mean", "med_R_apo"]
 
 
 def lengths(path, min_x1):
@@ -52,6 +52,10 @@ def lengths(path, min_x1):
     Ra, Rm = g("R_apo")[sel], g("R_apo_mean")[sel]
     out = dict(n_x1=int(sel.sum()), f_x1=float(sel.mean()),
                max_R_apo=float(Ra.max()),
+               # p99.5 is the usual literature choice; at n_x1 ~ 1400 it is the top ~7 orbits, so
+               # it is far noisier than p95 and sits much closer to the r_apo < 7 kpc cut.
+               **{"p99.5_R_apo": float(np.percentile(Ra, 99.5)),
+                  "p99.5_R_apo_mean": float(np.percentile(Rm, 99.5))},
                p99_R_apo=float(np.percentile(Ra, 99)),
                p95_R_apo=float(np.percentile(Ra, 95)),
                p90_R_apo=float(np.percentile(Ra, 90)),
