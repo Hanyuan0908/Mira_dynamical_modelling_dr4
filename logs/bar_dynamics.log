@@ -34,3 +34,54 @@ environment ok
     30/30 draws  2026-11-07 16:14:07
 
 --- test2_t5_sf_12p5pct  (0/30 already)  2026-11-07 16:14:07
+    30/30 draws  2026-11-07 16:21:28
+
+--- test2_t5.5_sf_12p5pct  (0/30 already)  2026-11-07 16:21:28
+    30/30 draws  2026-11-07 16:28:38
+
+--- test2_t6.25_sf_12p5pct  (0/30 already)  2026-11-07 16:28:38
+    30/30 draws  2026-11-07 16:36:07
+
+--- test2_t7_sf_12p5pct  (0/30 already)  2026-11-07 16:36:07
+    30/30 draws  2026-11-07 16:43:02
+
+--- test2_au5_sf_12p5pct  (0/30 already)  2026-11-07 16:43:02
+    30/30 draws  2026-11-07 16:48:25
+
+--- test2_au9_sf_12p5pct  (0/30 already)  2026-11-07 16:48:25
+    30/30 draws  2026-11-07 16:53:57
+
+--- test2_au10_sf_12p5pct  (0/30 already)  2026-11-07 16:53:57
+    30/30 draws  2026-11-07 16:59:37
+
+--- test2_au12_sf_12p5pct  (0/30 already)  2026-11-07 16:59:37
+    30/30 draws  2026-11-07 17:04:33
+
+--- test2_au14_sf_12p5pct  (0/30 already)  2026-11-07 17:04:33
+    30/30 draws  2026-11-07 17:10:33
+
+--- test2_au17_sf_12p5pct  (0/30 already)  2026-11-07 17:10:33
+    30/30 draws  2026-11-07 17:16:26
+
+--- test2_au18_sf_12p5pct  (0/30 already)  2026-11-07 17:16:26
+    30/30 draws  2026-11-07 17:21:57
+
+--- test2_au20_sf_12p5pct  (0/30 already)  2026-11-07 17:21:57
+    30/30 draws  2026-11-07 17:26:30
+
+--- test2_au22_sf_12p5pct  (0/30 already)  2026-11-07 17:26:30
+    30/30 draws  2026-11-07 17:32:18
+
+--- test2_au24_sf_12p5pct  (0/30 already)  2026-11-07 17:32:18
+    30/30 draws  2026-11-07 17:37:25
+
+--- test2_au26_sf_12p5pct  (0/30 already)  2026-11-07 17:37:25
+    30/30 draws  2026-11-07 17:43:49
+
+--- test2_au27_sf_12p5pct  (0/30 already)  2026-11-07 17:43:49
+    30/30 draws  2026-11-07 17:49:04
+
+--- test2_au28_sf_12p5pct  (0/30 already)  2026-11-07 17:49:04
+    30/30 draws  2026-11-07 17:55:35
+run_bar_dynamics_cluster.sh: line 116: syntax error near unexpected token `$n/$N_DRAW'
+run_bar_dynamics_cluster.sh: line 116: ` $RUN  ($n/$N_DRAW already)  $(date '+%F %T')"'

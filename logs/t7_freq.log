@@ -1,0 +1,4 @@
+=== test2_t7_sf_12p5pct_freq: 257 points, 50 Myr trajectories + frequencies at 1 Myr  2026-11-07 16:18:37 ===
+merged 257 points -> results/test2_t7_sf_12p5pct_freq/evals.csv
+run_t7_freq_local.sh: line 61: unexpected EOF while looking for matching `"'
+run_t7_freq_local.sh: line 62: syntax error: unexpected end of file
