@@ -4116,6 +4116,49 @@ trajectories (`rescore_empirical_selection.py --ring-width 0.5 --z-max 2`, new `
 
 Figures: `figures/osarg_zhang2024_mw_hunter24_emulator_{corner,slices,loo}_logLs_fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024_sfratio_r0.5_z2.png`.
 
+### Ω_b box extended down to 15: the low side closes. Ω_b ≈ 30 ± 6 km/s/kpc (preliminary)
+
+User: extend the lower bound of the pattern speed. `make_sobol_design.py --append`: 128 new Sobol points (seed 2042,
+idx 256–383) in |Ω_b| 15–25 with the other ranges unchanged. That is the same point density as the first 256 over
+25–45, so the combined 384-point design covers 15–45 evenly. The first 256 rows were checked unchanged (max |Δ| 0.0).
+Searched and re-scored on both grids. Of the 384 points, one (Ω 22.1) loses a block (N_data 680 instead of 697).
+
+**Best evaluated ΔlogLs per 2.5 km/s/kpc bin of |Ω_b|** (profile over the other three parameters):
+
+| \|Ω_b\| | 15 | 17.5 | 20 | 22.5 | 25 | 27.5 | 30 | 32.5 | 35 | 37.5 | 40 | 42.5 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0.3 kpc grid (adopted) | −4.2 | −2.9 | −2.0 | −1.1 | −0.3 | −1.3 | 0.0 | −0.4 | −1.5 | −1.1 | −1.6 | −3.1 |
+| 0.5 kpc rings, \|z\| < 2 | −4.7 | −3.3 | −1.7 | −1.3 | 0.0 | −0.8 | −0.1 | −0.3 | −1.6 | −2.0 | −2.2 | −3.5 |
+
+**Posterior** (emulator, 384 points, tempered):
+
+| | 0.3 kpc grid (adopted) | 0.5 kpc rings, \|z\| < 2 |
+|---|---|---|
+| \|Ω_b\| [km/s/kpc] | **29.8 (23.9–36.7)** | 29.2 (24.4–34.7) |
+| φ_b [deg] | 23.4 (20.9–27.4) | 23.1 (20.8–26.9) |
+| S | 0.98 (0.75–1.21) | 0.98 (0.78–1.19) |
+| bar_frac | 1.03 (0.70–1.33) | 1.04 (0.70–1.34) |
+| emulator max | Ω 31.2, φ 20.0, S 0.92, f 1.50 | Ω 31.6, φ 20.0, S 0.98, f 1.37 |
+| LOO rms (top 32) | 0.64 | 0.58 |
+| best χ²/N | 1.58 | 1.76 |
+
+- With the low side sampled, the Ω_b posterior is bounded on both sides inside the box. The profile falls by 4.2 at
+  15–17.5 and by 3.1 at 42.5–45. It is shallow: within 2 of the best from 20 to 42.5.
+- Low Ω_b goes with a weaker bar: the Ω–bar_frac correlation over the 50 best points is +0.57, also visible in the
+  corner. The 1D slices through the best point fall to −30 at Ω = 15 because they hold bar_frac at 1.5; the profile
+  frees it.
+- φ_b still piles at the lower edge (20°) and bar_frac at the upper one (1.5), both shallowly (≤ 1.1 in the profile
+  across the range). S peaks at 0.92–0.98.
+- With the box extended the GP is smoother: Ω length scale 0.69 of the box (was 0.076), LOO 0.64.
+- Against Zhang et al. (2024), 34.1 ± 2.4 (continuity equation, same stars): consistent, with an error about 2.5×
+  larger.
+- **Status: preliminary.** One potential family (Hunter+24); the grid is the validated one, but no mock has been
+  run with this star count, this footprint or a potential family other than the galaxy's own. The φ_b and bar_frac
+  edges are not closed.
+
+Figures (the 384-point versions overwrite the 256-point ones of the same name; the 256-point numbers are in the two
+sections above): `figures/osarg_zhang2024_mw_hunter24_emulator_{corner,slices,loo}_logLs_fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024_sfratio{,_r0.5_z2}.png`.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
@@ -4154,7 +4197,7 @@ below is still found by `find figures -name <name>`; most of the Test 1b set is 
 | `test2b_posterior_distance_draws_fourier_coefficients_absz_0to1.png` | Test 2b: smeared data against libraries from posterior distance draws (density prior; full phase-space prior), smeared stars and true positions, all observed with the errors |
 | `test2b_qmc_distance_error_7p5_coadded_error_emulator_corner_logLs_{observed,asis}.png` | Test 2b, 7.5% distance error, full focused grid: posterior with the co-added error (library observed again / as is); `..._logl_corner_...` evaluated points; without `_coadded_error` and with the long column name: bootstrap-only error |
 | `test2_nbody_mock_selection_vs_dr3_miras_sigmaDM0.163.png` | Test 2 mock: sky map, distance and R distributions and face-on map of the selection-function mock against the DR3 Miras |
-| `osarg_zhang2024_mw_hunter24_emulator_{corner,slices,loo}_logLs_fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024_sfratio.png` | real data (OSARGs, Hunter+24 family): emulator posterior, 1D slices through the best point and the emulator maximum, leave-one-out check. Too flat to measure Ω_b (2026-11-11) |
+| `osarg_zhang2024_mw_hunter24_emulator_{corner,slices,loo}_logLs_fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024_sfratio.png` | real data (OSARGs, Hunter+24 family), 384 points, |Ω_b| 15–45: emulator posterior, 1D slices through the best point and the emulator maximum, leave-one-out check; `_r0.5_z2` = 0.5 kpc rings, |z| < 2. Ω_b 29.8 (23.9–36.7), preliminary (2026-11-11) |
 | `test1_nbody_density_stationarity.png` | density change of the libraries; counts statistic retracted (needs the selection function) |
 
 ## Next steps

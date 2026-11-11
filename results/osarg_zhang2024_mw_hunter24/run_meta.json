@@ -11,11 +11,11 @@
   "sigma_DM": 0.2084078072757931,
   "accuracy": 1e-05,
   "design": "results/osarg_zhang2024_mw_hunter24/design.csv",
-  "n_points": 256,
+  "n_points": 384,
   "design_csv": "results/osarg_zhang2024_mw_hunter24/design.csv",
   "box": {
     "Omega_abs": [
-      25.0,
+      15.0,
       45.0
     ],
     "phi_b_deg": [
