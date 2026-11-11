@@ -1,0 +1,36 @@
+{
+  "run": "osarg_zhang2024_mw_hunter24",
+  "mock": "osarg_zhang2024_observed_R8.hdf5",
+  "galaxy": "mw",
+  "omega_truth": null,
+  "omega_scale": 1.0,
+  "variants": [
+    "observed",
+    "asis"
+  ],
+  "sigma_DM": 0.2084078072757931,
+  "accuracy": 1e-05,
+  "design": "results/osarg_zhang2024_mw_hunter24/design.csv",
+  "n_points": 256,
+  "design_csv": "results/osarg_zhang2024_mw_hunter24/design.csv",
+  "box": {
+    "Omega_abs": [
+      25.0,
+      45.0
+    ],
+    "phi_b_deg": [
+      20.0,
+      30.0
+    ],
+    "lnS": [
+      -0.6931471805599453,
+      0.4054651081081644
+    ],
+    "lnf": [
+      -0.6931471805599453,
+      0.4054651081081644
+    ]
+  },
+  "cadence_step": 2,
+  "snapshot_dt_myr": 50.0
+}

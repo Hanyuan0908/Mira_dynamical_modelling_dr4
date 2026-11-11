@@ -65,9 +65,12 @@ def run_from_meta(name):
     s = float(m.get("omega_scale", 1.0))
     box = dict(_nf.BOX)
     box["Omega_abs"] = (box["Omega_abs"][0] * s, box["Omega_abs"][1] * s)
+    if m.get("box"):             # a run with its own design (make_sobol_design.py) records its box
+        box = {k: tuple(v) for k, v in m["box"].items()}
+    truth = (None if m.get("omega_truth") is None      # real data
+             else dict(Omega_abs=float(m["omega_truth"]), phi_b_deg=27.0, S=1.0, bar_frac=1.0))
     return dict(csv=_R / "results" / name / "evals.csv", box=box, out=_R / "results" / name,
-                mock=MOCK_DIR / m["mock"], prefix=name, perstar=None,
-                truth=dict(Omega_abs=float(m["omega_truth"]), phi_b_deg=27.0, S=1.0, bar_frac=1.0))
+                mock=MOCK_DIR / m["mock"], prefix=name, perstar=None, truth=truth)
 
 
 def use_run(name):
@@ -166,11 +169,14 @@ def main():
     res["loo_points"] = "all" if not args.loo_top else f"top {args.loo_top}"
     near = (y > y.max() - 2000) & np.isfinite(loo)
     res["loo_rms_within_2000_of_max"] = float(np.sqrt(np.mean((loo[near] - y[near])**2)))
-    u_truth = to_unit(pd.DataFrame([TRUTH]))
-    pt, st = emu.predict(u_truth, return_std=True)
-    if len(truth_row):
-        res["truth_logL_evaluated"] = float(truth_row["logL"].iloc[0])
-    res["truth_logL_emulated"] = [float(pt[0]), float(st[0])]
+    # Real data have no truth: the first row of slices then goes through the best evaluated point instead.
+    ref = TRUTH if TRUTH is not None else {k: float(tr.loc[tr.logL.idxmax(), k]) for k in KEYS}
+    u_truth = to_unit(pd.DataFrame([ref]))
+    if TRUTH is not None:
+        pt, st = emu.predict(u_truth, return_std=True)
+        if len(truth_row):
+            res["truth_logL_evaluated"] = float(truth_row["logL"].iloc[0])
+        res["truth_logL_emulated"] = [float(pt[0]), float(st[0])]
 
     # maximum of the emulator
     best = None
@@ -196,18 +202,20 @@ def main():
     q = np.percentile(post, [16, 50, 84], axis=0)
     res["posterior"] = {k: dict(p16=float(a), p50=float(b), p84=float(c)) for k, a, b, c in zip(KEYS, *q)}
     res["truth"] = TRUTH
-    res["truth_offset_in_sigma"] = {k: float((TRUTH[k] - b) / (0.5 * (c - a)))
-                                    for k, a, b, c in zip(KEYS, *q)}
+    if TRUTH is not None:
+        res["truth_offset_in_sigma"] = {k: float((TRUTH[k] - b) / (0.5 * (c - a)))
+                                        for k, a, b, c in zip(KEYS, *q)}
     with open(OUT_DIR / f"emulator_results{tag}.json", "w") as f:
         json.dump(res, f, indent=2)
     print(json.dumps(res, indent=1))
 
     # figure 1: 1D slices through the truth and through the maximum, with the design points
-    tv = np.array([TRUTH[k] for k in KEYS])
+    tv = np.array([ref[k] for k in KEYS])
+    first = "slice through truth" if TRUTH is not None else "slice through best evaluated point"
     fig, axes = plt.subplots(2, 4, figsize=(15, 6.6), gridspec_kw=dict(hspace=0.35, wspace=0.3))
     grid = np.linspace(0, 1, 200)
     for j in range(4):
-        for row, centre, lab in ((0, u_truth[0], "slice through truth"), (1, best.x, "slice through emulator max")):
+        for row, centre, lab in ((0, u_truth[0], first), (1, best.x, "slice through emulator max")):
             ax = axes[row, j]
             Q = np.repeat(centre[None], len(grid), 0)
             Q[:, j] = grid
@@ -226,17 +234,17 @@ def main():
             ax.set_xlabel(NAMES[j])
             if j == 0:
                 ax.set_ylabel(r"$\log L - \max_{\rm design}$" + f"\n({lab})")
-    fig.suptitle("Test 1 GP emulator: orange dashed = truth, black dotted = emulator maximum; band = ±2σ",
-                 y=0.98, fontsize=11)
+    fig.suptitle("GP emulator: orange dashed = " + ("truth" if TRUTH is not None else "best evaluated point")
+                 + ", black dotted = emulator maximum; band = ±2σ", y=0.98, fontsize=11)
     savefig(fig, f"{pre}_emulator_slices{tag}")
 
     # figure 2: posterior corner plot
-    fig = corner.corner(post, labels=NAMES, truths=tv, truth_color=ACCENT, color=BLUE_RAMP[5],
-                        quantiles=[0.16, 0.5, 0.84], show_titles=True, title_fmt=".3f",
+    fig = corner.corner(post, labels=NAMES, truths=tv if TRUTH is not None else None, truth_color=ACCENT,
+                        color=BLUE_RAMP[5], quantiles=[0.16, 0.5, 0.84], show_titles=True, title_fmt=".3f",
                         title_kwargs=dict(fontsize=9), label_kwargs=dict(fontsize=10))
     fig.suptitle(f"{pre}: posterior from the GP emulator of {args.column}"
                  + (" (tempered: -chi2 / 2 sqrt(2 N_data))" if args.column.startswith("logLs_") else "")
-                 + "; orange = truth", y=1.02)
+                 + ("; orange = truth" if TRUTH is not None else ""), y=1.02)
     savefig(fig, f"{pre}_emulator_corner{tag}")
 
     # figure 3: leave-one-out

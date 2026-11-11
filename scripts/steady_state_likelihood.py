@@ -64,17 +64,23 @@ def bar_aligned_potential(bar_frac, S, galaxy="au18"):
         pd = galaxy_info(galaxy)["pot_dir"]
         _CACHE[galaxy] = (agama.Potential(agama.Potential(str(pd / "dm.ini")),
                                           agama.Potential(str(pd / "bh.ini"))) if _is_auriga(galaxy)
+                          else agama.Potential(str(pd / "fixed.ini")) if galaxy == "mw"
                           else agama.Potential(str(pd / "dm_spherical.ini")))
     if _is_auriga(galaxy):   # merged mmax-8 CylSpline for the baryons
         return make_static_fast(bar_frac, S, phi0=np.radians(BAR_ANGLE_DEG), mmax=8, symmetry="none",
                                 pot_dm_bh=_CACHE[galaxy], galaxy=galaxy)
+    # The mock galaxies' files hold the bar at -BAR_ANGLE_DEG (MW-like frame) and are turned onto x here.
+    # The Milky Way model (build_mw_potential.py) is exported with its bar along x and is exactly
+    # triaxial, so it is neither rotated nor re-expanded with odd or sine terms.
+    mw = galaxy == "mw"
     F = family_files(galaxy)
     bary = agama.Potential(agama.Potential(file=str(F["baryon_axi"])),
                            agama.Potential(file=str(F["baryon_full"]), scale=[bar_frac * S, S],
-                                           rotation=np.radians(BAR_ANGLE_DEG)),
+                                           rotation=0.0 if mw else np.radians(BAR_ANGLE_DEG)),
                            agama.Potential(file=str(F["baryon_axi"]), scale=[-bar_frac * S, S]))
     return agama.Potential(_CACHE[galaxy], agama.Potential(type="CylSpline", potential=bary, mmax=8,
-                                                           symmetry="none", **NBODY_GRID))
+                                                           symmetry="triaxial" if mw else "none",
+                                                           **NBODY_GRID))
 
 
 def cell_moments(w, weight=None):

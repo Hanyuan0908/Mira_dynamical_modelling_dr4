@@ -4015,6 +4015,63 @@ Downloaded for a first real-data application before DR4 (user request).
     stars at R < 6 kpc, so OSARGs give 0.49x the stars inside the likelihood's radial range.
 - Same solar parameters as the mocks (`common.py`: R0 8.122 kpc, v_sun = (12.9, 245.6, 7.78) km/s); the paper uses these too.
 
+## 2026-11-11 — First real-data run: OSARGs in the Hunter+24 family. The pipeline works; the likelihood is too flat to measure Ω_b
+
+User request: a preliminary result for a public talk. The adopted pipeline (2026-11-05 entry) on the OSARG data, with
+the median OSARG distance error as the representative one, in a new Sobol box.
+
+**Set-up.**
+- **Data.** `make_osarg_data.py` → `mock/osarg_zhang2024_observed_R8.hdf5`: the paper's 33,704-star sample
+  (`M_JKs_sigma < 0.4` + RV), observed R < 8 kpc, **26,630 stars**. Representative error = median `M_JKs_sigma` of
+  the 33,704 = **σ_DM 0.2084 mag (9.60%)**. Galactocentric conversion checked against astropy (max |Δv| 1.4e-3 km/s).
+- **Trial potentials.** `build_mw_potential.py` → `mock/mw_potential/`, galaxy `mw`: Hunter+24 (Sormani+22 bar, an
+  analytic fit to Portail+17; spherical Einasto halo). Fixed: the Multipole (halo, SgrA*, NSC, NSD). Rescaled: the
+  bar + disc + gas CylSpline, as bar_frac·[Φ(x/S) − Φ_axi(x/S)]. Bar along x in the file, so no rotation; re-expanded
+  with triaxial symmetry. Checks: at bar_frac = S = 1 against the source model, relative force error median 1e-6,
+  max 8e-4; m = 2 density phase 0.00°; v_c(R0) 228.9 km/s. Corner caveat: bar_frac 1.5, S 0.5 gives A2/A0 = 1.13 at
+  2 kpc (negative density at some azimuths).
+- **Orbits checked.** 300 orbits of point 0 against a 1e-8 integration in the unexpanded composite: position
+  difference median 1.3e-4 kpc at 100 Myr, 5.6e-3 kpc at 1 Gyr.
+- **Design.** `make_sobol_design.py`: 256 scrambled Sobol points (seed 2041), |Ω_b| 25–45, φ_b 20–30°, S and
+  bar_frac 0.5–1.5 log-uniform (the emulator's prior). `results/osarg_zhang2024_mw_hunter24/design.csv`.
+- **Pipeline.** `run_osarg_mw_local.sh`: search at 50 Myr (`--cadence-step 2`) → `sfratio` re-score, K = 10 →
+  scheme B emulator. Code changes, none affecting the mock runs: `--design` (a run's own table, no Ω scaling, no
+  truth); tempering N_data = the most common value when there is no truth row (here 697 at every point); emulator
+  box from `run_meta.json`, no truth lines.
+- **Cost.** 9.9 s integration per point (26.6k stars, 7 threads), 6 s per re-scored point; 28 min end to end on the
+  M5 Pro. Trajectories 13.4 MB per point, 3.4 GB in `~/mira_dr4_runs/osarg_zhang2024_mw_hunter24/`.
+
+**Result (column `logLs_fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024_sfratio`).**
+
+| | posterior p50 (p16–p84) | emulator max | best evaluated point |
+|---|---|---|---|
+| \|Ω_b\| [km/s/kpc] | 31.5 (27.1–37.9) | 31.7 | 32.1 |
+| φ_b [deg] | 23.5 (20.9–27.6) | 20.0 (box edge) | 20.5 |
+| S | 0.98 (0.79–1.22) | 0.91 | 0.95 |
+| bar_frac | 1.10 (0.78–1.36) | 1.43 | 1.49 (box edge) |
+
+**This is not a measurement of Ω_b.** Read off the 256 evaluated points, not the emulator:
+- The whole box spans only **8.0** in logLs, and 163 of the 256 points lie within 4.5 of the best. The 12.5% mocks
+  span 20–255, with the flattest (Au5, Au20, Au12) at 20–28.
+- Best evaluated logLs per eighth of the Ω box, 25 → 45: −0.3, −1.3, 0.0, −0.4, −1.5, −1.1, −1.6, −3.1. Only Ω_b ≳
+  42.5 is disfavoured, and the low side does not fall at all: the posterior's lower bound is the box edge. In the
+  mocks the same profile falls on both sides of the truth, e.g. Au18 −9.4 … 0.0 … −11.4, Au24 −6.9 … −6.5.
+- φ_b piles against the lower edge, 20°; bar_frac against the upper edge, 1.5. S is the best-constrained parameter
+  (logL −4 at S = 0.5, −2.7 at 1.5 along the slices).
+- Emulator: LOO rms 0.79 over the top 32 points, which span only 2 in logLs. The GP's Ω length scale is 0.076 of
+  the box (1.5 km/s/kpc), so the two Ω peaks in the corner (27 and 31.5) are not to be trusted.
+- Goodness of fit: best χ²/N 1.58, median 2.01, worst 2.44 (N_data 697). The mock runs score 1.4–2.5 at their truth,
+  so χ² alone shows no sign of a family that cannot fit the Milky Way.
+- Zhang et al. (2024) find 34.1 ± 2.4 from the continuity equation on these stars; this run neither confirms nor
+  contradicts it.
+
+**Why so flat: not established.** Measured differences from the mocks: 0.49× the stars inside R < 6 kpc; a different
+potential family (Hunter+24 instead of the galaxy's own); real data instead of a steady-state mock. Which of them
+flattens the surface has not been tested.
+
+Figures: `figures/osarg_zhang2024_mw_hunter24_emulator_{corner,slices,loo}_logLs_fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024_sfratio.png`.
+Results: `results/osarg_zhang2024_mw_hunter24/{design.csv,design_box.json,run_meta.json,evals.csv,evals_sfratio.csv,emulator_results_*.json}`.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
@@ -4053,6 +4110,7 @@ below is still found by `find figures -name <name>`; most of the Test 1b set is 
 | `test2b_posterior_distance_draws_fourier_coefficients_absz_0to1.png` | Test 2b: smeared data against libraries from posterior distance draws (density prior; full phase-space prior), smeared stars and true positions, all observed with the errors |
 | `test2b_qmc_distance_error_7p5_coadded_error_emulator_corner_logLs_{observed,asis}.png` | Test 2b, 7.5% distance error, full focused grid: posterior with the co-added error (library observed again / as is); `..._logl_corner_...` evaluated points; without `_coadded_error` and with the long column name: bootstrap-only error |
 | `test2_nbody_mock_selection_vs_dr3_miras_sigmaDM0.163.png` | Test 2 mock: sky map, distance and R distributions and face-on map of the selection-function mock against the DR3 Miras |
+| `osarg_zhang2024_mw_hunter24_emulator_{corner,slices,loo}_logLs_fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024_sfratio.png` | real data (OSARGs, Hunter+24 family): emulator posterior, 1D slices through the best point and the emulator maximum, leave-one-out check. Too flat to measure Ω_b (2026-11-11) |
 | `test1_nbody_density_stationarity.png` | density change of the libraries; counts statistic retracted (needs the selection function) |
 
 ## Next steps

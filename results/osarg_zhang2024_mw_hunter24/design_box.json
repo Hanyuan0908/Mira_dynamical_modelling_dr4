@@ -1,0 +1,23 @@
+{
+  "box": {
+    "Omega_abs": [
+      25.0,
+      45.0
+    ],
+    "phi_b_deg": [
+      20.0,
+      30.0
+    ],
+    "lnS": [
+      -0.6931471805599453,
+      0.4054651081081644
+    ],
+    "lnf": [
+      -0.6931471805599453,
+      0.4054651081081644
+    ]
+  },
+  "n": 256,
+  "seed": 2041,
+  "sampling": "scrambled Sobol; Omega, phi uniform; S, bar_frac log-uniform"
+}

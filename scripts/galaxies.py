@@ -44,6 +44,10 @@ def _nbody_entry(t):
 
 GALAXIES["nbody"] = _nbody_entry(NBODY_DEFAULT_TIME)
 
+# The real Milky Way: no star file and no truth, only the trial-potential family (build_mw_potential.py).
+GALAXIES["mw"] = dict(label="Milky Way (Hunter+24)", prefix="mw", pot_dir=MOCK_DIR / "mw_potential",
+                      components=("MW_full",), truth=RESULTS_DIR / "mw_ground_truth_DOES_NOT_EXIST.json")
+
 
 def galaxy(name):
     """Galaxy entry by name: "au18", "nbody", or "nbody_t<T>" for any snapshot time T."""

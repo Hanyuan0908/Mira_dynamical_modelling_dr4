@@ -45,6 +45,8 @@ ORBIT_KW = {"verbose": False} if "verbose" in (agama.orbit.__doc__ or "") else {
 FAMILY = {
     "au18": dict(file_prefix="Au18", fixed=("dm", "bh"), bar=("stars", "gas")),
     "nbody": dict(file_prefix="Nbody", fixed=("dm_spherical",), bar=("bulge", "disc")),
+    # the Milky Way (Hunter+24); its files are written by build_mw_potential.py, not by build_files
+    "mw": dict(file_prefix="MW", fixed=("fixed",), bar=("baryon",)),
 }
 
 

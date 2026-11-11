@@ -86,6 +86,21 @@ def scaled_design(galaxy_name):
     return d, scale
 
 
+def load_design(galaxy_name, design_csv=None):
+    """The design to search: a run's own table (--design, e.g. from make_sobol_design.py, used as it is), else
+    the focused design scaled to the galaxy's pattern speed. Returns the table and the Omega scale factor."""
+    if design_csv:
+        return pd.read_csv(design_csv).sort_values("idx").reset_index(drop=True), 1.0
+    return scaled_design(galaxy_name)
+
+
+def reference_ndata(df, col):
+    """N_data of the tempering logLs = -chi2 / (2 sqrt(2 N_data)): its value at the truth for a mock. Real data
+    have no truth row, so there the most common value over the design (it changes only where a block drops out)."""
+    t = df.kind == "truth"
+    return int(df.loc[t, col].iloc[0]) if t.any() else int(df[col].mode().iloc[0])
+
+
 STALE_LOCK_H = 3.0        # a lock older than this, with no result, belonged to a worker that died
 
 
@@ -124,16 +139,14 @@ def merge_evals(design, out_dir, evals_path, variants):
         print("nothing to merge")
         return None
     df = pd.DataFrame(rows).sort_values("idx")
-    t = df.kind == "truth"
-    if t.any():
-        for name in fs.SCHEMES:
-            for v in variants:
-                col = f"ndata_{name}_{v}"
-                if col not in df:
-                    continue
-                nd = int(df.loc[t, col].iloc[0])
-                df[f"chi2N_{name}_{v}"] = df[f"chi2_{name}_{v}"] / df[col]
-                df[f"logLs_{name}_{v}"] = -0.5 * df[f"chi2_{name}_{v}"] / np.sqrt(2 * nd)
+    for name in fs.SCHEMES:
+        for v in variants:
+            col = f"ndata_{name}_{v}"
+            if col not in df:
+                continue
+            nd = reference_ndata(df, col)
+            df[f"chi2N_{name}_{v}"] = df[f"chi2_{name}_{v}"] / df[col]
+            df[f"logLs_{name}_{v}"] = -0.5 * df[f"chi2_{name}_{v}"] / np.sqrt(2 * nd)
     df.to_csv(evals_path, index=False)
     print(f"merged {len(df)} points -> {rel(evals_path)}")
     return df
@@ -144,6 +157,9 @@ def main():
     ap.add_argument("--mock", default=MOCK.name, help="mock file name in mock/")
     ap.add_argument("--run", default=OUT_DIR.name, help="output directory name under $MIRA_DR4_RUNS and results/")
     ap.add_argument("--galaxy", default="nbody", help="galaxy whose potential and truth Omega are used")
+    ap.add_argument("--design", default=None, metavar="CSV",
+                    help="search this design as it is (make_sobol_design.py) instead of the focused design "
+                         "scaled to the galaxy's truth; needed for real data, which have no truth")
     ap.add_argument("--stride", type=int, default=1, help="run every stride-th design point")
     ap.add_argument("--offset", type=int, default=0, help="this worker's residue, 0 .. stride-1")
     ap.add_argument("--no-traj", action="store_true", help="do not save trajectories")
@@ -169,7 +185,8 @@ def main():
     evals = res_dir / "evals.csv"
     out_dir.mkdir(parents=True, exist_ok=True)
     res_dir.mkdir(parents=True, exist_ok=True)
-    design, scale = scaled_design(args.galaxy)
+    design_csv = ROOT / args.design if args.design else None      # an absolute --design replaces ROOT
+    design, scale = load_design(args.galaxy, design_csv)
 
     if args.merge:
         tab0 = selection.load_tables(mock)
@@ -185,17 +202,26 @@ def main():
         sigma_dm = float(f.attrs.get("sigma_DM", 0.0))
     tab = selection.load_tables(mock)
     variants = list(VARIANTS) + (["sf"] if tab else [])
-    omega_truth = truth_omega(args.galaxy)
+    omega_truth = None if design_csv else truth_omega(args.galaxy)
     print(f"mock     {rel(mock)}  ({len(w_mw):,} stars, sigma_DM {sigma_dm:.4f}"
           f"{', with selection function' if tab else ''})")
-    print(f"galaxy   {args.galaxy}: truth |Omega_b| = {omega_truth:.2f} (design Omega scaled by {scale:.4f}, "
-          f"box {design.Omega_abs.min():.1f}-{design.Omega_abs.max():.1f})")
+    if design_csv:
+        print(f"galaxy   {args.galaxy}: no truth; design {rel(design_csv)} as it is "
+              f"(Omega {design.Omega_abs.min():.1f}-{design.Omega_abs.max():.1f})")
+    else:
+        print(f"galaxy   {args.galaxy}: truth |Omega_b| = {omega_truth:.2f} (design Omega scaled by {scale:.4f}, "
+              f"box {design.Omega_abs.min():.1f}-{design.Omega_abs.max():.1f})")
     print(f"library  variants: {', '.join(variants)}")
     print(f"worker   stride {args.stride} offset {args.offset}; output {rel(out_dir)}", flush=True)
+    extra = {}
+    if design_csv:
+        box_json = design_csv.parent / "design_box.json"
+        extra = dict(design_csv=str(rel(design_csv)),
+                     box=json.load(open(box_json))["box"] if box_json.exists() else None)
     with open(res_dir / "run_meta.json", "w") as fh:
         json.dump(dict(run=args.run, mock=args.mock, galaxy=args.galaxy, omega_truth=omega_truth,
                        omega_scale=scale, variants=variants, sigma_DM=sigma_dm, accuracy=old.ACCURACY,
-                       design=str(rel(DESIGN_CSV)), n_points=len(design),
+                       design=str(rel(design_csv or DESIGN_CSV)), n_points=len(design), **extra,
                        cadence_step=args.cadence_step,
                        snapshot_dt_myr=round(float(ssl.T_GYR / (ssl.N_SNAP - 1) * args.cadence_step * 1000), 3)),
                   fh, indent=2)

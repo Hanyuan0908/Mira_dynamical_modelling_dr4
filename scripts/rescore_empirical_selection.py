@@ -33,7 +33,7 @@ from common import ROOT, MOCK_DIR, RUNS_DIR, BAR_ANGLE_DEG, rel
 import steady_state_likelihood as ssl
 import test1_nbody_qmc_focused_fourier_stars as fs
 import selection
-from test2b_qmc_distance_error_run import scaled_design, claim
+from test2b_qmc_distance_error_run import load_design, reference_ndata, claim
 from test1_nbody_qmc_focused_fourier_stars import rotation
 
 NSIDE = 32
@@ -60,12 +60,10 @@ def merge(design, out_dir, path):
         print("nothing to merge")
         return
     df = pd.DataFrame(rows).sort_values("idx")
-    t = df.kind == "truth"
-    if t.any():
-        for name in fs.SCHEMES:
-            nd = int(df.loc[t, f"ndata_{name}_{VARIANT}"].iloc[0])
-            df[f"chi2N_{name}_{VARIANT}"] = df[f"chi2_{name}_{VARIANT}"] / df[f"ndata_{name}_{VARIANT}"]
-            df[f"logLs_{name}_{VARIANT}"] = -0.5 * df[f"chi2_{name}_{VARIANT}"] / np.sqrt(2 * nd)
+    for name in fs.SCHEMES:
+        nd = reference_ndata(df, f"ndata_{name}_{VARIANT}")
+        df[f"chi2N_{name}_{VARIANT}"] = df[f"chi2_{name}_{VARIANT}"] / df[f"ndata_{name}_{VARIANT}"]
+        df[f"logLs_{name}_{VARIANT}"] = -0.5 * df[f"chi2_{name}_{VARIANT}"] / np.sqrt(2 * nd)
     df.to_csv(path, index=False)
     print(f"merged {len(df)} points -> {rel(path)}")
     # also fold the new columns into the run's own evals.csv, which is what test1_gp_emulator reads
@@ -106,7 +104,7 @@ def main():
     res_dir = ROOT / "results" / args.run
     out_dir = RUNS_DIR / args.run
     meta = json.load(open(res_dir / "run_meta.json"))
-    design, _ = scaled_design(meta["galaxy"])
+    design, _ = load_design(meta["galaxy"], meta.get("design_csv") and ROOT / meta["design_csv"])
     evals = res_dir / f"evals_{VARIANT}.csv"
     if args.merge:
         merge(design, out_dir, evals)
