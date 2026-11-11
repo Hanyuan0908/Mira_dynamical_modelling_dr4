@@ -134,20 +134,33 @@ def main():
                     help="measure the kinematic angle on this run's own mock instead of taking it "
                          "from the ring cache (required for any run whose data is not the "
                          "fiducial uniform-error mock)")
+    ap.add_argument("--prior", type=float, nargs=2, metavar=("MEAN", "SIGMA"), default=None,
+                    help="use this Gaussian prior on phi_b [deg] instead of the Auriga-calibrated kinematic "
+                         "one (e.g. for the real data, which are not in the ring cache)")
     args = ap.parse_args()
     set_style()
 
     run = ge.use_run(args.run)
     TRUTH, pre = run["truth"], run["prefix"]
     meta = json.load(open(RESULTS_DIR / args.run / "run_meta.json"))
-    meas = measure_from_mock(meta["mock"], args.rule, args.est) if args.measure_from_mock else None
-    phi_kin, sig_kin, info = kinematic_prior(meta["galaxy"], args.rule, args.est, measured=meas)
-    if meas is not None:
-        info["measured_from"] = meta["mock"]
     print(f"  {args.run}: galaxy {meta['galaxy']}")
-    print(f"    kinematic angle {info['measured']:.2f} deg measured -> phi_b = {phi_kin:.2f} "
-          f"+- {sig_kin:.2f} deg  ({'leave-one-out, ' if info['leave_one_out'] else ''}"
-          f"{info['calibrators']} calibrators)")
+    if args.prior:
+        phi_kin, sig_kin = map(float, args.prior)
+        info = dict(source="given on the command line", measured=None, leave_one_out=False, calibrators=0)
+        tag = f"phib_prior_{phi_kin:g}pm{sig_kin:g}deg"
+        label = f"$\\phi_b$ = {phi_kin:g} $\\pm$ {sig_kin:g}$^\\circ$ (given)"
+        print(f"    given prior phi_b = {phi_kin:.2f} +- {sig_kin:.2f} deg")
+    else:
+        meas = measure_from_mock(meta["mock"], args.rule, args.est) if args.measure_from_mock else None
+        phi_kin, sig_kin, info = kinematic_prior(meta["galaxy"], args.rule, args.est, measured=meas)
+        if meas is not None:
+            info["measured_from"] = meta["mock"]
+        tag = "kinprior"
+        label = (f"$\\phi_b$ = {phi_kin:.1f} $\\pm$ {sig_kin:.1f}$^\\circ$ from {args.est} / {args.rule}"
+                 f"{' (leave-one-out)' if info['leave_one_out'] else ' (blind)'}")
+        print(f"    kinematic angle {info['measured']:.2f} deg measured -> phi_b = {phi_kin:.2f} "
+              f"+- {sig_kin:.2f} deg  ({'leave-one-out, ' if info['leave_one_out'] else ''}"
+              f"{info['calibrators']} calibrators)")
 
     post, w, ess = weighted_posterior(args.column, phi_kin, sig_kin)
     print(f"    chain {len(post)} samples -> effective {ess:.0f} under the prior")
@@ -171,14 +184,14 @@ def main():
                      for k, a, b, c in zip(ge.KEYS, *q0)},
                with_prior={k: dict(p16=float(a), p50=float(b), p84=float(c))
                            for k, a, b, c in zip(ge.KEYS, *q1)})
-    out = RESULTS_DIR / args.run / f"kinematic_prior_{args.column}.json"
+    out = RESULTS_DIR / args.run / f"{'kinematic_prior' if tag == 'kinprior' else tag}_{args.column}.json"
     json.dump(res, open(out, "w"), indent=2)
 
     lab = [r"$|\Omega_b|$ [km s$^{-1}$ kpc$^{-1}$]", r"$\phi_b$ [deg]", "$S$", "bar_frac"]
-    rng = [(min(post[:, i].min(), TRUTH[k]), max(post[:, i].max(), TRUTH[k]))
-           for i, k in enumerate(ge.KEYS)]
+    rng = [(min(post[:, i].min(), TRUTH[k]), max(post[:, i].max(), TRUTH[k])) if TRUTH
+           else (post[:, i].min(), post[:, i].max()) for i, k in enumerate(ge.KEYS)]
     fig = corner.corner(post, labels=lab, range=rng, color=BLUE_RAMP[5], plot_datapoints=False,
-                        levels=(0.39, 0.68, 0.95), truths=[TRUTH[k] for k in ge.KEYS],
+                        levels=(0.39, 0.68, 0.95), truths=[TRUTH[k] for k in ge.KEYS] if TRUTH else None,
                         truth_color=INK_2, hist_kwargs=dict(density=True))
     corner.corner(post, weights=w, labels=lab, range=rng, color=ACCENT, fig=fig,
                   plot_datapoints=False, levels=(0.39, 0.68, 0.95),
@@ -187,19 +200,17 @@ def main():
         a, b, c = q1[:, i]
         fig.axes[i * 5].set_title(f"{k}: {b:.2f}$^{{+{c-b:.2f}}}_{{-{b-a:.2f}}}$",
                                   color=ACCENT, fontsize=9)
-    fig.suptitle(f"{pre}: flat prior (blue) vs kinematic prior on $\\phi_b$ (orange)\n"
-                 f"$\\phi_b$ = {phi_kin:.1f} $\\pm$ {sig_kin:.1f}$^\\circ$ from "
-                 f"{args.est} / {args.rule}"
-                 f"{' (leave-one-out)' if info['leave_one_out'] else ' (blind)'}; "
-                 f"truth in grey; effective samples {ess:.0f}",
+    fig.suptitle(f"{pre}: flat prior (blue) vs prior on $\\phi_b$ (orange)\n{label}; "
+                 + ("truth in grey; " if TRUTH else "") + f"effective samples {ess:.0f}",
                  color=INK, fontsize=11, y=1.02)
-    savefig(fig, f"{pre}_corner_kinprior_{args.column}")
+    savefig(fig, f"{pre}_corner_{tag}_{args.column}")
 
     print(f"    {'param':10s} {'truth':>8s} | {'flat':>22s} | {'with prior':>22s}")
     for i, k in enumerate(ge.KEYS):
         a0, b0, c0 = q0[:, i]
         a1, b1, c1 = q1[:, i]
-        print(f"    {k:10s} {TRUTH[k]:8.2f} | {b0:8.2f} +{c0-b0:5.2f} -{b0-a0:5.2f} | "
+        tv = f"{TRUTH[k]:8.2f}" if TRUTH else f"{'-':>8s}"
+        print(f"    {k:10s} {tv} | {b0:8.2f} +{c0-b0:5.2f} -{b0-a0:5.2f} | "
               f"{b1:8.2f} +{c1-b1:5.2f} -{b1-a1:5.2f}")
     print(f"  wrote {rel(out)}")
 

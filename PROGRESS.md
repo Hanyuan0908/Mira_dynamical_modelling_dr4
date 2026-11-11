@@ -4159,6 +4159,31 @@ Searched and re-scored on both grids. Of the 384 points, one (Ω 22.1) loses a b
 Figures (the 384-point versions overwrite the 256-point ones of the same name; the 256-point numbers are in the two
 sections above): `figures/osarg_zhang2024_mw_hunter24_emulator_{corner,slices,loo}_logLs_fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024_sfratio{,_r0.5_z2}.png`.
 
+### A φ_b = 25 ± 2° prior, as in the simulation tests: only φ_b moves
+
+User: put the bar-angle prior on, 25 ± 2°, and see what changes. `plot_corner_with_kinematic_prior.py` gained
+`--prior MEAN SIGMA` (and truth-free plotting). The prior is applied by importance-weighting the emulator chain, as for
+the mocks; it is exact here because 25 ± 2° lies inside the 20–30° box. Effective samples: 8,474 of 12,800 (adopted
+grid) and 8,416 (0.5 kpc grid).
+
+| | flat prior | φ_b = 25 ± 2° |
+|---|---|---|
+| \|Ω_b\| (adopted grid) | 29.76 (+6.98 −5.91) | 29.64 (+6.97 −5.85) |
+| φ_b | 23.37 (+4.01 −2.49) | 24.46 (+2.09 −1.95) |
+| S | 0.98 (+0.23 −0.23) | 0.97 (+0.23 −0.23) |
+| bar_frac | 1.03 (+0.29 −0.34) | 1.03 (+0.29 −0.34) |
+| \|Ω_b\| (0.5 kpc rings, \|z\| < 2) | 29.16 (+5.50 −4.77) | 29.08 (+5.65 −4.77) |
+
+- **Why nothing else moves.** In the OSARG posterior, φ_b is uncorrelated with the other three parameters. The
+  correlation coefficients of the flat-prior chain are: φ_b–Ω −0.03, φ_b–S −0.11, φ_b–bar_frac −0.06.
+- In the simulations the prior worked through the φ_b–bar_frac degeneracy (2026-11-05 entry). It moved bar_frac,
+  and by design hardly moved Ω_b or S. The OSARGs show no such degeneracy, so there is nothing for it to break.
+- **What limits Ω_b here.** The correlations that matter are Ω–bar_frac +0.40 and Ω–S +0.35. A prior on the bar
+  strength or length would narrow Ω_b; a prior on the angle does not.
+
+Figures: `figures/osarg_zhang2024_mw_hunter24_corner_phib_prior_25pm2deg_logLs_fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024_sfratio{,_r0.5_z2}.png`.
+Tables: `results/osarg_zhang2024_mw_hunter24/phib_prior_25pm2deg_*.json`.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
