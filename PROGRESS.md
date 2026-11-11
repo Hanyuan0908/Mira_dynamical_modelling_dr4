@@ -4072,6 +4072,50 @@ flattens the surface has not been tested.
 Figures: `figures/osarg_zhang2024_mw_hunter24_emulator_{corner,slices,loo}_logLs_fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024_sfratio.png`.
 Results: `results/osarg_zhang2024_mw_hunter24/{design.csv,design_box.json,run_meta.json,evals.csv,evals_sfratio.csv,emulator_results_*.json}`.
 
+### A coarser Fourier grid for the OSARGs: same information, no real gain (user's suggestion)
+
+User: drop the |z| 2–3 layer and broaden the rings, to raise the constraining power. Re-scored from the saved
+trajectories (`rescore_empirical_selection.py --ring-width 0.5 --z-max 2`, new `fs.set_grid`; variant
+`sfratio_r0.5_z2`, default columns untouched), 0.5 kpc rings to 6 kpc, layers 0–1 and 1–2.
+
+- **Stars per block, OSARG data at φ_b = 27°** (counts that motivated it):
+
+  | grid | \|z\| 0–1 median (min) | \|z\| 1–2 median, blocks < 500 | \|z\| 2–3 median, blocks < 50 |
+  |---|---|---|---|
+  | 0.3 kpc rings | 742 (161) | 224, 20/20 | 30, 18/20 |
+  | 0.5 kpc rings | 1,236 (498) | 378, 10/12 | — dropped |
+
+  The |z| 2–3 layer was already almost entirely below the 50-star block minimum (2 blocks used). The 10% t7 mock has
+  1,598 / 314 / 26 at 0.3 kpc.
+- **Result** (scheme B, sfratio, K = 10):
+
+  | | 0.3 kpc, 3 layers | 0.5 kpc, 2 layers |
+  |---|---|---|
+  | N_data | 697 | 408 |
+  | χ² span over the design | 601 | 567 |
+  | logLs span (tempered) | 8.04 | 9.93 |
+  | points within 4.5 of best | 163 / 256 | 127 / 256 |
+  | best χ²/N (median) | 1.58 (2.01) | 1.76 (2.39) |
+  | Ω profile, best ΔlogLs per eighth, 25 → 45 | −0.3 −1.3 0.0 −0.4 −1.5 −1.1 −1.6 −3.1 | 0.0 −0.8 −0.1 −0.3 −1.6 −2.0 −2.2 −3.5 |
+  | \|Ω_b\| posterior | 31.5 (27.1–37.9) | 30.4 (26.8–35.3) |
+  | φ_b | 23.5 (20.9–27.6) | 23.1 (20.8–27.0) |
+  | S | 0.98 (0.79–1.22) | 0.99 (0.82–1.21) |
+  | bar_frac | 1.10 (0.78–1.36) | 1.10 (0.79–1.36) |
+  | emulator LOO rms (top 32) | 0.79 | 0.71 |
+
+- **What changed and what did not.**
+  - The discriminating power is the same: the χ² span fell 6% (601 → 567).
+  - The logLs span rose by 1.24×. That is the tempering, not information: √(697/408) = 1.31, times the 6% smaller χ²
+    span.
+  - The ranking of the 256 models is unchanged (Spearman 0.957 between the grids).
+  - The Ω profile still does not fall on the low side (0.0 at 25–27.5), so the lower bound is still the box edge.
+    The upper side tightened, 37.9 → 35.3.
+  - Best χ²/N rose (1.58 → 1.76). Larger blocks have smaller errors, so whatever the models miss counts for more; why
+    is not established.
+- **Conclusion.** The grid is not what limits the OSARG constraint.
+
+Figures: `figures/osarg_zhang2024_mw_hunter24_emulator_{corner,slices,loo}_logLs_fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024_sfratio_r0.5_z2.png`.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name

@@ -49,7 +49,7 @@ def data_lbdR(mock):
 def merge(design, out_dir, path):
     rows = []
     for f in sorted(out_dir.glob(f"{VARIANT}_[0-9][0-9][0-9].npz")):
-        i = int(f.stem.split("_")[1])
+        i = int(f.stem.rsplit("_", 1)[1])
         s = np.load(f)
         p = design.set_index("idx").loc[i]
         row = dict(idx=i, kind=p.kind, batch=p.batch, Omega_abs=p.Omega_abs, phi_b_deg=p.phi_b_deg,
@@ -97,9 +97,14 @@ def main():
                          "parameter-dependent amount, and K=10 cuts the emulator's leave-one-out "
                          "error 1.47 -> 0.65. Pass --n-draw 1 to reproduce results from before that "
                          "date. See selection.observed_library.")
+    ap.add_argument("--ring-width", type=float, default=0.3,
+                    help="Fourier ring width inside 6 kpc (default 0.3, the validated grid)")
+    ap.add_argument("--z-max", type=float, default=3.0,
+                    help="top of the |z| layers, 1 kpc each (default 3)")
     args = ap.parse_args()
     global VARIANT
-    VARIANT = ESTIMATORS[args.estimator]
+    # a non-default grid gets its own variant name (e.g. sfratio_r0.5_z2), so default results are never overwritten
+    VARIANT = ESTIMATORS[args.estimator] + fs.set_grid(args.ring_width, args.z_max)
 
     res_dir = ROOT / "results" / args.run
     out_dir = RUNS_DIR / args.run

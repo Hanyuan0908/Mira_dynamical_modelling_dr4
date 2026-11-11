@@ -54,6 +54,21 @@ SCHEMES = {   # name: (rings used, {field: kept terms})
 }
 
 
+def set_grid(ring_width=0.3, z_max=3.0):
+    """Switch the module to another (ring, layer) grid: rings of ring_width out to 6 kpc (then the usual 0.5 kpc rings
+    to 8), |z| layers of 1 kpc up to z_max. Every function here reads the grid at call time, and the schemes' "R0to6"
+    ring count follows. Returns a tag for variant names ("" for the default grid)."""
+    global RING_EDGES, LAYER_EDGES, NR, NL, NB, N_RING_DEFAULT
+    RING_EDGES = np.round(np.r_[np.arange(0.0, 6.0 + 1e-9, ring_width), [6.5, 7.0, 7.5, 8.0]], 6)
+    LAYER_EDGES = np.arange(0.0, z_max + 1e-9, 1.0)
+    NR, NL = len(RING_EDGES) - 1, len(LAYER_EDGES) - 1
+    NB = NR * NL
+    old_n, N_RING_DEFAULT = N_RING_DEFAULT, int(round(6.0 / ring_width))
+    for name, (n_ring, spec) in list(SCHEMES.items()):
+        SCHEMES[name] = (N_RING_DEFAULT if n_ring == old_n else NR, spec)
+    return "" if (abs(ring_width - 0.3) < 1e-9 and abs(z_max - 3.0) < 1e-9) else f"_r{ring_width:g}_z{z_max:g}"
+
+
 def prepare(w):
     """Block index, basis (n, 5), velocities (v_R, v_phi, v_z sign z) and the in-grid mask for bar-frame points."""
     R = np.hypot(w[:, 0], w[:, 1])
