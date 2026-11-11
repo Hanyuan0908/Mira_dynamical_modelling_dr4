@@ -3994,6 +3994,27 @@ Scripts: `integrate_orbit_frequencies.py --truth --mock-file NAME --tag TAG` int
 observed stars in the true potential, which is what makes this decomposition cheap.
 `bar_dynamical_length.py --stat` now offers p99.5 as well. Tables `truth_nbody_{noerr,err}_{nosel,sel}.npz`.
 
+## 2026-11-11 — Real data in hand: the Zhang et al. (2024) LA-LPV (OSARG) sample
+
+Downloaded for a first real-data application before DR4 (user request).
+
+- **Source.** Zenodo record 13285574 (CC-BY-4.0), the published sample of Zhang et al. (2024, MNRAS 534,
+  1175; arXiv:2406.06678). One file, `gaia_dr3_lpv_withdist.fits`, 89.6 MB, MD5
+  b53b8af943d2f476c252227525d4e2b6 (matches Zenodo). Saved to `data/osarg_zhang2024/` (git-ignored, like all of `data/`).
+- **Contents.** 107,845 rows, 195 columns: Gaia DR3 source + LPV + 2MASS columns, and the paper's PL distance
+  (`DM`, `M_JKs_sigma`, `luminosity_dist` in kpc). It is the sample *before* the paper's last two cuts.
+- **The paper's final sample reproduces exactly.** `M_JKs_sigma < 0.4` leaves 45,819 stars (paper: 45,819); with a
+  Gaia DR3 RV, 33,704 (paper: 33,704).
+- **That sample, measured here.**
+  - Distance error from `M_JKs_sigma`: median 9.6% (σ_DM 0.208), mean 10.2%, 16–84% range 7.9–12.6%. This is inside
+    the range Tests 2 and 3 cover (10% and 12.5%, per-star scatter ±2.5%).
+  - RV error: median 0.83 km/s.
+  - Positions in the astropy-default Galactocentric frame (Sun at x = −8.122 kpc, as in the mocks):
+    20,161 stars at R < 6 kpc (14,694 at |z| < 1, 4,671 at 1–2, 594 at 2–3); 26,630 at R < 8 kpc.
+  - For comparison, the local 10% selection mock (`mock/nbody_mock_selection_sigmaDM0.163_N50k.hdf5`) has 41,348
+    stars at R < 6 kpc, so OSARGs give 0.49x the stars inside the likelihood's radial range.
+- Same solar parameters as the mocks (`common.py`: R0 8.122 kpc, v_sun = (12.9, 245.6, 7.78) km/s); the paper uses these too.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
