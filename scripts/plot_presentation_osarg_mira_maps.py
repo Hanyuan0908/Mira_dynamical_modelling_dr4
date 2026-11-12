@@ -5,7 +5,7 @@ Samples:
   OSARGs  the Zhang et al. (2024) final sample, 33,704 stars (M_JKs_sigma < 0.4, Gaia DR3 RV), positions and
           velocities exactly as make_osarg_data.final_sample (PL distances, MW-like frame, Sun at x = -8.122 kpc)
   Miras   data/gaia_dr3_lpv_mira.csv with DM_err < 0.4 (54,573 stars); its x, y, z are in the same frame
-Both are cut to |z| < 3 kpc, the vertical range the likelihood uses. Maps: 0.2 kpc pixels over |x|, |y| < 10 kpc,
+Both are cut to |z| < 3 kpc, the vertical range the likelihood uses. Maps: 0.2 kpc pixels over |x|, |y| < 15 kpc,
 counts (and v_R sums) smoothed with a Gaussian of SMOOTH kpc before dividing, as in the animations. Density is
 stars per kpc^2 on a log scale; <v_R> (Galactocentric cylindrical, positive outward) is shown where the smoothed
 count corresponds to at least N_MIN stars inside the kernel. The dashed line is the bar axis at the conventional
@@ -28,7 +28,7 @@ from common import ROOT, R0_KPC, BAR_ANGLE_DEG
 from make_osarg_data import final_sample
 from plot_presentation_figures import dark_style, save, BG, TEXT, TEXT_2, AXIS
 
-EXTENT, PIX, SMOOTH, N_MIN, Z_MAX, VLIM = 10.0, 0.2, 0.3, 15, 3.0, 40.0
+EXTENT, PIX, SMOOTH, N_MIN, Z_MAX, VLIM = 15.0, 0.2, 0.3, 15, 3.0, 40.0
 EDGES = np.arange(-EXTENT, EXTENT + 1e-9, PIX)
 DENSITY_CMAP = LinearSegmentedColormap.from_list(
     "blue_ramp_dark", ["#184f95", "#256abf", "#3987e5", "#6da7ec", "#9ec5f4", "#cde2fb", "#f0f6fe"])
