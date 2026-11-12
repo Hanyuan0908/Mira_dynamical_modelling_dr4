@@ -32,20 +32,13 @@ SIGMA_M_MAX = 0.4
 R_MAX = 8.0
 
 
-def main():
+def final_sample():
+    """The paper's final 33,704-star sample in the MW-like frame, with its catalogue rows and cut masks."""
     d = fits.open(SRC)[1].data
     sig = np.asarray(d["M_JKs_sigma"], float)
     rv = np.asarray(d["radial_velocity"], float)
     cut1 = sig < SIGMA_M_MAX
     final = cut1 & np.isfinite(rv)
-    print(f"{rel(SRC)}: {len(d):,} stars; M_JKs_sigma < {SIGMA_M_MAX}: {cut1.sum():,}; with RV: {final.sum():,} "
-          f"(Zhang et al. 2024: 45,819 and 33,704)")
-    sigma_dm = float(np.median(sig[final]))
-    frac = np.log(10) / 5 * sig[final]
-    print(f"distance-modulus error of the final sample: median {sigma_dm:.4f} mag "
-          f"(fractional {100 * np.log(10) / 5 * sigma_dm:.2f}%), mean fractional {100 * frac.mean():.2f}%, "
-          f"16-84% {100 * np.percentile(frac, 16):.2f}-{100 * np.percentile(frac, 84):.2f}%")
-
     s = d[final]
     c = SkyCoord(ra=s["ra"] * u.deg, dec=s["dec"] * u.deg, pm_ra_cosdec=s["pmra"] * u.mas / u.yr,
                  pm_dec=s["pmdec"] * u.mas / u.yr, frame="icrs").galactic
@@ -54,6 +47,22 @@ def main():
     dist = np.asarray(s["luminosity_dist"], float)
     vlos = np.asarray(s["radial_velocity"], float)
     x, y, z, vx, vy, vz = observe.to_galactocentric(l, b, dist, pml, pmb, vlos)
+    return dict(d=d, s=s, sig=sig, cut1=cut1, final=final, l=l, b=b, pml=pml, pmb=pmb, dist=dist, vlos=vlos,
+                x=x, y=y, z=z, vx=vx, vy=vy, vz=vz)
+
+
+def main():
+    fs_ = final_sample()
+    d, s, sig, cut1, final = fs_["d"], fs_["s"], fs_["sig"], fs_["cut1"], fs_["final"]
+    l, b, pml, pmb, dist, vlos = (fs_[k] for k in ("l", "b", "pml", "pmb", "dist", "vlos"))
+    x, y, z, vx, vy, vz = (fs_[k] for k in ("x", "y", "z", "vx", "vy", "vz"))
+    print(f"{rel(SRC)}: {len(d):,} stars; M_JKs_sigma < {SIGMA_M_MAX}: {cut1.sum():,}; with RV: {final.sum():,} "
+          f"(Zhang et al. 2024: 45,819 and 33,704)")
+    sigma_dm = float(np.median(sig[final]))
+    frac = np.log(10) / 5 * sig[final]
+    print(f"distance-modulus error of the final sample: median {sigma_dm:.4f} mag "
+          f"(fractional {100 * np.log(10) / 5 * sigma_dm:.2f}%), mean fractional {100 * frac.mean():.2f}%, "
+          f"16-84% {100 * np.percentile(frac, 16):.2f}-{100 * np.percentile(frac, 84):.2f}%")
     R = np.hypot(x, y)
     keep = R < R_MAX
     print(f"observed R < {R_MAX:g} kpc: {keep.sum():,} stars (R < 6: {(R < 6).sum():,})")
