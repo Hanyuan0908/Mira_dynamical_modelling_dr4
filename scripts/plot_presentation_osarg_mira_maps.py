@@ -14,9 +14,13 @@ count corresponds to at least N_MIN stars inside the kernel. The dashed line is 
 Colours: density on the reference blue ramp, darkest step #184f95 (2.6:1 on black, validated --ordinal --mode
 dark); <v_R> on a blue-grey-red diverging map with a dark grey midpoint, so zero velocity is distinct from no data.
 
+The third figure splits the Miras by Gaia G (phot_g_mean_mag): G < 14, G < 16 and all, on ONE colour scale (the
+all-star map's), so the panels compare directly. The catalogue's other G, the LPV mean_mag_g_fov, runs 0.28 mag
+brighter at the median and would put 21,078 rather than 16,155 stars at G < 14.
+
 Usage: python plot_presentation_osarg_mira_maps.py
 Figures: figures/presentation/{osarg_zhang2024_face_on_number_density_and_mean_vR_black,
-         dr3_mira_face_on_number_density_black}.{png,pdf}
+         dr3_mira_face_on_number_density_black, dr3_mira_face_on_number_density_by_G_magnitude_black}.{png,pdf}
 """
 import numpy as np
 import pandas as pd
@@ -81,6 +85,29 @@ def colorbar(fig, ax, im, label):
     cb.ax.tick_params(colors=TEXT_2, which="both")
 
 
+def mira_by_magnitude(m, norm, ext):
+    """Mira density for G < 14, G < 16 and all, on the all-star map's colour scale."""
+    cuts = (("G < 14", m.phot_g_mean_mag < 14), ("G < 16", m.phot_g_mean_mag < 16),
+            ("all", np.ones(len(m), bool)))
+    fig, axes = plt.subplots(1, 3, figsize=(22.0, 7.2), gridspec_kw=dict(wspace=0.32))
+    for ax, (lab, sel) in zip(axes, cuts):
+        im = ax.imshow(density(m.x.values[sel], m.y.values[sel]), origin="lower", extent=ext, cmap=DENSITY_CMAP,
+                       norm=norm, interpolation="nearest")
+        decorate(ax, f"Gaia DR3 Miras, {lab}", f"{int(sel.sum()):,} stars")
+        r = np.hypot(m.x.values[sel], m.y.values[sel])
+        print(f"Miras {lab:7s}: {int(sel.sum()):6,d} stars; {(r < 5).sum():6,d} at R < 5 kpc; "
+              f"{(m.x.values[sel] > 0).sum():6,d} beyond the Galactic centre (x > 0)")
+    for ax in axes[1:]:
+        ax.set_ylabel("")
+    cb = fig.colorbar(im, ax=list(axes), fraction=0.015, pad=0.015)
+    cb.set_label(r"stars per kpc$^2$", color=TEXT)
+    cb.outline.set_edgecolor(AXIS)
+    cb.ax.tick_params(colors=TEXT_2, which="both")
+    fig.text(0.45, 0.90, f"Gaia DR3 Miras by G magnitude: DM error < 0.4 mag, |z| < {Z_MAX:g} kpc, one colour scale",
+             ha="center", va="bottom", color=TEXT_2, fontsize=14)
+    save(fig, "dr3_mira_face_on_number_density_by_G_magnitude_black")
+
+
 def main():
     dark_style()
     o = final_sample()
@@ -89,7 +116,7 @@ def main():
     vR = (x * vx + y * vy) / np.hypot(x, y)
     print(f"OSARGs: {len(o['x']):,} in the final sample, {keep.sum():,} at |z| < {Z_MAX:g} kpc")
 
-    m = pd.read_csv(ROOT / "data" / "gaia_dr3_lpv_mira.csv", usecols=["x", "y", "z", "DM_err"])
+    m = pd.read_csv(ROOT / "data" / "gaia_dr3_lpv_mira.csv", usecols=["x", "y", "z", "DM_err", "phot_g_mean_mag"])
     m = m[(m.DM_err < 0.4) & (np.abs(m.z) < Z_MAX)]
     print(f"Miras: {len(m):,} with DM_err < 0.4 and |z| < {Z_MAX:g} kpc")
 
@@ -117,6 +144,8 @@ def main():
     colorbar(fig, ax, im, r"stars per kpc$^2$")
     decorate(ax, "Gaia DR3 Miras: number density", f"{len(m):,} stars, DM error < 0.4 mag, |z| < {Z_MAX:g} kpc")
     save(fig, "dr3_mira_face_on_number_density_black")
+
+    mira_by_magnitude(m, norms["mira"], ext)
 
     r = np.hypot(x, y)
     print(f"peak density: OSARGs {np.nanmax(d_osarg):.0f}, Miras {np.nanmax(d_mira):.0f} stars/kpc^2; colour "
