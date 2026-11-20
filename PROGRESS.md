@@ -4205,6 +4205,11 @@ G_RP − 0.64; see `plot_presentation_mira_grvs_distribution.py`):
   3100–7500 K and note the template mismatch for cooler LPVs; no relaxation of the floor is stated.
 - **Implication, untested.** Magnitude will not limit DR4: an estimated 98% of these Miras are brighter than G_RVS = 15.
   The template floor may, and it would select short-period (older) Miras. Every mock so far gives every star an RV.
+- **The floor is a publication cut, not a missing template.** The RVS synthetic library (GDR3 doc 6.2.3) is MARCS
+  2500–8000 K, 100 K steps below 3900 K; the radial velocity uses the closest of its 6,772 spectra. Only the
+  28-model restricted library used to estimate parameters stops at 3100 K. Katz et al. (2023) removed the ~243,000
+  stars with templates below 3100 K, saying validation was good down to 3100 K; no reason is given for the cut.
+  Of the 963 Miras with a faint-pipeline RV (G_RVS 12–14), 105 carry the default 5500 K template.
 
 ## Figure index (Test 1b, N-body, perfect mock)
 
