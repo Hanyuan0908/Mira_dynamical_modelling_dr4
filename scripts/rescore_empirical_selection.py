@@ -68,7 +68,10 @@ def merge(design, out_dir, path):
     print(f"merged {len(df)} points -> {rel(path)}")
     # also fold the new columns into the run's own evals.csv, which is what test1_gp_emulator reads
     main = path.parent / "evals.csv"
-    if main.exists():
+    if not main.exists():          # a --keep sub-sample's own results directory: the scored table is the evals
+        df.to_csv(main, index=False)
+        print(f"  wrote {rel(main)}")
+    else:
         base = pd.read_csv(main)
         new_cols = [c for c in df.columns if c.endswith(f"_{VARIANT}")]
         base = base.drop(columns=[c for c in new_cols if c in base.columns])
@@ -101,15 +104,32 @@ def main():
                     help="Fourier ring width inside 6 kpc (default 0.3, the validated grid)")
     ap.add_argument("--z-max", type=float, default=3.0,
                     help="top of the |z| layers, 1 kpc each (default 3)")
+    ap.add_argument("--keep", default=None, metavar="NPY",
+                    help="boolean mask over the mock's stars: score only these, dropping the same rows from the "
+                         "data and from every saved trajectory. Orbits are test particles, so this is exactly a "
+                         "search on the sub-sample, with no new integration. Needs --keep-tag.")
+    ap.add_argument("--keep-tag", default=None,
+                    help="name of the sub-sample; results go to results/<run>_<tag>/ under variant sfratio_<tag>")
     args = ap.parse_args()
+    if bool(args.keep) != bool(args.keep_tag):
+        raise SystemExit("--keep and --keep-tag go together")
     global VARIANT
     # a non-default grid gets its own variant name (e.g. sfratio_r0.5_z2), so default results are never overwritten
-    VARIANT = ESTIMATORS[args.estimator] + fs.set_grid(args.ring_width, args.z_max)
+    VARIANT = ESTIMATORS[args.estimator] + fs.set_grid(args.ring_width, args.z_max) + \
+        (f"_{args.keep_tag}" if args.keep else "")
 
     res_dir = ROOT / "results" / args.run
     out_dir = RUNS_DIR / args.run
     meta = json.load(open(res_dir / "run_meta.json"))
     design, _ = load_design(meta["galaxy"], meta.get("design_csv") and ROOT / meta["design_csv"])
+    keep = None
+    if args.keep:
+        keep = np.load(ROOT / args.keep)
+        sub_dir = ROOT / "results" / f"{args.run}_{args.keep_tag}"
+        sub_dir.mkdir(parents=True, exist_ok=True)
+        json.dump(dict(meta, parent_run=args.run, keep_mask=args.keep, n_keep=int(keep.sum()), n_mock=len(keep)),
+                  open(sub_dir / "run_meta.json", "w"), indent=2)
+        res_dir = sub_dir
     evals = res_dir / f"evals_{VARIANT}.csv"
     if args.merge:
         merge(design, out_dir, evals)
@@ -120,6 +140,12 @@ def main():
     sigma_dm = float(meta["sigma_DM"])
     stars = np.column_stack([h5py.File(mock, "r")[k][:].astype(np.float64)
                              for k in ("x", "y", "z", "vx", "vy", "vz")])
+    if keep is not None:
+        if len(keep) != len(stars):
+            raise SystemExit(f"--keep has {len(keep)} entries for {len(stars)} mock stars")
+        dat = tuple(np.asarray(a)[keep] for a in dat)
+        stars = stars[keep]
+        print(f"keeping {int(keep.sum()):,} of {len(keep):,} stars ({args.keep})", flush=True)
     boot_w = np.random.default_rng(fs.SEED).multinomial(len(stars), np.full(len(stars), 1 / len(stars)),
                                                         size=fs.N_BOOT).astype(float)
     cd0, cov0, n_stars, ok = fs.data_fit(stars, BAR_ANGLE_DEG, boot_w)
@@ -137,6 +163,8 @@ def main():
             continue
         p = design.set_index("idx").loc[i]
         traj = np.load(traj_f)
+        if keep is not None:
+            traj = traj[keep]                   # row i of a trajectory file is star i of the mock
         if args.cadence_step > 1:
             traj = np.ascontiguousarray(traj[:, ::args.cadence_step])
         times = ssl.times_for_traj(traj)        # the file may already be thinned

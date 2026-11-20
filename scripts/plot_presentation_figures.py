@@ -4,13 +4,12 @@
    galaxies (orange diamonds), with the fractional bias beside it. Same runs, column and truth convention as
    figures/test2_pattern_speed_recovery_12p5pct_12pt_plus_auriga.png (plot_test2_pattern_speed_recovery.py):
    scheme B with sfratio; N-body truth = the simulation table's finite-difference column, Auriga truth = our own
-   Dehnen measurement (run_meta omega_truth). One difference: a run that carries an explicit K = 10 column
-   uses it. Only t = 7 does, where the plain `sfratio` column is neither K = 1 nor K = 10 (PROGRESS
-   2026-11-05) and Omega_b moves by 0.02 km/s/kpc.
+   Dehnen measurement (run_meta omega_truth). Every run uses its plain `sfratio` column. For t = 7 that is the
+   column today's code reproduces (K = 10, 50 Myr: matched exactly at three design points, 2026-11-21); its
+   separate `sfratioK10` column is not, and was wrongly used here before.
 2. The bar-strength profile A2/A0(R) of the midplane density for t = 7: the truth (the galaxy's own potential,
    bar_frac = S = 1) and the trial potential rebuilt at 300 draws of the flat-prior posterior (median and
-   16-84%), as in plot_bar_strength_profile_recovery.py (same chain seeds and draw seed), but on the K = 10
-   column.
+   16-84%), as in plot_bar_strength_profile_recovery.py (same chain seeds and draw seed and column).
 
 Colours: the reference palette's dark steps, blue #3987e5 and orange #d95926, validated on #000000
 (dataviz validate_palette.js --mode dark --pairs all: all checks pass, CVD dE 26.8); shapes differ too.
@@ -72,8 +71,7 @@ def recovery_points(table):
     for g in NBODY + AURIGA:
         run = RESULTS_DIR / f"test2_{g}_sf_12p5pct"
         meta = json.load(open(run / "run_meta.json"))
-        f = run / f"emulator_results_logLs_{SCHEME_B}_sfratioK10.json"
-        f = f if f.exists() else run / f"emulator_results_logLs_{SCHEME_B}_sfratio.json"
+        f = run / f"emulator_results_logLs_{SCHEME_B}_sfratio.json"
         p = json.load(open(f))["posterior"]["Omega_abs"]
         auriga = g.startswith("au")
         if auriga:
@@ -122,12 +120,12 @@ def plot_recovery(pts):
 
 
 def t7_profile(n_draw):
-    """Truth and the flat-posterior 16/50/84% of A2/A0(R) for t = 7 (K = 10 column)."""
+    """Truth and the flat-posterior 16/50/84% of A2/A0(R) for t = 7 (plain sfratio column)."""
     import emcee
     from scipy.optimize import minimize
     import test1_gp_emulator as ge
     from plot_bar_strength_profile_recovery import a2_over_a0, R_GRID
-    run, column = "test2_t7_sf_12p5pct", f"logLs_{SCHEME_B}_sfratioK10"
+    run, column = "test2_t7_sf_12p5pct", f"logLs_{SCHEME_B}_sfratio"
     ge.use_run(run)
     df, _ = ge.load_table(column, None, None)
     tr = df[df.kind == "qmc"]
@@ -181,13 +179,13 @@ def main():
         print(f"{p['galaxy']:8s} {p['truth']:7.2f} {p['med']:7.2f} {p['lo']:6.2f}-{p['hi']:6.2f} "
               f"{100 * (p['med'] / p['truth'] - 1):+6.1f}%  {p['column'][len('logLs_' + SCHEME_B) + 1:]}")
     plot_recovery(pts)
-    saved = RESULTS_DIR / "test2_t7_sf_12p5pct" / f"bar_strength_profile_t7_logLs_{SCHEME_B}_sfratioK10.npz"
+    saved = RESULTS_DIR / "test2_t7_sf_12p5pct" / f"bar_strength_profile_t7_logLs_{SCHEME_B}_sfratio.npz"
     if saved.exists() and int(np.load(saved)["n_draw"]) == args.n_draw:     # the draws are seeded: re-use
         s = np.load(saved)
         R, truth, q = s["R"], s["truth"], np.array([s["p16"], s["p50"], s["p84"]])
     else:
         R, truth, q, pq = t7_profile(args.n_draw)
-        print(f"t = 7 posterior (K = 10): S {pq[1, 2]:.3f} ({pq[0, 2]:.3f}-{pq[2, 2]:.3f}), "
+        print(f"t = 7 posterior: S {pq[1, 2]:.3f} ({pq[0, 2]:.3f}-{pq[2, 2]:.3f}), "
               f"bar_frac {pq[1, 3]:.3f} ({pq[0, 3]:.3f}-{pq[2, 3]:.3f})")
     i = int(np.nanargmax(truth))
     j = int(np.nanargmax(q[1]))

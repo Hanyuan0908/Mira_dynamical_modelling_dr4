@@ -4211,6 +4211,62 @@ G_RP − 0.64; see `plot_presentation_mira_grvs_distribution.py`):
   stars with templates below 3100 K, saying validation was good down to 3100 K; no reason is given for the cut.
   Of the 963 Miras with a faint-pipeline RV (G_RVS 12–14), 105 carry the default 5500 K template.
 
+
+## 2026-11-21 — Fewer RVs: the t = 7 mock thinned to Gaia-RV sub-samples. Neither sample size nor coverage explains OSARG
+
+User: DR4 may give RVs for fewer Miras than assumed. Drop stars from the existing mock and library instead of
+re-integrating, then ask what limits the OSARG constraint: spatial coverage, or sample size.
+
+**Method: no new integrations.** Orbits are test particles, so dropping a star = dropping its row from the mock and
+from every `traj_NNN.npy`. Row order was checked: `runs/test2_t7_sf_12p5pct/traj_000.npy` (on the USB copy of the
+cluster runs, 257 files, 50,218 × 41 × 6) matches the mock's stars to 3e-5.
+- `rescore_empirical_selection.py --keep MASK --keep-tag TAG` re-scores the sub-sample (data fit and bootstrap,
+  library, sfratio, K = 10). Results go to `results/test2_t7_sf_12p5pct_<TAG>/`.
+- Masks: `make_rv_selection_masks.py`. A mock star is kept with the probability measured on the real catalogues among
+  its 32 nearest real stars in observed (x, y, z): the fraction of DR3 Miras with G < 14/15/16 or G_RVS < 14; the
+  OSARG/Mira density ratio scaled to the OSARG count at R < 8 (`osarg_cover`); or a constant giving the same count
+  (`random_osargN`). Kept fractions match the real ones: G < 14 29% (real 30%), G < 15 56% (57%), G < 16 78% (78%),
+  G_RVS < 14 85% (85%). G_RVS < 15 and < 16 keep 98% and ~100% of the real Miras, so they were not run.
+  Period/age is not modelled (user: only equilibrium matters, not self-gravity).
+- Run: `run_rv_scenarios_t7.sh`, 6 × 257 points, about 5 min each.
+- **Control.** The all-stars mask reproduces the run's plain `sfratio` χ² exactly at 3 design points (1883.9047,
+  1880.4807, 2045.4117), not its `sfratioK10` column (1841.1, 1864.1, 1961.3). So the plain column is what today's
+  pipeline (K = 10, 50 Myr) gives. This settles the 2026-11-05 trap ("matches neither") for t = 7. The presentation
+  figures were switched back to the plain column.
+
+**Result** (scheme B, sfratio, K = 10, 50 Myr; truth 25.20):
+
+| sample | stars | at R < 6 | R < 6, \|z\| 1–2 | x > 0 | \|Ω_b\| (16–84%) | width | bias | logLs span | LOO |
+|---|---|---|---|---|---|---|---|---|---|
+| full mock | 50,218 | 41,274 | 5,497 | 21,108 | 24.83 (24.00–25.73) | 6.9% | −1.5% | 99 | 1.06 |
+| G_RVS < 14 | 42,579 | 35,215 | 5,373 | 16,103 | 24.68 (23.81–25.64) | 7.4% | −2.1% | 94 | 0.88 |
+| G < 16 | 39,157 | 32,344 | 5,294 | 13,989 | 24.52 (23.63–25.45) | 7.4% | −2.7% | 86 | 0.94 |
+| G < 15 | 28,034 | 22,957 | 4,628 | 7,790 | 24.57 (23.61–25.59) | 8.1% | −2.5% | 78 | 0.89 |
+| G < 14 | 14,569 | 11,241 | 2,945 | 2,173 | 24.57 (23.41–25.85) | 9.9% | −2.5% | 60 | 0.56 |
+| OSARG coverage, OSARG N | 26,544 | 20,820 | 4,415 | 7,660 | 24.49 (23.48–25.63) | 8.8% | −2.8% | 70 | 0.57 |
+| random, OSARG N | 26,686 | 21,911 | 2,863 | 11,213 | 24.87 (23.73–26.12) | 9.6% | −1.3% | 55 | 0.99 |
+| *OSARG, real (Hunter+24, 384 pts)* | 26,630 | 20,161 | | | 29.8 (23.9–36.7) | 43% | — | | 0.64 |
+
+- **Losing stars costs little.** The width grows roughly as 1/√N (random at OSARG N: 9.6% against 9.5% from the
+  scaling). Even G < 14, with 29% of the stars and the far side almost gone (2,173 at x > 0 against 21,108), only
+  goes from 6.9% to 9.9%. Every sub-sample stays within its 16–84% of the truth. Biases are −1.3 to −2.8% against
+  −1.5% for the full mock; the sub-samples share stars, so these are not independent.
+- **G_RVS < 14 is close to free:** 7.4% against 6.9%.
+- **Neither sample size nor spatial coverage explains OSARG.** The mock with OSARG's coverage and star count
+  constrains Ω_b to 8.8%; the real OSARG run gives 43%, about 5× wider.
+- **Untested candidates** for the gap, in no order: the potential family (the mocks are fitted with their own
+  family, OSARG with Hunter+24); the real Galaxy not being in equilibrium in any trial potential; and data
+  systematics (PL-distance scale, contamination). OSARG's distance error (9.6%) is smaller than the mock's (12.5%),
+  so that is not it. Best χ²/N: OSARG 1.58 against 1.73 for the OSARG-coverage mock, so the fit is not worse per
+  point; the real-data surface is flatter, not poorer.
+- **Next, the cleanest test of the first candidate:** fit a mock with the Hunter+24 family instead of its own. This
+  needs new integrations.
+
+Figures: `figures/test2_t7_mock_thinned_to_gaia_rv_scenarios_face_on.png`,
+`figures/test2_t7_pattern_speed_constraint_vs_gaia_rv_subsample.png`, and
+`figures/test2_t7_sf_12p5pct_<TAG>_emulator_{corner,slices,loo}_*.png`. Tables:
+`results/rv_selection_masks/{*__summary.csv, test2_t7_sf_12p5pct__constraints.csv}`; masks `results/rv_selection_masks/*.npy`.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
@@ -4250,8 +4306,10 @@ below is still found by `find figures -name <name>`; most of the Test 1b set is 
 | `test2b_qmc_distance_error_7p5_coadded_error_emulator_corner_logLs_{observed,asis}.png` | Test 2b, 7.5% distance error, full focused grid: posterior with the co-added error (library observed again / as is); `..._logl_corner_...` evaluated points; without `_coadded_error` and with the long column name: bootstrap-only error |
 | `test2_nbody_mock_selection_vs_dr3_miras_sigmaDM0.163.png` | Test 2 mock: sky map, distance and R distributions and face-on map of the selection-function mock against the DR3 Miras |
 | `osarg_zhang2024_mw_hunter24_emulator_{corner,slices,loo}_logLs_fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024_sfratio.png` | real data (OSARGs, Hunter+24 family), 384 points, |Ω_b| 15–45: emulator posterior, 1D slices through the best point and the emulator maximum, leave-one-out check; `_r0.5_z2` = 0.5 kpc rings, |z| < 2. Ω_b 29.8 (23.9–36.7), preliminary (2026-11-11) |
-| `presentation/pattern_speed_recovered_vs_true_nbody_and_auriga_12p5pct_black.{png,pdf}` | talk version (black background) of the 12.5% recovery: 12 N-body snapshots (blue circles, mean \|bias\| 2.8%) and 13 Auriga (orange diamonds, 3.4%), recovered vs true and fractional bias. Same runs/truths as `test2_pattern_speed_recovery_12p5pct_12pt_plus_auriga.png`, but t = 7 uses its K = 10 column (Ω_b 24.85 instead of 24.83). `scripts/plot_presentation_figures.py` (2026-11-12) |
-| `presentation/bar_strength_profile_A2_over_A0_truth_vs_recovered_nbody_t7_black.{png,pdf}` | talk version: A2/A0(R) of t = 7, truth vs the trial potential at 300 flat-prior posterior draws (K = 10 column), median and 16–84%. Peak at 2.5 kpc: truth 0.548, recovered 0.461 (0.268–0.684). Regenerated here, as the cluster's `bar_strength_profile_recovery.npz` is not in git; table `results/test2_t7_sf_12p5pct/bar_strength_profile_t7_*.npz` |
+| `presentation/pattern_speed_recovered_vs_true_nbody_and_auriga_12p5pct_black.{png,pdf}` | talk version (black background) of the 12.5% recovery: 12 N-body snapshots (blue circles, mean \|bias\| 2.8%) and 13 Auriga (orange diamonds, 3.4%), recovered vs true and fractional bias. Same runs, columns and truths as `test2_pattern_speed_recovery_12p5pct_12pt_plus_auriga.png` (t = 7: plain sfratio, 24.83; an earlier version wrongly used its sfratioK10 column, 24.85; corrected 2026-11-21). `scripts/plot_presentation_figures.py` (2026-11-12) |
+| `presentation/bar_strength_profile_A2_over_A0_truth_vs_recovered_nbody_t7_black.{png,pdf}` | talk version: A2/A0(R) of t = 7, truth vs the trial potential at 300 flat-prior posterior draws (plain sfratio column), median and 16–84%. Peak: truth 0.548 at 2.5 kpc, recovered 0.429 (0.264–0.614) at 2.7 kpc (corrected 2026-11-21 from the sfratioK10 version, 0.461). Regenerated here, as the cluster's `bar_strength_profile_recovery.npz` is not in git; table `results/test2_t7_sf_12p5pct/bar_strength_profile_t7_*.npz` |
+| `test2_t7_mock_thinned_to_gaia_rv_scenarios_face_on.png` | t = 7 mock (12.5%) thinned to Gaia-RV sub-samples: G < 14/15/16, G_RVS < 14, OSARG coverage and random at OSARG N (2026-11-21) |
+| `test2_t7_pattern_speed_constraint_vs_gaia_rv_subsample.png` | recovered Ω_b and posterior width of those sub-samples against stars at R < 6, with the real OSARG run for reference (2026-11-21) |
 | `presentation/osarg_zhang2024_face_on_number_density_and_mean_vR_black.{png,pdf}` | talk version: face-on number density (log, own scale 2.6–822 stars/kpc²) and ⟨v_R⟩ (±40 km/s; ≥ 15 stars in the kernel) of the 32,977 OSARGs at \|z\| < 3 kpc (paper's final sample), σ = 0.3 kpc smoothing on 0.2 kpc pixels over ±15 kpc; Sun, Galactic centre, and a 27° bar guide line (not fitted). `scripts/plot_presentation_osarg_mira_maps.py` (2026-11-12) |
 | `presentation/dr3_mira_face_on_number_density_black.{png,pdf}` | the same density map for the 53,693 DR3 Miras with DM_err < 0.4 at \|z\| < 3 kpc (own scale 6.5–2051 stars/kpc²) |
 | `presentation/dr3_mira_face_on_number_density_by_G_magnitude_black.{png,pdf}` | DR3 Miras (DM_err < 0.4, \|z\| < 3 kpc) split by Gaia G (`phot_g_mean_mag`): G < 14 (16,155 stars; 2,297 at x > 0), G < 16 (41,915; 14,720), all (53,693; 22,294), on one colour scale. The LPV `mean_mag_g_fov` is 0.28 mag brighter at the median and would give 21,078 at G < 14 (2026-11-18) |
