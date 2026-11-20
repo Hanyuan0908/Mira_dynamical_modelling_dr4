@@ -4184,6 +4184,28 @@ grid) and 8,416 (0.5 kpc grid).
 Figures: `figures/osarg_zhang2024_mw_hunter24_corner_phib_prior_25pm2deg_logLs_fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024_sfratio{,_r0.5_z2}.png`.
 Tables: `results/osarg_zhang2024_mw_hunter24/phib_prior_25pm2deg_*.json`.
 
+
+## 2026-11-20 — Which Miras will have a Gaia RV? In DR3 it was template temperature, not magnitude
+
+User question: to what G_RVS can DR4 give Mira RVs. Measured on `data/gaia_dr3_lpv_mira.csv` (G_RVS measured, else
+G_RP − 0.64; see `plot_presentation_mira_grvs_distribution.py`):
+
+- **DR3 RV completeness of Miras is low at every magnitude.** 3,284 of 55,074 have an RV. By G_RVS: 9–10 21%, 10–11
+  14%, 11–12 7%, 12–13 5%, 13–14 2%, 14–15 0.2%. The coolest `rv_template_teff` among them is exactly 3100 K, the
+  DR3 floor (Katz et al. 2023 removed combined RVs of stars with rv_template_teff < 3100 K).
+- **It is a period cut.** At fixed brightness (G_RVS < 12), the DR3 RV fraction falls with period: 100–200 d 49.5%,
+  200–250 d 9.2%, 250–300 d 2.6%, 300–400 d 1.9%, 400–500 d 0.6%, > 500 d 0 of 283. The median template Teff of the
+  survivors falls from 3600 K to the 3100 K floor. Period tracks age for Miras, so a DR3-like RV selection would be
+  an age selection.
+- **DR4 (2 Dec 2026, 66 months; ESA content page, list dated 14 Sep 2026).** It will have `all_source_rvs`
+  (312 M rows) and transit-level `rvs_epoch_parameters_single` (6.9 G rows). It will also have `rvs_epoch_spectrum`
+  (6.9 G transit-level spectra) and `rvs_mean_spectrum` (250 M). The page gives no G_RVS limit and no statement on
+  cool-star templates. DR3 papers aim for the RVS limit G_RVS ≈ 16 in DR4.
+- **The FPR LPV RV time series** (Trabucchi et al. 2023; 9,614 LPVs, all G_RVS < 12) used O-rich templates of
+  3100–7500 K and note the template mismatch for cooler LPVs; no relaxation of the floor is stated.
+- **Implication, untested.** Magnitude will not limit DR4: an estimated 98% of these Miras are brighter than G_RVS = 15.
+  The template floor may, and it would select short-period (older) Miras. Every mock so far gives every star an RV.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
