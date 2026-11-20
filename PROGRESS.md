@@ -4267,6 +4267,46 @@ Figures: `figures/test2_t7_mock_thinned_to_gaia_rv_scenarios_face_on.png`,
 `figures/test2_t7_sf_12p5pct_<TAG>_emulator_{corner,slices,loo}_*.png`. Tables:
 `results/rv_selection_masks/{*__summary.csv, test2_t7_sf_12p5pct__constraints.csv}`; masks `results/rv_selection_masks/*.npy`.
 
+
+## 2026-11-21 — The t = 7 mock in the Hunter+24 family: a wrong family biases and worsens the fit, it does not flatten it
+
+User's hypothesis: the OSARG constraint is weak because no trial potential puts the data in equilibrium. Test: the
+t = 7 mock (12.5%, Mira-like selection; truth 25.20) integrated in the Milky Way family (`mw`, Hunter+24) on EXACTLY
+the OSARG 384-point design (|Ω_b| 15–45, φ_b 20–30, S and bar_frac 0.5–1.5). Same pipeline (sfratio, K = 10,
+50 Myr, scheme B); only the data differ from the OSARG run.
+`run_t7_in_mw_hunter24_family.sh`, run `test2_t7_sf_12p5pct_mwH24_osargdesign`. Trajectories (9.7 GB) are on the
+USB drive. 17 s per point (2 workers × 7 threads); 1 h 23 min end to end.
+
+**How big the mismatch is** (the family rescales only the bar; the axisymmetric part is Hunter+24's own):
+- v_c of t = 7 / Hunter+24 at R = 1, 2, 3, 4, 5, 6, 8 kpc: 275/180, 263/196, 243/207, 229/218, 220/225, 218/228,
+  222/229 km/s. Hunter+24 is 25–35% short inside 2 kpc.
+- Bar A2/A0 peak: 0.55 for t = 7 against 0.42 for Hunter+24.
+- This is far larger than the Milky Way–Hunter+24 mismatch should be, since Hunter+24 is fitted to the Milky Way.
+
+**Result** (best evaluated logLs per 1.25 km/s/kpc bin; `plot_family_mismatch_test.py`):
+
+| case | best χ²/N (median) | logLs span | \|Ω_b\| posterior | profile within 2 of best |
+|---|---|---|---|---|
+| t = 7 mock, own family (focused design) | 2.66 (4.03) | 99 | 24.83 (24.00–25.73) | ≈ 23–27 |
+| t = 7 mock, Hunter+24 family | 5.12 (7.27) | 34 | 19.56 (17.92–21.21), −22% | ≈ 17–22.5 (−3.1 at the 15 edge) |
+| OSARG data, Hunter+24 family | 1.58 (2.01) | 46 | 29.8 (23.9–36.7) | ≈ 20–42.5 |
+
+- **The wrong family biases Ω_b and worsens the fit.** Ω_b is 22% low, best χ²/N doubles (2.66 → 5.12), and the
+  profile goes ragged at high Ω_b. φ_b 22.3 (20.6–25.0), S 1.13 (1.02–1.27), bar_frac 1.12 (0.85–1.38). The
+  surface is still bounded: it falls 14–21 within 5–10 km/s/kpc above the best.
+- **That is not OSARG's signature.** OSARG's best fit is the BEST of the three (χ²/N 1.58), with a profile flat to
+  within ~3 over 17–45. A family that cannot put the data in equilibrium shows up as a poor fit, as for t = 7. So
+  "no trial potential is close to equilibrium" does not explain OSARG.
+- **Caveat.** This was a near-worst-case mismatch (inner v_c 25–35% off). A milder mismatch that keeps χ²/N low
+  while flattening the surface has not been ruled out.
+- **What is left:** the OSARG data carry less discriminating information per star than the mock, at the same N and
+  coverage (2026-11-21 entry above). Untested, cheap, no integration needed: compare per-block signal-to-noise of
+  the bar Fourier terms (⟨v_R⟩ m = 2, ⟨v_φ⟩ m = 2, …) and the bootstrap errors between the OSARG data and the
+  OSARG-coverage mock.
+
+Figure: `figures/test2_t7_family_mismatch_omega_profile_vs_osarg.png`; emulator figures
+`figures/test2_t7_sf_12p5pct_mwH24_osargdesign_emulator_*.png`.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
@@ -4309,6 +4349,7 @@ below is still found by `find figures -name <name>`; most of the Test 1b set is 
 | `presentation/pattern_speed_recovered_vs_true_nbody_and_auriga_12p5pct_black.{png,pdf}` | talk version (black background) of the 12.5% recovery: 12 N-body snapshots (blue circles, mean \|bias\| 2.8%) and 13 Auriga (orange diamonds, 3.4%), recovered vs true and fractional bias. Same runs, columns and truths as `test2_pattern_speed_recovery_12p5pct_12pt_plus_auriga.png` (t = 7: plain sfratio, 24.83; an earlier version wrongly used its sfratioK10 column, 24.85; corrected 2026-11-21). `scripts/plot_presentation_figures.py` (2026-11-12) |
 | `presentation/bar_strength_profile_A2_over_A0_truth_vs_recovered_nbody_t7_black.{png,pdf}` | talk version: A2/A0(R) of t = 7, truth vs the trial potential at 300 flat-prior posterior draws (plain sfratio column), median and 16–84%. Peak: truth 0.548 at 2.5 kpc, recovered 0.429 (0.264–0.614) at 2.7 kpc (corrected 2026-11-21 from the sfratioK10 version, 0.461). Regenerated here, as the cluster's `bar_strength_profile_recovery.npz` is not in git; table `results/test2_t7_sf_12p5pct/bar_strength_profile_t7_*.npz` |
 | `test2_t7_mock_thinned_to_gaia_rv_scenarios_face_on.png` | t = 7 mock (12.5%) thinned to Gaia-RV sub-samples: G < 14/15/16, G_RVS < 14, OSARG coverage and random at OSARG N (2026-11-21) |
+| `test2_t7_family_mismatch_omega_profile_vs_osarg.png` | Ω_b profiles (best evaluated logLs per bin): t = 7 in its own family, t = 7 in Hunter+24 on the OSARG design, and the OSARG data (2026-11-21) |
 | `test2_t7_pattern_speed_constraint_vs_gaia_rv_subsample.png` | recovered Ω_b and posterior width of those sub-samples against stars at R < 6, with the real OSARG run for reference (2026-11-21) |
 | `presentation/osarg_zhang2024_face_on_number_density_and_mean_vR_black.{png,pdf}` | talk version: face-on number density (log, own scale 2.6–822 stars/kpc²) and ⟨v_R⟩ (±40 km/s; ≥ 15 stars in the kernel) of the 32,977 OSARGs at \|z\| < 3 kpc (paper's final sample), σ = 0.3 kpc smoothing on 0.2 kpc pixels over ±15 kpc; Sun, Galactic centre, and a 27° bar guide line (not fitted). `scripts/plot_presentation_osarg_mira_maps.py` (2026-11-12) |
 | `presentation/dr3_mira_face_on_number_density_black.{png,pdf}` | the same density map for the 53,693 DR3 Miras with DM_err < 0.4 at \|z\| < 3 kpc (own scale 6.5–2051 stars/kpc²) |
