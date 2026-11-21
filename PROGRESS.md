@@ -4624,6 +4624,41 @@ denominator. Two different "bootstraps" answer different questions:
 - **Caveats.** 18 perturbations give the std to ±17%. It is measured at one point of one dataset and assumed
   homogeneous (the user's design). The largest steps (Ω ±0.5) may carry a small genuine change.
 
+
+## 2026-11-22 — σ(Δχ²) from 100 random tiny perturbations as the χ² scale: the OSARG posterior does not change
+
+User: launch N runs that perturb the best-fit parameters slightly, take σ of Δχ², and use it as the χ² scale.
+`chi2_jitter_small_perturbations.py --case osarg_h24 --random 100`: all four parameters perturbed together, drawn from
+Gaussians of width 0.25 km/s/kpc (Ω_b), 0.15° (φ_b) and 0.007 (S, bar_frac), far below the statistical resolution.
+Same stars and seeds; control repeat = 1097.7 = the pipeline's χ². `results/chi2_jitter_osarg_h24_random.csv`.
+
+| covariance | Δχ² = χ² − χ²(best run): mean, σ, 16/50/84% | σ between two perturbed runs |
+|---|---|---|
+| C_data (pipeline) | +10.3, **29.3**, −18.5/+7.1/+39.2 | **41.3** (= √2 × 29.2) |
+| C_data + C_model | +7.2, 20.6, −11.7/+4.8/+28.8 | 29.0 (= √2 × 20.5) |
+
+- The jitter is mildly skewed (0.39), ranges from −60 to +103, and correlates only weakly with the offsets
+  (0.06–0.25), so it is nearly all jitter.
+- 39% of the perturbed runs score below the best run: the best design point is partly a lucky draw (mean +10).
+- The two-run σ is √2 × the one-run σ, as expected for independent jitter. σ₂ is the relevant scale for comparing any
+  two design points, since both jitter; σ₁ applies against a fixed reference.
+
+**Posterior with logL = −χ² / (2σ)** (`posterior_with_jitter_scale.py`; emulator refitted on the 384 χ² for each
+scale; figure `osarg_zhang2024_mw_hunter24_posterior_vs_chi2_scale.png`):
+
+| scale | \|Ω_b\| | φ_b | S | bar_frac |
+|---|---|---|---|---|
+| √(2N) = 37.3 (old) | 29.84 (24.32–36.66) | 23.28 (20.82–27.24) | 0.98 (0.77–1.21) | 1.04 (0.70–1.34) |
+| σ₁ = 29.3 | 30.00 (24.56–36.92) | 22.92 (20.79–26.89) | 0.99 (0.80–1.19) | 1.06 (0.73–1.35) |
+| σ₂ = 41.3 | 30.08 (24.04–37.58) | 23.61 (20.99–27.67) | 0.97 (0.74–1.21) | 1.01 (0.67–1.32) |
+
+- The measured jitter scale (29–41) brackets the old √(2N) = 37, and the posterior is essentially unchanged across
+  it. Even σ₁, 21% below √(2N), does not narrow Ω_b (12.4 against 12.3 km/s/kpc); the surface is not quadratic, it is
+  flat over a range and bounded by steep sides.
+- So OSARG's weak Ω_b constraint is not a tempering artefact. The χ² surface is flat compared with the model's own
+  jitter.
+- Caveat: σ is measured at one point and assumed homogeneous across the design (the user's design).
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name

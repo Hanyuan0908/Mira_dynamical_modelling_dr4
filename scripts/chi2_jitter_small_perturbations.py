@@ -29,6 +29,7 @@ from rescore_empirical_selection import data_lbdR, library_fit_empirical
 from scan_omega_at_fixed_bar import CASES
 
 B = "fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024"
+RANDOM_WIDTH = dict(Omega_abs=0.25, phi_b_deg=0.15, S=0.007, bar_frac=0.007)   # far below the statistical resolution
 PERTURB = [("Omega_abs", d) for d in (-0.5, -0.25, -0.1, 0.1, 0.25, 0.5)] + \
           [("phi_b_deg", d) for d in (-0.25, -0.1, 0.1, 0.25)] + \
           [("S", d) for d in (-0.01, -0.005, 0.005, 0.01)] + [("bar_frac", d) for d in (-0.01, -0.005, 0.005, 0.01)]
@@ -37,6 +38,9 @@ PERTURB = [("Omega_abs", d) for d in (-0.5, -0.25, -0.1, 0.1, 0.25, 0.5)] + \
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--case", default="osarg_h24", choices=list(CASES))
+    ap.add_argument("--random", type=int, default=0, metavar="N",
+                    help="instead of the fixed list, N runs with all four parameters perturbed together, drawn from "
+                         "Gaussians of width RANDOM_WIDTH")
     args = ap.parse_args()
     c = CASES[args.case]
     meta = json.load(open(RESULTS_DIR / c["run"] / "run_meta.json"))
@@ -60,16 +64,25 @@ def main():
                    for b in (r * fs.NL + z for r in range(nr) for z in range(fs.NL)) if ok[b]}
     ssl.ACCURACY = old.ACCURACY
     rows = []
-    for par, dlt in [("repeat", 0.0)] + PERTURB:
+    if args.random:
+        rng = np.random.default_rng(2123)
+        todo = [("repeat", 0.0)] + [("random", r) for r in range(args.random)]
+    else:
+        todo = [("repeat", 0.0)] + PERTURB
+    for par, dlt in todo:
         q = best.copy()
-        if par != "repeat":
+        if par == "random":
+            for k, wdt in RANDOM_WIDTH.items():
+                q[k] = q[k] + wdt * rng.standard_normal()
+        elif par != "repeat":
             q[par] = q[par] + dlt
         t0 = time.time()
         pot = ssl.bar_aligned_potential(float(q.bar_frac), float(q.S), c["galaxy"])
         _, traj = ssl.integrate(pot, ssl.rotate_z(w, np.radians(float(q.phi_b_deg))), -abs(float(q.Omega_abs)))
         cl, _ = library_fit_empirical(np.ascontiguousarray(traj[:, ::2]), float(q.phi_b_deg), sigma_dm, dat, ok)
         cl = cl.reshape(fs.NB, -1) @ fs.rotation(BAR_ANGLE_DEG - float(q.phi_b_deg)).T
-        row = dict(param=par, delta=dlt)
+        row = dict(param=par, delta=dlt, Omega_abs=float(q.Omega_abs), phi_b_deg=float(q.phi_b_deg), S=float(q.S),
+                   bar_frac=float(q.bar_frac))
         for tag, W in Ws.items():
             blocks = [b for b in W if np.all(np.isfinite(cl[b][idx]))]
             row[tag] = h * sum(float(np.sum((W[b] @ (cd0[b][idx] - cl[b][idx])) ** 2)) for b in blocks)
@@ -78,9 +91,19 @@ def main():
         print(f"  {par:10s} {dlt:+7.3f}: chi2 {row['C_data']:8.1f} | {row['C_data + C_model']:8.1f}  "
               f"({time.time() - t0:.0f} s)", flush=True)
     t = pd.DataFrame(rows)
-    t.to_csv(RESULTS_DIR / f"chi2_jitter_{args.case}.csv", index=False)
+    t.to_csv(RESULTS_DIR / f"chi2_jitter_{args.case}{'_random' if args.random else ''}.csv", index=False)
     N = int(t.n_blocks.iloc[0]) * len(idx)
     pert = t[t.param != "repeat"]
+    if args.random:
+        for tag in Ws:
+            x = pert[tag].values
+            d = x - t[tag].iloc[0]
+            pairs = (x[:, None] - x[None, :])[np.triu_indices(len(x), 1)]
+            print(f"[{tag}] {len(x)} random perturbations: dchi2 = chi2 - chi2(best run): mean {d.mean():+.1f}, "
+                  f"std {d.std(ddof=1):.1f}, 16/50/84% {np.percentile(d, 16):+.1f}/{np.percentile(d, 50):+.1f}/"
+                  f"{np.percentile(d, 84):+.1f}; between two perturbed runs: std {pairs.std(ddof=1):.1f} "
+                  f"(sqrt(2) x {pairs.std(ddof=1) / np.sqrt(2):.1f}); best-run chi2/N {t[tag].iloc[0] / N:.3f}")
+        return
     for tag in Ws:
         print(f"[{tag}] best-point chi2 {t[tag].iloc[0]:.1f} (chi2/N {t[tag].iloc[0] / N:.3f}); across the "
               f"{len(pert)} tiny perturbations: std {pert[tag].std():.1f}, range {pert[tag].min() - t[tag].iloc[0]:+.1f} "
