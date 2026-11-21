@@ -4595,6 +4595,35 @@ needs handling: quieter libraries (more orbits, snapshots, draws), or the measur
 the emulator instead of a fitted one. Re-drawn realisations have χ²/N 1.70 against the original best's 1.57 with
 C_data, because they add a second distance error on top of the observed one.
 
+
+## 2026-11-22 — χ² jitter between models: σ ≈ 27 per model, ≈ 38 for a difference (≈ √(2N) = 37)
+
+User: the jitter is what should be measured; σ_χ², how uncertain the model is under small perturbations, could be the
+denominator. Two different "bootstraps" answer different questions:
+- **Re-drawing the stars' distances at the best fit** (100 realisations, previous entry). The std of χ² is 39 with
+  C_data (72 with the star bootstrap added; 26 and 35 with C_data + C_model). But every design point uses the same
+  stars and the same draw seed, so this noise is largely common to all models and cancels in a χ² difference.
+- **Tiny perturbations of the best point**, the jitter a Δχ² comparison actually faces:
+  `chi2_jitter_small_perturbations.py --case osarg_h24`. Same stars and seeds; 18 integrations at |Ω_b| ±0.1, 0.25,
+  0.5 km/s/kpc, φ_b ±0.1, 0.25°, S and bar_frac ±0.005, 0.01, far below the statistical resolution. Control: repeating
+  the best point gives χ² = 1097.7, exactly the pipeline's value. (A first run summed the 6–8 kpc rings outside
+  scheme B and gave 1864; fixed.)
+
+| covariance | best χ² (χ²/N) | std of χ² over the 18 | range | std by parameter: Ω_b, φ_b, S, bar_frac |
+|---|---|---|---|---|
+| C_data (pipeline) | 1097.7 (1.575) | **26.6** | −38 to +70 | 29.9, 27.6, 21.9, 12.3 |
+| C_data + C_model | 903.0 (1.296) | 17.3 | −19 to +49 | 19.6, 22.1, 11.0, 4.2 |
+
+- With the pipeline covariance, one model's χ² jitters by σ ≈ 27. A difference between two models (independent
+  jitter) scatters by √2 · 27 ≈ 38, which is numerically the old √(2N) = 37. That temperature was justified for the
+  wrong reason (the absolute data-noise scatter of χ²), but it lands on the scale below which χ² differences
+  between models are jitter.
+- Taken as the denominator, the measured jitter gives T ≈ 38 (C_data) or ≈ 24 (C_data + C_model), not a much smaller
+  T. Use one covariance or the other with its own T: putting C_model in the covariance AND using the jitter as T
+  would count the model noise twice.
+- **Caveats.** 18 perturbations give the std to ±17%. It is measured at one point of one dataset and assumed
+  homogeneous (the user's design). The largest steps (Ω ±0.5) may carry a small genuine change.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
