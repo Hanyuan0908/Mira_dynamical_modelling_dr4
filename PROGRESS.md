@@ -4781,6 +4781,36 @@ drew contours past the edges where there are no samples), and `figures/osarg_zha
 - Five evaluated points lie within Δχ² < 60 of the best, which is about the emulator's error and the measured
   two-run jitter (41). They span Ω 26.0–33.6.
 
+
+## 2026-11-22 — OSARG at T = 1 with a φ_b prior of 25 ± 2°: the prior cannot move it
+
+User: add the φ_b prior 25 ± 2° to the T = 1 OSARG posterior. The prior goes into the log-posterior and the chain is
+re-sampled (`rerun_emulators_T1.py --runs osarg_zhang2024_mw_hunter24 --phi-prior 25 2`). Reweighting would not
+work: the flat-prior T = 1 chain lies entirely at φ_b 20.0–20.2°, where the prior weight is almost constant.
+Figures (`plot_corner_T1.py --suffix _phiprior25pm2`):
+`figures/osarg_zhang2024_mw_hunter24_corner_T1_phiprior25pm2.png` and
+`figures/osarg_zhang2024_mw_hunter24_corner_T1_vs_tempered_phiprior25pm2.png`.
+
+| | \|Ω_b\| | φ_b | S | bar_frac |
+|---|---|---|---|---|
+| T = 1, flat φ_b | 31.10 (30.64–31.57) | 20.07 (20.02–20.19) | 0.930 (0.904–0.957) | 1.437 (1.376–1.481) |
+| **T = 1, φ_b 25 ± 2°** | 31.13 (30.66–31.59) | 20.08 (20.02–20.21) | 0.930 (0.905–0.957) | 1.442 (1.384–1.483) |
+| tempered, φ_b 25 ± 2° | 29.81 (23.82–37.19) | 24.64 (22.63–26.63) | 0.975 (0.757–1.201) | 1.017 (0.688–1.332) |
+
+Why: T = 1 emulator profile in φ_b (maximised over the other three parameters):
+
+| φ_b | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 30 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Δχ² | 0 | 19 | 37 | 54 | 70 | 85 | 98 | 111 | 122 | 140 |
+
+- Moving from 20° to 25° costs ΔlogL = 42 on the emulator, against a prior penalty of 3.1 for staying at 20°. The
+  likelihood term is ~14× the prior.
+- At the tempered scale the same Δχ² costs 85/(2 × 37.3) = 1.1 in logL, so the prior wins there.
+- The evaluated design points do not show this smooth slope. The smallest Δχ² per 1° bin of φ_b (≈ 38 points each)
+  is 0, 19, 80, 58, 144, 83, 111, 83, 155, 77 from 20–21° to 29–30°. The emulator's ~17 χ² per degree is anchored on
+  the single best point (φ_b 20.46). Beyond 21° the bin minima scatter between 58 and 155, around 2σ of the measured
+  two-run jitter (41).
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
@@ -4831,6 +4861,8 @@ below is still found by `find figures -name <name>`; most of the Test 1b set is 
 | `test2_bar_strength_profile_recovery_T1_vs_tempered.png` | A2/A0(R) truth against the T = 1 and tempered 16–84% bands for the 12 N-body snapshots and Au18 (2026-11-21) |
 | `osarg_zhang2024_mw_hunter24_corner_T1.png` | OSARG posterior at T = 1 on its own scale, with the prior box edges marked (φ_b on 20°, bar_frac against 1.5) (2026-11-22) |
 | `osarg_zhang2024_mw_hunter24_corner_T1_vs_tempered.png` | the same over the √(2N) tempered posterior on the full prior box (2026-11-22) |
+| `osarg_zhang2024_mw_hunter24_corner_T1_phiprior25pm2.png` | OSARG at T = 1 re-sampled with a φ_b prior 25 ± 2°: still on the 20° edge (2026-11-22) |
+| `osarg_zhang2024_mw_hunter24_corner_T1_vs_tempered_phiprior25pm2.png` | the same over the tempered posterior with that prior, which moves to φ_b 24.6° (2026-11-22) |
 | `presentation/osarg_zhang2024_face_on_number_density_and_mean_vR_black.{png,pdf}` | talk version: face-on number density (log, own scale 2.6–822 stars/kpc²) and ⟨v_R⟩ (±40 km/s; ≥ 15 stars in the kernel) of the 32,977 OSARGs at \|z\| < 3 kpc (paper's final sample), σ = 0.3 kpc smoothing on 0.2 kpc pixels over ±15 kpc; Sun, Galactic centre, and a 27° bar guide line (not fitted). `scripts/plot_presentation_osarg_mira_maps.py` (2026-11-12) |
 | `presentation/dr3_mira_face_on_number_density_black.{png,pdf}` | the same density map for the 53,693 DR3 Miras with DM_err < 0.4 at \|z\| < 3 kpc (own scale 6.5–2051 stars/kpc²) |
 | `presentation/dr3_mira_face_on_number_density_by_G_magnitude_black.{png,pdf}` | DR3 Miras (DM_err < 0.4, \|z\| < 3 kpc) split by Gaia G (`phot_g_mean_mag`): G < 14 (16,155 stars; 2,297 at x > 0), G < 16 (41,915; 14,720), all (53,693; 22,294), on one colour scale. The LPV `mean_mag_g_fov` is 0.28 mag brighter at the median and would give 21,078 at G < 14 (2026-11-18) |
