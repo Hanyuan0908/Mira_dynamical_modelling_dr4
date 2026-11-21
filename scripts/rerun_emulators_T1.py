@@ -61,8 +61,10 @@ def main():
                             posterior={k: dict(p16=float(a), p50=float(b), p84=float(c))
                                        for k, a, b, c in zip(ge.KEYS, *q)})
             chains[tag] = post.astype(np.float32)
+            truth = ge.RUN["truth"]
             print(f"{run} [{tag}] Omega {q[1, 0]:.2f} ({q[0, 0]:.2f}-{q[2, 0]:.2f}), phi {q[1, 1]:.1f}, S {q[1, 2]:.2f}, "
-                  f"f {q[1, 3]:.2f}; LOO {loo:.2f}; truth Omega {ge.RUN['truth']['Omega_abs']:.2f}", flush=True)
+                  f"f {q[1, 3]:.2f}; LOO {loo:.2f}"
+                  + (f"; truth Omega {truth['Omega_abs']:.2f}" if truth is not None else ""), flush=True)
         json.dump(out, open(RESULTS_DIR / run / "emulator_results_T1.json", "w"), indent=2)
         np.savez_compressed(RESULTS_DIR / run / "posterior_chains_T1.npz", **chains)
 

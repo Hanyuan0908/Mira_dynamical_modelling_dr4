@@ -4758,6 +4758,29 @@ drive, symlinked into `mock/`.
   t4 and t4.5 land at φ_b 29.9 and 29.6 with bar_frac 1.23 and 1.18, and they are the two galaxies whose A2/A0 is
   over-estimated at T = 1 (0.715 against 0.644; 0.759 against 0.654).
 
+
+## 2026-11-22 — OSARG corner plot at T = 1
+
+User: show the OSARG corner plot at T = 1. `rerun_emulators_T1.py --runs osarg_zhang2024_mw_hunter24` refits the
+emulator on the 384 raw χ² (Hunter+24 family; prior box Ω 15–45, φ_b 20–30, S and bar_frac 0.5–1.5).
+`plot_corner_T1.py --run osarg_zhang2024_mw_hunter24` draws two figures:
+`figures/osarg_zhang2024_mw_hunter24_corner_T1.png`, with the box edges marked and no contour smoothing (smoothing
+drew contours past the edges where there are no samples), and `figures/osarg_zhang2024_mw_hunter24_corner_T1_vs_tempered.png`.
+
+| | \|Ω_b\| | φ_b | S | bar_frac |
+|---|---|---|---|---|
+| T = 1 | 31.10 (30.64–31.57) | 20.07 (20.02–20.19) | 0.930 (0.904–0.957) | 1.437 (1.376–1.481) |
+| tempered √(2N) | 29.84 (24.32–36.66) | 23.28 (20.82–27.24) | 0.983 (0.772–1.211) | 1.042 (0.704–1.341) |
+
+- φ_b sits on the 20° lower edge and bar_frac against the 1.5 upper edge; none of the 12,800 samples is outside
+  the box. Two of the four parameters are bounded by the prior, not the data.
+- **No evaluated design point lies inside the T = 1 16–84% box** (0 of 384). The posterior is centred 0.065 (in
+  the unit cube) from the single best design point (Ω 32.06, φ_b 20.46, S 0.95, bar_frac 1.49; χ² 1097.7). The next
+  nearest is 0.158 away, at Δχ² = 29. So the T = 1 posterior is the emulator's smoothed peak around one point.
+- Emulator leave-one-out rms 24.0 in T = 1 logL (≈ 48 in χ²), against a posterior that spans ΔlogL ~ 1.
+- Five evaluated points lie within Δχ² < 60 of the best, which is about the emulator's error and the measured
+  two-run jitter (41). They span Ω 26.0–33.6.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
@@ -4806,6 +4829,8 @@ below is still found by `find figures -name <name>`; most of the Test 1b set is 
 | `osarg_zhang2024_mw_hunter24_posterior_vs_chi2_scale.png` | OSARG marginal posteriors with the χ² scale √(2N) = 37.3 and the measured jitter σ₁ = 29.3, σ₂ = 41.3 (2026-11-22) |
 | `test2_pattern_speed_recovery_12p5pct_T1_vs_tempered.png` | 25 galaxies, recovered against true \|Ω_b\| and bias, T = 1 against the √(2N) tempering; coverage 0.36 against 0.96 (2026-11-21) |
 | `test2_bar_strength_profile_recovery_T1_vs_tempered.png` | A2/A0(R) truth against the T = 1 and tempered 16–84% bands for the 12 N-body snapshots and Au18 (2026-11-21) |
+| `osarg_zhang2024_mw_hunter24_corner_T1.png` | OSARG posterior at T = 1 on its own scale, with the prior box edges marked (φ_b on 20°, bar_frac against 1.5) (2026-11-22) |
+| `osarg_zhang2024_mw_hunter24_corner_T1_vs_tempered.png` | the same over the √(2N) tempered posterior on the full prior box (2026-11-22) |
 | `presentation/osarg_zhang2024_face_on_number_density_and_mean_vR_black.{png,pdf}` | talk version: face-on number density (log, own scale 2.6–822 stars/kpc²) and ⟨v_R⟩ (±40 km/s; ≥ 15 stars in the kernel) of the 32,977 OSARGs at \|z\| < 3 kpc (paper's final sample), σ = 0.3 kpc smoothing on 0.2 kpc pixels over ±15 kpc; Sun, Galactic centre, and a 27° bar guide line (not fitted). `scripts/plot_presentation_osarg_mira_maps.py` (2026-11-12) |
 | `presentation/dr3_mira_face_on_number_density_black.{png,pdf}` | the same density map for the 53,693 DR3 Miras with DM_err < 0.4 at \|z\| < 3 kpc (own scale 6.5–2051 stars/kpc²) |
 | `presentation/dr3_mira_face_on_number_density_by_G_magnitude_black.{png,pdf}` | DR3 Miras (DM_err < 0.4, \|z\| < 3 kpc) split by Gaia G (`phot_g_mean_mag`): G < 14 (16,155 stars; 2,297 at x > 0), G < 16 (41,915; 14,720), all (53,693; 22,294), on one colour scale. The LPV `mean_mag_g_fov` is 0.28 mag brighter at the median and would give 21,078 at G < 14 (2026-11-18) |
