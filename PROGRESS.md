@@ -4625,7 +4625,7 @@ denominator. Two different "bootstraps" answer different questions:
   homogeneous (the user's design). The largest steps (Ω ±0.5) may carry a small genuine change.
 
 
-## 2026-11-22 — σ(Δχ²) from 100 random tiny perturbations as the χ² scale: the OSARG posterior does not change
+## 2026-11-22 — σ(Δχ²) from 100 random tiny perturbations as the χ² scale (the "posterior does not change" conclusion is WITHDRAWN; see the correction at the end)
 
 User: launch N runs that perturb the best-fit parameters slightly, take σ of Δχ², and use it as the χ² scale.
 `chi2_jitter_small_perturbations.py --case osarg_h24 --random 100`: all four parameters perturbed together, drawn from
@@ -4658,6 +4658,31 @@ scale; figure `osarg_zhang2024_mw_hunter24_posterior_vs_chi2_scale.png`):
 - So OSARG's weak Ω_b constraint is not a tempering artefact. The χ² surface is flat compared with the model's own
   jitter.
 - Caveat: σ is measured at one point and assumed homogeneous across the design (the user's design).
+
+**Correction (same day, user).** "The posterior is essentially unchanged across 29–41" and "not a tempering artefact"
+are withdrawn.
+- The three scales differ by at most a factor of 1.4, so their widths can only differ by ~√1.4 ≈ 1.19. The first
+  comparison (12.36 against 12.34) was within the sampler's Monte Carlo noise; a rerun gives 11.72 at σ = 29.3.
+- Refitting the emulator for each scale is mathematically a rescaling: the GP length scales come out identical
+  ([0.689, 10, 1.51, 3.2]), the amplitude scales as 1/σ and the white noise as 1/σ². So the posterior is
+  exp(f(θ)/σ) with one f, and its width depends strongly on σ:
+
+  | σ | \|Ω_b\| | width | φ_b | bar_frac |
+  |---|---|---|---|---|
+  | 1 (T = 1) | 31.10 (30.64–31.57) | 0.94 | 20.07 (box edge) | 1.44 |
+  | 4 | 30.99 (30.00–32.01) | 2.0 | 20.31 | 1.38 |
+  | 10 | 30.75 (28.42–32.87) | 4.5 | 20.88 | 1.27 |
+  | 29.3 | 29.98 (24.53–36.25) | 11.7 | 22.95 | 1.05 |
+  | 41.3 | 29.62 (23.50–37.13) | 13.6 | 23.44 | 1.00 |
+
+  The width grows roughly as √σ (×2.1 from 1 to 4, ×1.16 from 29.3 to 41.3), faster at the large end where the
+  surface flattens.
+- At T = 1 the GP's own fitted white noise, 456 in logL², corresponds to a χ² jitter of 2√456 ≈ 43, matching the
+  directly measured two-run σ₂ = 41.3. The emulator sees the same jitter, smooths it, and at T = 1 reports only the
+  curvature of the smoothed surface. φ_b and bar_frac then sit on the box edges (20.0, 1.5).
+- So the OSARG Ω_b error is set by the choice of σ: about ±0.5 km/s/kpc at T = 1 and about ±6 at the measured jitter
+  scale. Which is the right statistical error is the open question; T = 1 treats the smoothed surface as exact and
+  ignores the jitter's uncertainty in where the minimum lies.
 
 ## Figure index (Test 1b, N-body, perfect mock)
 
