@@ -110,13 +110,16 @@ def main():
                          "search on the sub-sample, with no new integration. Needs --keep-tag.")
     ap.add_argument("--keep-tag", default=None,
                     help="name of the sub-sample; results go to results/<run>_<tag>/ under variant sfratio_<tag>")
+    ap.add_argument("--sigma-dm", type=float, default=None, metavar="MAG",
+                    help="smear the library with this distance-modulus error instead of the run's own (e.g. to "
+                         "ask what the data imply if their distances are worse than assumed); variant sfratio_sdm<MAG>")
     args = ap.parse_args()
     if bool(args.keep) != bool(args.keep_tag):
         raise SystemExit("--keep and --keep-tag go together")
     global VARIANT
     # a non-default grid gets its own variant name (e.g. sfratio_r0.5_z2), so default results are never overwritten
     VARIANT = ESTIMATORS[args.estimator] + fs.set_grid(args.ring_width, args.z_max) + \
-        (f"_{args.keep_tag}" if args.keep else "")
+        (f"_{args.keep_tag}" if args.keep else "") + (f"_sdm{args.sigma_dm:g}" if args.sigma_dm else "")
 
     res_dir = ROOT / "results" / args.run
     out_dir = RUNS_DIR / args.run
@@ -137,7 +140,7 @@ def main():
 
     mock = MOCK_DIR / meta["mock"]
     dat = data_lbdR(mock)
-    sigma_dm = float(meta["sigma_DM"])
+    sigma_dm = float(args.sigma_dm or meta["sigma_DM"])
     stars = np.column_stack([h5py.File(mock, "r")[k][:].astype(np.float64)
                              for k in ("x", "y", "z", "vx", "vy", "vz")])
     if keep is not None:

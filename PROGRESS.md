@@ -4307,6 +4307,31 @@ USB drive. 17 s per point (2 workers × 7 threads); 1 h 23 min end to end.
 Figure: `figures/test2_t7_family_mismatch_omega_profile_vs_osarg.png`; emulator figures
 `figures/test2_t7_sf_12p5pct_mwH24_osargdesign_emulator_*.png`.
 
+
+## 2026-11-21 — OSARGs re-scored as if their distances were 12.5% off: the constraint does not change
+
+User: perhaps the OSARG distance errors are underestimated; what does the Milky Way posterior look like at 12.5%?
+No new integration: only the library smearing depends on σ_DM (K = 10 draws, and the sfratio selection estimated
+from the smeared library). The 384 OSARG points were re-scored with σ_DM = 0.2714 (12.5%) instead of 0.2084
+(9.6%), using the new `rescore_empirical_selection.py --sigma-dm` (variant `sfratio_sdm0.2714`); 6 min.
+
+| assumed distance error | best χ²/N (median) | \|Ω_b\| | φ_b | S | bar_frac | LOO |
+|---|---|---|---|---|---|---|
+| 9.6% (σ_DM 0.208, measured) | 1.575 (2.010) | 29.76 (23.85–36.74) | 23.4 (20.9–27.4) | 0.98 (0.75–1.21) | 1.03 (0.70–1.33) | 0.64 |
+| 12.5% (σ_DM 0.271) | 1.477 (1.846) | 30.65 (24.84–38.31) | 24.0 (21.1–27.9) | 0.95 (0.72–1.19) | 0.98 (0.66–1.30) | 0.56 |
+
+- **The Ω_b constraint is unchanged:** 44% width against 43%. The profile is still flat: best ΔlogLs per 2.5 km/s/kpc
+  bin from 15 to 45 is −4.6 −2.7 −1.8 −1.3 0.0 −1.2 −0.3 −0.8 −1.1 −1.1 −1.2 −2.5. The ranking of the 384 models
+  barely moves (Spearman 0.938).
+- **But the data fit better with more smearing.** χ² is lower at 362 of 384 points (median Δχ² 108). At the best
+  points χ² goes 1097.7 → 1029.8, Δχ² = 68, a tempered ΔlogL of 0.91. The data look more smeared than a 9.6%
+  library. Larger true distance errors are one explanation; contamination or extra velocity noise would act alike.
+  Not established which.
+- So an underestimated distance error does not explain the weak constraint either. Ruled out so far: sample size,
+  spatial coverage, (near-worst-case) potential-family mismatch, distance error.
+- Cheap next checks, no integration: (1) a σ_DM scan on the best ~30 points to find the distance error the data
+  prefer; (2) per-block signal-to-noise of the bar Fourier terms, OSARG data against the OSARG-coverage mock.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
