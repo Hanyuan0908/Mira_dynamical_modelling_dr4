@@ -4436,6 +4436,58 @@ Changes below ~3 tempered (Δχ² ≈ 200 for N ≈ 700) cannot be read as model
 
 Tables: `results/omega_scan_fixed_bar_{osarg_h24,t7_h24,t7_own}.npz`.
 
+
+## 2026-11-21 — Hunter+24's bar is Sormani+22's; a longer bar makes the OSARG kinematics react; Δχ² scatter (Wang+2026) measured
+
+**The bar model.** AGAMA's `example_mw_potential_hunter24.py` imports `makeBarDensity` from `example_mw_bar_potential.py`
+(the Sormani+22 three-component analytic fit to Portail+17) and calls it unchanged. Hunter+24 replaces only the rest:
+SgrA*, NSC, NSD (instead of a central mass concentration), thin and thick stellar discs with a 2.7 kpc hole plus HI
+and H₂ discs (instead of one disc with a 4.7 kpc hole), and a spherical Einasto halo (instead of a flattened one,
+q = 0.8). Measured on the two exported potentials (`Portail17.ini` from the Sormani+22 script,
+`MWPotentialHunter24_full.ini`):
+- v_c at R = 1, 2, 3, 4, 5, 6, 8 kpc: Sormani+22 191, 194, 197, 208, 219, 228, 239; Hunter+24 180, 196, 207, 218,
+  225, 228, 229 km/s.
+- Bar force Q_T: 0.24/0.21, 0.28/0.27, 0.31/0.28, 0.18/0.17, 0.09/0.09, 0.04/0.04, 0.01/0.01.
+- The density A2/A0 differs inside 3 kpc only through the different axisymmetric density.
+- Our trial family rescales only the non-axisymmetric part, which comes from the bar alone, so it is essentially the
+  same in both. The weak bar beyond 4 kpc (Q_T 0.09 at 5 kpc) belongs to the Portail+17 bar, not to Hunter+24
+  (corrects the wording of the fixed-bar entry).
+
+**A longer bar: the same OSARG scan at S = 1.5** (φ_b 20.46, bar_frac 1.495; `scan_omega_at_fixed_bar.py --S 1.5`;
+figure `test2_omega_scan_at_fixed_bar_osarg_vs_mock_osarg_S1.5.png`):
+- Data ΔlogL, Ω = 15 … 45 by 2.5: −77.9 −47.7 −31.0 −20.2 −12.0 −7.7 −3.5 −1.3 0.0 −0.4 −2.5 −5.9 −9.6.
+- Model change D: −73.7 −42.7 −27.0 −17.6 −11.9 −7.9 −4.5 0 −4.0 −5.6 −7.8 −12.1 −16.6.
+- The response to a faster bar doubles: D = 16.6 at +12.5 km/s/kpc against 8.1 at S = 0.95. The data now bound
+  Ω_b from above (−9.6 at 45 against −2.6), mostly through ⟨v_φ⟩ at R ≥ 3 kpc (model change 4.56 against 2.12;
+  data 1.27 against −0.30).
+- But the longer bar fits worse: best χ²/N 1.80 against 1.55 at S = 0.95.
+- So the short Portail+17 bar limits how much a faster bar changes the predicted kinematics, and the data prefer
+  that short bar.
+
+**The statistic (user: use the scatter of model differences, as Wang, Thomas, Lipka et al. 2026, arXiv:2603.26894,
+§ "Statistical criterion"; Thomas & Lipka 2022, MNRAS 514).** Wang et al.: 200 mocks from the best model + noise.
+The AIC of one model scatters by ~42 ≈ √(2N), but the difference between two models on the same noise realisation by
+only ~11. They take ΔAIC ≈ 11 as 1σ and keep ΔAIC ≤ 22.
+`delta_chi2_bootstrap.py` does this on our saved libraries (no integration): every design point's prediction is
+whitened with the data covariance (reproducing evals.csv: exactly for t = 7; within 36 for OSARG, where one block
+invalid at some point is dropped), with 500 mocks = best prediction + noise.
+- **σ(Δχ²) = 2Δ is confirmed:** measured / (2Δ) = 0.99 (OSARG) and 1.01 (t = 7) for the 20 nearest points, where
+  2Δ = 35 and 39. That 2Δ ≈ √(2N) = 37 is a coincidence of the design spacing (as found on 2026-11-01).
+- **On this design the bootstrap threshold collapses to Δχ² = 0.** Neighbouring design points differ by Δ² ≈
+  300–380, so in every mock the generating model is the grid minimum, and the confidence region is the single best
+  point. This holds for both runs, with or without library noise. The statistical error is far below the design
+  spacing (Fisher σ(Ω_b) ≈ 0.9%, 2026-11-01); resolving it needs the emulator at T = 1 or a dense local design.
+- **Alone, it would report a biased mock as certain.** For t = 7 the single-point region (Ω 25.61) excludes the truth
+  25.20: the −1.5% systematic is far larger than the statistical error. A systematic term calibrated on the 25-galaxy
+  suite is needed alongside (2026-11-01 recommendation).
+- **Wang's null model fails for OSARG and holds for the mock.** If the data were the best model + noise, a point at
+  separation Δ would sit at Δχ² = Δ² ± 2Δ above the best. Observed Δχ² / Δ², and the median z:
+  - t = 7: 1.01 within ±5 km/s/kpc of the best (z = 0.2), 1.14 for faster bars and 1.20 for slower.
+  - OSARG: 0.61 within ±5 (z = −4.1), 0.53 faster (−5.9), 0.65 slower (−3.7).
+  Library noise inflates Δ² by about the floor (~180–230) for both datasets, which biases this ratio low; the mock
+  still gives ~1.0. So the OSARG data lie systematically closer to the other models than "best model + noise"
+  allows: the measured form of "the data do not react".
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name

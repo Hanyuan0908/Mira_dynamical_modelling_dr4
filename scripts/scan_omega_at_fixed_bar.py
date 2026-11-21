@@ -45,14 +45,18 @@ CASES = {
 RINGS = [r for r in range(fs.N_RING_DEFAULT) if 0.5 * (fs.RING_EDGES[r] + fs.RING_EDGES[r + 1]) <= 5.0]
 
 
-def run_case(key):
+def run_case(key, s_override=None):
     c = CASES[key]
     meta = json.load(open(RESULTS_DIR / c["run"] / "run_meta.json"))
     design, _ = load_design(meta["galaxy"], meta.get("design_csv") and ROOT / meta["design_csv"])
     design = design.set_index("idx")
     ev = pd.read_csv(RESULTS_DIR / c["run"] / "evals.csv").set_index("idx")
     ibest = int(ev[f"logLs_{B}_sfratio"].idxmax())
-    p = design.loc[ibest]
+    p = design.loc[ibest].copy()
+    out_key = key
+    if s_override is not None:            # same phi_b and bar_frac, a different bar length
+        p["S"] = s_override
+        out_key = f"{key}_S{s_override:g}"
     sigma_dm = float(meta["sigma_DM"])
     mock = MOCK_DIR / c["mock"]
     dat = data_lbdR(mock)
@@ -85,12 +89,45 @@ def run_case(key):
     for cl in libs:
         valid = ok & np.all(np.isfinite(cl), axis=(1, 2)) & np.all(np.isfinite(libs[iref]), axis=(1, 2))
         D.append(fs.scheme_chi2(libs[iref], cl, cov, valid, fs.SCHEMES[B])[0])
-    np.savez(RESULTS_DIR / f"omega_scan_fixed_bar_{key}.npz", omegas=c["omegas"], chi2=np.array(chi2), D=np.array(D),
+    np.savez(RESULTS_DIR / f"omega_scan_fixed_bar_{out_key}.npz", omegas=c["omegas"], chi2=np.array(chi2), D=np.array(D),
              ndata=nd, coef_lib=libs, coef_data=cd, cov_data=cov, best=np.array([p.Omega_abs, p.phi_b_deg, p.S,
                                                                                  p.bar_frac]), iref=iref)
 
 
-def plot(keys):
+NAMES = {0: "<v_R> m2,4", 1: "<v_phi> m0,2,4", 3: "sig_R^2 m2,4", 4: "sig_phi^2 m2,4"}
+
+
+def field_breakdown(key, step=10.0):
+    """Tempered model change and data change per moment, R < 3 | R >= 3 kpc, for a +step change of |Omega_b| from the
+    reference (field-by-field covariance: an apportioning approximation of the joint chi2)."""
+    s = np.load(RESULTS_DIR / f"omega_scan_fixed_bar_{key}.npz")
+    om, iref, cov, cd, L = s["omegas"], int(s["iref"]), s["cov_data"], s["coef_data"], s["coef_lib"]
+    temp = 2 * np.sqrt(2 * int(s["ndata"]))
+    j = int(np.argmin(np.abs(om - (om[iref] + step))))
+    nr, spec = fs.SCHEMES[B]
+    inner = [r for r in range(nr) if fs.RING_EDGES[r + 1] <= 3.0 + 1e-9]
+    outer = [r for r in range(nr) if fs.RING_EDGES[r] >= 3.0 - 1e-9]
+
+    def chi2_field(a, b, f, rings):
+        tot, idx = 0.0, [f * fs.NK + k for k in spec[f]]
+        for r in rings:
+            for z in range(fs.NL):
+                i = r * fs.NL + z
+                if not (np.all(np.isfinite(a[i])) and np.all(np.isfinite(b[i]))):
+                    continue
+                d, C = (a[i] - b[i]).reshape(-1)[idx], cov[i][np.ix_(idx, idx)]
+                if np.all(np.isfinite(C)):
+                    tot += (fs.N_BOOT - len(idx) - 2) / (fs.N_BOOT - 1) * float(d @ np.linalg.solve(C, d))
+        return tot
+
+    print(f"{key}: Omega {om[iref]:.1f} -> {om[j]:.1f}, tempered, R<3 | R>=3 kpc")
+    for f in spec:
+        m = [chi2_field(L[j], L[iref], f, rr) / temp for rr in (inner, outer)]
+        d = [(chi2_field(cd, L[j], f, rr) - chi2_field(cd, L[iref], f, rr)) / temp for rr in (inner, outer)]
+        print(f"   {NAMES[f]:16s} model change {m[0]:6.2f} | {m[1]:6.2f}    data change {d[0]:6.2f} | {d[1]:6.2f}")
+
+
+def plot(keys, tag=""):
     set_style()
     fig, axes = plt.subplots(2, len(keys), figsize=(5.4 * len(keys), 9.0), squeeze=False,
                              gridspec_kw=dict(hspace=0.32, wspace=0.28))
@@ -110,14 +147,14 @@ def plot(keys):
         a.errorbar(R, damp, yerr=derr, fmt="o", color=INK, ms=5, capsize=2, label="data", zorder=5)
         a.set(xlabel="R [kpc]  (|z| < 1)", ylabel=r"$\langle v_R\rangle$ quadrupole amplitude [km s$^{-1}$]",
               ylim=(0, 45))
-        a.set_title(f"{CASES[key]['label']}\nbar fixed: φ_b {best[1]:.1f}, S {best[2]:.2f}, bar_frac {best[3]:.2f}",
+        a.set_title(f"{CASES[key.split('_S')[0]]['label']}\nbar fixed: φ_b {best[1]:.1f}, S {best[2]:.2f}, bar_frac {best[3]:.2f}",
                     color=INK, fontsize=10)
         a.legend(title=r"$|\Omega_b|$", fontsize=7.5, title_fontsize=8, ncol=2, frameon=False, loc="upper right")
         b = axes[1, j]
         b.plot(om, -(chi2 - chi2.min()) / temp, "o-", color=INK, lw=1.8, label="data: χ² against the data")
         b.plot(om, -D / temp, "s--", color=ACCENT, lw=1.6, label="models: change of the prediction")
         b.axvline(best[0], color=BLUE_RAMP[3], lw=1, ls=":", label=f"search best {best[0]:.1f}")
-        if key == "t7_own":
+        if key.startswith("t7_own"):
             b.axvline(25.20, color=BLUE_RAMP[5], lw=1.2, ls="--", label="truth 25.20")
         for lev in (-0.5, -2, -4.5):
             b.axhline(lev, color=INK_2, lw=0.5, ls=":")
@@ -128,18 +165,24 @@ def plot(keys):
         print(f"{' ' * len(key)}  model change D:      " + " ".join(f"{x:.1f}" for x in -D / temp))
     fig.suptitle("Pattern speed varied with the bar held fixed: do the predicted kinematics change, and does the data "
                  "notice?", color=INK, y=0.995, fontsize=12)
-    savefig(fig, "test2_omega_scan_at_fixed_bar_osarg_vs_mock")
+    savefig(fig, "test2_omega_scan_at_fixed_bar_osarg_vs_mock" + tag)
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--cases", nargs="+", default=["osarg_h24", "t7_h24", "t7_own"])
     ap.add_argument("--plot-only", action="store_true")
+    ap.add_argument("--S", type=float, default=None, help="override the bar length S (phi_b and bar_frac stay at the "
+                    "best point); outputs are tagged _S<value>")
+    ap.add_argument("--figure-tag", default="", help="suffix for the figure name")
     args = ap.parse_args()
+    keys = [k if args.S is None else f"{k}_S{args.S:g}" for k in args.cases]
     if not args.plot_only:
         for k in args.cases:
-            run_case(k)
-    plot(args.cases)
+            run_case(k, args.S)
+    plot(keys, args.figure_tag)
+    for k in keys:
+        field_breakdown(k)
 
 
 if __name__ == "__main__":
