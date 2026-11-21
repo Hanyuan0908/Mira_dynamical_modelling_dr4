@@ -4509,6 +4509,36 @@ No replacement "temperature" is to be introduced. The direction under discussion
 It needs a design or emulator fine enough to resolve a posterior narrower than the current design spacing. Not yet
 decided or implemented.
 
+
+## 2026-11-21 — How much tempering is justified? About T ≈ 11, a third of √(2N), from coverage over the 25 galaxies
+
+User: some tempering is needed, because χ² treats its terms as independent Gaussians when they are not; but it should
+be far smaller than √(2N).
+- **Where the dependence is.** For the DATA the χ² is right: stars are independent between blocks, and within a block
+  the joint covariance is used. The over-counting is on the MODEL side: library Monte Carlo noise correlated across
+  blocks and missing from the covariance (Δχ² ≈ 180–230 between libraries at essentially the same potential); smooth
+  systematic misfit (best χ²/N 1.6–2.7); and the sparse-block bootstrap miscalibration (χ²/N 1.25–1.49 at |z| 1–2).
+  The standard treatment is the composite-likelihood magnitude adjustment (T = score variance / curvature, the
+  sandwich estimate).
+- **Measured.** Coverage of the |Ω_b| 16–84% interval over the 25 galaxies. The existing posteriors were made at
+  T0 = √(2N) = 36.9; posterior width is scaled as √(T/T0) with the medians held fixed (an approximation), and the side
+  of the interval the truth lies on is used:
+
+  | T | 1 | 2 | 4 | 6 | 8 | 12 | 16 | 24 | 36.9 | 60 |
+  |---|---|---|---|---|---|---|---|---|---|---|
+  | all 25 | 0.16 | 0.28 | 0.36 | 0.44 | 0.48 | **0.68** | 0.72 | 0.92 | 0.96 | 1.00 |
+  | N-body (12) | 0.08 | 0.25 | 0.25 | 0.42 | 0.50 | 0.67 | 0.75 | 0.92 | 0.92 | 1.00 |
+  | Auriga (13) | 0.23 | 0.31 | 0.46 | 0.46 | 0.46 | 0.69 | 0.69 | 0.92 | 1.00 | 1.00 |
+
+  68% coverage at T ≈ 11.3 (N-body 11.7, Auriga 11.0). Median |z| at √(2N) is 0.48.
+- **Independent check.** The 2026-11-01 single-galaxy test (data noise including library noise, t = 7) gave 87% at
+  T = 16 and 100% at 36.4, with the 68% point between T ≈ 8 and 16 (grid-limited). It is consistent.
+- **What T ≈ 11 means.** Ω_b widths shrink by √(11.3 / 36.9) = 0.55. Calibrated this way, T already includes the
+  method's systematic scatter across galaxies, so a separate systematic term on top would double count.
+- **Caveats.** With 25 galaxies, a coverage fraction carries ±9% binomial uncertainty, so T for 68% is roughly 8–16.
+  The √T scaling is an approximation; re-emulating at T = 11.3 would check it. Only Ω_b is calibrated; φ_b
+  (Auriga −7°) and bar_frac need their own check. The mocks use their own potential family; OSARG uses Hunter+24.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
