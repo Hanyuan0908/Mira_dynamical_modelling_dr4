@@ -46,6 +46,28 @@ def data_lbdR(mock):
         return (f["l"][:], f["b"][:], f["d"][:], np.hypot(f["x"][:], f["y"][:]))
 
 
+def library_fit_empirical(traj, phi_deg, sigma_dm, dat, ok, n_draw=10, estimator="ratio", nside=NSIDE, dbin=1.0):
+    """Library Fourier coefficients of one trajectory with the empirical selection: every kept sample observed with
+    n_draw distance-error draws, S estimated as rho_obs / rho_lib (or the separable IPF fit) against the data's
+    (l, b, d, R), and weighted S(x_j) / tau_i. Returns (coefficients, tau)."""
+    times = ssl.times_for_traj(traj)        # the file may already be thinned
+    K = max(1, n_draw)
+    obs_bar, lbdR, nk = selection.observed_library(traj, times, phi_deg, sigma_dm, seed=11, n_draw=K)
+    R0 = np.hypot(traj[:, 1:, 0], traj[:, 1:, 1])
+    tau0 = np.clip(np.mean(R0 < ssl.R_SEL, axis=1), 1.0 / (traj.shape[1] - 1), 1.0)
+    w0 = np.tile(np.repeat(1.0 / tau0, nk), K) / K
+    if estimator == "ratio":
+        tab = selection.ratio_tables(dat, lbdR, w0, nside=nside, d_bin=dbin)
+        Se = selection.evaluate_ratio(tab, *lbdR)
+    else:
+        tab = selection.empirical_tables(dat, lbdR, w0, nside=nside)
+        Se = selection.evaluate_raw(tab, *lbdR)
+    tau = np.clip(Se.reshape(K, traj.shape[0], nk).mean(axis=(0, 2)), selection.TAU_FLOOR, None)
+    wt = Se / np.tile(np.repeat(tau, nk), K) / K
+    b, X, v, m = fs.prepare(obs_bar)
+    return fs.fit(b, X, v, wt[m], ok, leverage=False), tau
+
+
 def merge(design, out_dir, path):
     rows = []
     for f in sorted(out_dir.glob(f"{VARIANT}_[0-9][0-9][0-9].npz")):
@@ -170,24 +192,9 @@ def main():
             traj = traj[keep]                   # row i of a trajectory file is star i of the mock
         if args.cadence_step > 1:
             traj = np.ascontiguousarray(traj[:, ::args.cadence_step])
-        times = ssl.times_for_traj(traj)        # the file may already be thinned
         K = max(1, args.n_draw)
-        _obs_bar, lbdR, nk = selection.observed_library(traj, times, float(p.phi_b_deg), sigma_dm,
-                                                        seed=11, n_draw=K)
-        R0 = np.hypot(traj[:, 1:, 0], traj[:, 1:, 1])
-        tau0 = np.clip(np.mean(R0 < ssl.R_SEL, axis=1), 1.0 / (traj.shape[1] - 1), 1.0)
-        w0 = np.tile(np.repeat(1.0 / tau0, nk), K) / K
-        if args.estimator == "ratio":
-            tab = selection.ratio_tables(dat, lbdR, w0, nside=args.nside, d_bin=args.dbin)
-            Se = selection.evaluate_ratio(tab, *lbdR)
-        else:
-            tab = selection.empirical_tables(dat, lbdR, w0, nside=args.nside)
-            Se = selection.evaluate_raw(tab, *lbdR)
-        obs_bar = _obs_bar
-        tau = np.clip(Se.reshape(K, traj.shape[0], nk).mean(axis=(0, 2)), selection.TAU_FLOOR, None)
-        wt = Se / np.tile(np.repeat(tau, nk), K) / K
-        b, X, v, m = fs.prepare(obs_bar)
-        cl = fs.fit(b, X, v, wt[m], ok, leverage=False)
+        cl, tau = library_fit_empirical(traj, float(p.phi_b_deg), sigma_dm, dat, ok, K, args.estimator,
+                                        args.nside, args.dbin)
         T = rotation(float(p.phi_b_deg) - BAR_ANGLE_DEG)
         cd = (cd0f @ T.T).reshape(fs.NB, 6, fs.NK)
         cov = np.einsum("ij,bjk,lk->bil", T, cov0, T)

@@ -4333,7 +4333,13 @@ from the smeared library). The 384 OSARG points were re-scored with σ_DM = 0.27
   prefer; (2) per-block signal-to-noise of the bar Fourier terms, OSARG data against the OSARG-coverage mock.
 
 
-## 2026-11-21 — Do the OSARG model moments not change with the potential? They do. The Hunter+24 family is degenerate in Ω_b
+## 2026-11-21 — Do the OSARG model moments not change with the potential? (the "Hunter+24 is degenerate in Ω_b" conclusion below is WITHDRAWN)
+
+**Withdrawn (user, same day).** The degeneracy argument rested on D minimised over S, bar_frac and φ_b together.
+That is not evidence that Ω_b trades off against them. The posterior correlations are mild (Ω_b–S +0.35,
+Ω_b–bar_frac +0.40), and the emulator slice at the best (φ_b, S, bar_frac) is still broad on the high side
+(within ~1.5–2 of the best from Ω_b ≈ 30 to 42). The design-wide spread in the first table mixes all four
+parameters, so it does not show that the moments react to Ω_b. Superseded by the fixed-bar Ω_b scan (next entry).
 
 User: the flat OSARG likelihood suggests the kinematic moments barely change with the potential; true? Why would
 they change for the mock but not for the real data? `diagnose_library_sensitivity.py` uses the saved library
@@ -4379,6 +4385,57 @@ the best the data could ever do. (2) The spread of the predicted moments against
 
 Figure: `figures/test2_library_sensitivity_osarg_vs_mock.png`; table `results/library_sensitivity_osarg_vs_mock.csv`.
 
+
+## 2026-11-21 — Ω_b scanned at a fixed bar: OSARG's predicted kinematics barely react to a FASTER bar, and the data react less
+
+User: even at fixed bar strength and length the OSARG Ω_b error is large, so the kinematics do not react to the
+models (and my degeneracy argument above was unsupported; withdrawn). Direct test, no emulator:
+`scan_omega_at_fixed_bar.py`. (φ_b, S, bar_frac) are held at each search's best point; only |Ω_b| is varied. At
+every value the stars are integrated and scored exactly as the pipeline does. `library_fit_empirical`, factored out
+of the re-score, reproduces the 12.5% OSARG re-score to 0.0.
+Recorded: χ² against the data, and the change of the PREDICTION, D = χ²(library(Ω) vs library(Ω_ref) | data
+covariance), both tempered.
+
+**Library noise floor.** Repeating the same Ω gives D = 0.00 exactly. But ±0.25 km/s/kpc gives D = 2.3–2.5 (OSARG),
+2.7–3.1 (t = 7 in Hunter+24), 2.5–2.9 (t = 7 own); ±1 gives 3.2, 3.6–5.1, 3.7–4.4. A genuine change would scale
+like ΔΩ². So D ≈ 2.5–3 is the library's own noise: a tiny Ω change scrambles the orbital phases at the 15 snapshots.
+Changes below ~3 tempered (Δχ² ≈ 200 for N ≈ 700) cannot be read as model differences.
+
+**Scan** (tempered ΔlogL; `figures/test2_omega_scan_at_fixed_bar_osarg_vs_mock.png`):
+
+| case (bar fixed at) | Ω grid | data vs best | model change D |
+|---|---|---|---|
+| OSARG, Hunter+24 (φ 20.5, S 0.95, f 1.50) | 15 … 45 by 2.5 | −27.8 −18.0 −10.7 −6.0 −2.2 −2.4 0.0 −1.0 −0.5 −2.0 −1.4 −2.7 −2.6 | −28.9 −19.6 −13.0 −9.1 −6.2 −4.5 −3.9 **0** −4.0 −5.1 −6.0 −7.1 −8.1 |
+| t = 7, Hunter+24 (φ 21.9, S 1.16, f 1.29) | 15 … 45 | −24.6 −5.3 −2.6 0.0 −7.3 −12.3 −19.6 −14.0 −10.6 −11.6 −14.5 −14.8 −21.0 | −22.7 −9.4 −5.8 **0** −5.5 −6.7 −9.9 −10.0 −8.9 −9.7 −11.9 −12.9 −15.9 |
+| t = 7, own family (φ 26.2, S 0.90, f 1.33) | 15 … 40 | −64.6 −51.0 −23.6 −5.0 0.0 −3.3 −8.0 −12.1 −12.7 −17.7 −22.3 | −45.0 −35.4 −17.2 −6.9 **0** −5.7 −9.2 −13.4 −14.5 −18.5 −24.0 |
+
+- **Low side (slower bar):** OSARG's predictions change strongly (D 29 at Ω = 15) and the data follow (−27.8). The
+  lower bound is real.
+- **High side (faster bar):** OSARG's predictions change little. D only climbs from the ~3 noise floor to 8 at
+  +12.5 km/s/kpc, against 24 at +15 for t = 7 in its own family. The data register even less (0.5–2.7). The
+  user's statement holds there, and this is what leaves the upper side of the OSARG posterior open.
+- **Which moment carries Ω_b: ⟨v_φ⟩, not the ⟨v_R⟩ quadrupole.** Tempered contributions for a +10 km/s/kpc step,
+  R < 3 | R ≥ 3 kpc (field-by-field covariance, an apportioning approximation):
+
+  | moment | OSARG/H24 model | OSARG data | t = 7 own model | t = 7 own data | t = 7 H24 model | t = 7 H24 data |
+  |---|---|---|---|---|---|---|
+  | ⟨v_R⟩ m = 2, 4 | 0.25 \| 0.57 | 0.12 \| 0.21 | 0.13 \| 0.43 | 0.12 \| 0.24 | 0.20 \| 0.69 | 0.47 \| 0.55 |
+  | ⟨v_φ⟩ m = 0, 2, 4 | 0.79 \| 2.12 | 0.82 \| −0.30 | 2.38 \| 5.84 | 5.22 \| 5.19 | 1.11 \| 1.73 | 0.36 \| 7.44 |
+  | σ_R² m = 2, 4 | 0.49 \| 0.79 | −0.08 \| 0.58 | 1.08 \| 2.03 | 0.22 \| −0.11 | 0.43 \| 2.95 | 1.46 \| 0.33 |
+  | σ_φ² m = 2, 4 | 0.30 \| 0.78 | 0.14 \| 0.48 | 0.69 \| 1.35 | 0.55 \| 0.46 | 0.43 \| 1.83 | 1.02 \| 0.80 |
+
+  In the mock, the predicted mean rotation ⟨v_φ⟩ changes by 8.2 and the data notice 10.4. For OSARG in Hunter+24,
+  ⟨v_φ⟩ changes by 2.9 and the data notice 0.5. The ⟨v_R⟩ quadrupole contributes ≤ 0.7 in every case.
+- **The t = 7 stars in Hunter+24 also show a weak ⟨v_φ⟩ response (2.8),** about 3× below the same stars in their
+  own family. So the weak response to a faster bar comes with the Hunter+24 potential, not only with the OSARG data.
+  The bar parameters and starting Ω differ between those two Hunter+24 scans, so this comparison is indicative.
+  What differs between the datasets is the data's own reaction: t = 7's data move with the models, OSARG's barely.
+- **Not established:** why ⟨v_φ⟩ responds weakly in Hunter+24. One possibility, consistent with A2/A0 but untested:
+  Hunter+24's bar is weak beyond 4 kpc (A2/A0 0.13 at 5 kpc against 0.33 for t = 7), exactly where ⟨v_φ⟩ at
+  R ≥ 3 kpc carries the information. Cheap test: the same scan with a longer bar (S = 1.5).
+
+Tables: `results/omega_scan_fixed_bar_{osarg_h24,t7_h24,t7_own}.npz`.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
@@ -4421,6 +4478,7 @@ below is still found by `find figures -name <name>`; most of the Test 1b set is 
 | `presentation/pattern_speed_recovered_vs_true_nbody_and_auriga_12p5pct_black.{png,pdf}` | talk version (black background) of the 12.5% recovery: 12 N-body snapshots (blue circles, mean \|bias\| 2.8%) and 13 Auriga (orange diamonds, 3.4%), recovered vs true and fractional bias. Same runs, columns and truths as `test2_pattern_speed_recovery_12p5pct_12pt_plus_auriga.png` (t = 7: plain sfratio, 24.83; an earlier version wrongly used its sfratioK10 column, 24.85; corrected 2026-11-21). `scripts/plot_presentation_figures.py` (2026-11-12) |
 | `presentation/bar_strength_profile_A2_over_A0_truth_vs_recovered_nbody_t7_black.{png,pdf}` | talk version: A2/A0(R) of t = 7, truth vs the trial potential at 300 flat-prior posterior draws (plain sfratio column), median and 16–84%. Peak: truth 0.548 at 2.5 kpc, recovered 0.429 (0.264–0.614) at 2.7 kpc (corrected 2026-11-21 from the sfratioK10 version, 0.461). Regenerated here, as the cluster's `bar_strength_profile_recovery.npz` is not in git; table `results/test2_t7_sf_12p5pct/bar_strength_profile_t7_*.npz` |
 | `test2_t7_mock_thinned_to_gaia_rv_scenarios_face_on.png` | t = 7 mock (12.5%) thinned to Gaia-RV sub-samples: G < 14/15/16, G_RVS < 14, OSARG coverage and random at OSARG N (2026-11-21) |
+| `test2_omega_scan_at_fixed_bar_osarg_vs_mock.png` | Ω_b scanned at a fixed bar (no emulator): predicted ⟨v_R⟩ quadrupole per Ω against the data, and the data's χ² change vs the predictions' change, for OSARG/H24, t = 7/H24 and t = 7/own (2026-11-21) |
 | `test2_t7_family_mismatch_omega_profile_vs_osarg.png` | Ω_b profiles (best evaluated logLs per bin): t = 7 in its own family, t = 7 in Hunter+24 on the OSARG design, and the OSARG data (2026-11-21) |
 | `test2_t7_pattern_speed_constraint_vs_gaia_rv_subsample.png` | recovered Ω_b and posterior width of those sub-samples against stars at R < 6, with the real OSARG run for reference (2026-11-21) |
 | `presentation/osarg_zhang2024_face_on_number_density_and_mean_vR_black.{png,pdf}` | talk version: face-on number density (log, own scale 2.6–822 stars/kpc²) and ⟨v_R⟩ (±40 km/s; ≥ 15 stars in the kernel) of the 32,977 OSARGs at \|z\| < 3 kpc (paper's final sample), σ = 0.3 kpc smoothing on 0.2 kpc pixels over ±15 kpc; Sun, Galactic centre, and a 27° bar guide line (not fitted). `scripts/plot_presentation_osarg_mira_maps.py` (2026-11-12) |
