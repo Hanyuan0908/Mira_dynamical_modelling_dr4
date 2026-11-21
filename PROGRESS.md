@@ -4488,6 +4488,27 @@ invalid at some point is dropped), with 500 mocks = best prediction + noise.
   still gives ~1.0. So the OSARG data lie systematically closer to the other models than "best model + noise"
   allows: the measured form of "the data do not react".
 
+
+## 2026-11-21 — Decision: the √(2N) tempering is not a likelihood and is not carried forward (user)
+
+The user defined logL = −χ²/(2√(2N_data)) on 2026-10-27 only to smooth the posterior surface while the method was
+being set up. It was never meant as the statistical model, and it is statistically flawed:
+- √(2N) is the scatter of the absolute χ², while a posterior width depends on the scatter of χ² differences between
+  models on the same data (2Δ, confirmed to 1% by `delta_chi2_bootstrap.py`).
+- It gave 100% coverage for nominal 68% intervals (2026-11-01).
+- It absorbed the method's systematic bias into the error bar.
+
+Every `logLs_*` column and every "tempered" number in this file is on that scale and stays as a historical record.
+No replacement "temperature" is to be introduced. The direction under discussion:
+- the actual likelihood −χ²/2;
+- an error model that includes the library's own Monte Carlo noise (Δχ² ≈ 180–230 between libraries at essentially
+  the same potential);
+- Δχ² thresholds from a parametric bootstrap (Wang, Thomas, Lipka et al. 2026);
+- the systematic error measured separately on the 25-galaxy mock suite.
+
+It needs a design or emulator fine enough to resolve a posterior narrower than the current design spacing. Not yet
+decided or implemented.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
