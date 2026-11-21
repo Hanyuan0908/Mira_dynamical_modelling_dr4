@@ -4332,6 +4332,53 @@ from the smeared library). The 384 OSARG points were re-scored with σ_DM = 0.27
 - Cheap next checks, no integration: (1) a σ_DM scan on the best ~30 points to find the distance error the data
   prefer; (2) per-block signal-to-noise of the bar Fourier terms, OSARG data against the OSARG-coverage mock.
 
+
+## 2026-11-21 — Do the OSARG model moments not change with the potential? They do. The Hunter+24 family is degenerate in Ω_b
+
+User: the flat OSARG likelihood suggests the kinematic moments barely change with the potential; true? Why would
+they change for the mock but not for the real data? `diagnose_library_sensitivity.py` uses the saved library
+coefficients of every design point, rotated to the data frame, and separates the two ingredients of χ².
+(1) The library-vs-library distance D_i = χ²(library_i vs best library | data covariance), with no data values:
+the best the data could ever do. (2) The spread of the predicted moments against the data errors.
+
+**The predicted moments change at least as much for OSARG.** For the ⟨v_R⟩ m = 2 amplitude, rings 1 < R < 4 kpc,
+|z| < 1, medians over rings:
+
+| case | 16–84% spread across the design | data bootstrap error | ratio | data amplitude | typical predicted amplitude |
+|---|---|---|---|---|---|
+| OSARG data, Hunter+24 | 11.5 km/s | 5.0 | **2.25** | 21.1 | 14.2 |
+| t = 7 mock, Hunter+24 (OSARG design) | 7.8 | 4.4 | 1.76 | 24.2 | 8.2 |
+| t = 7 mock, own family | 9.0 | 4.4 | 2.06 | 24.2 | 19.2 |
+| t = 7 mock, own family, OSARG coverage + N | 9.8 | 6.1 | 1.66 | 22.5 | 19.6 |
+
+- So the statement is false for the predictions, and OSARG's errors are not larger (5.0 vs 6.1 km/s for the matched
+  mock).
+- **The data quadrupole is fitted as well as the mock's.** It exceeds every model in the design in 1 of 10 rings
+  (mock: 1), and the best model by > 2σ in 2 of 10 (mock: 3). Phases agree similarly. The data are not beyond the
+  models' reach.
+
+**What differs: the Hunter+24 family can mimic one Ω_b with another.**
+- The smallest D per Ω_b bin (other parameters free), tempered, away from the best:
+  - OSARG in Hunter+24: only ~4–8 over 15–45.
+  - t = 7 in its own family: 10–35 (e.g. 21–39 at Ω 18–19, 15–20 at 35–38).
+  - t = 7 in Hunter+24: a similar ~5–6 floor on the low side (−5.6 … −4.3 over 15–21), deeper (9–14) above.
+- So in the Hunter+24 family, a change in Ω_b can largely be undone by S, bar_frac and φ_b. That caps the
+  attainable constraint, whatever the data. The own family is more distinguishable despite its WIDER nuisance
+  ranges (φ_b 15–39, S 0.6–1.65, bar_frac 0.45–2 against 20–30, 0.5–1.5, 0.5–1.5), so this belongs to the family,
+  not the box.
+- The t = 7 mock in Hunter+24 shows the same thing in its data profile: within 3.1 of the best over 15–22
+  (2026-11-21 entry above).
+- **Correction to the previous entry.** "Mismatch ruled out" holds only in the narrow sense: a wrong family makes the
+  fit worse and biases Ω_b rather than flattening it. The Hunter+24 family's OWN Ω_b–(S, bar_frac) degeneracy is a
+  separate effect, and a large part of OSARG's flatness.
+- **Still unexplained.** The real OSARG profile (0.3–3 below the best across the box) is flatter than even that
+  best-case limit (4–8): the data realise roughly a third of what the family allows. Not established why.
+- **Cheap next step.** Hunter+24's bar is a fit to the Milky Way's bar density, so S ≈ 1 and bar_frac ≈ 1 are
+  physically motivated. Priors on them (importance weighting the existing chain, like the φ_b prior) would show how
+  much of the Ω_b width is the degeneracy.
+
+Figure: `figures/test2_library_sensitivity_osarg_vs_mock.png`; table `results/library_sensitivity_osarg_vs_mock.csv`.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
