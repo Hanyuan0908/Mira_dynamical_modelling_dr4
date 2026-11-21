@@ -4684,6 +4684,80 @@ are withdrawn.
   scale. Which is the right statistical error is the open question; T = 1 treats the smoothed surface as exact and
   ignores the jitter's uncertainty in where the minimum lies.
 
+
+## 2026-11-21 — The 25 Test 2 galaxies at T = 1 (no tempering): Ω_b intervals shrink ~7x and miss the truth in 16 of 25
+
+User: redo the 25 mock galaxies with T = 1 and show the pattern speed comparison and the A2/A0 profile plots.
+`rerun_emulators_T1.py` refits the same emulator (quadratic mean + Matérn-5/2 ARD GP + white noise, emcee, fixed
+seeds) on each run's raw scheme B sfratio χ² (12.5% distance error, K = 10, 50 Myr), once with logL = −Δχ²/2
+(T = 1) and once with the old √(2N) scale for comparison. No new integration and no new χ². Outputs:
+`results/test2_*_sf_12p5pct/emulator_results_T1.json` and `posterior_chains_T1.npz`;
+`results/T1_vs_tempered_summary.csv`. Figures:
+`figures/test2_pattern_speed_recovery_12p5pct_T1_vs_tempered.png` and
+`figures/test2_bar_strength_profile_recovery_T1_vs_tempered.png`. Truth convention as in the presentation figure:
+finite-difference pattern speed for the N-body snapshots, our own measurement for Auriga.
+
+The recomputed tempered numbers reproduce the logged ones: N-body mean |bias| 2.80%; Auriga 3.29% and +0.93%,
+against the logged 3.4% and +1.1%. The small gap is the sampler and the use of one N per run.
+
+**Pattern speed** (all 25):
+
+| | mean \|bias\| | mean bias | median 16–84% width | coverage of 16–84% | median \|z\| |
+|---|---|---|---|---|---|
+| tempered √(2N) | 3.05% | +0.55% | 12.3% | 0.96 | 0.46 |
+| **T = 1** | 3.37% | −1.27% | **1.8%** | **0.36** | **3.9** |
+
+- At T = 1 the median half-width is 0.33 km/s/kpc, against 2.28 tempered. The medians barely move: |bias| goes from
+  3.05% to 3.37% and is larger at T = 1 in 14 of 25.
+- The interval misses the truth in 16 of 25 galaxies, with |z| up to 14.3 (t5: 27.96 ± 0.19 against 30.60).
+- **φ_b collapses onto the lower box edge.** The T = 1 median of φ_b lies within 3% of the 15° edge in 18 of 25
+  galaxies; the median over galaxies is 15.2° against a truth of 27°. Tempered: 0 of 25, median 21.1°.
+- **The emulator cannot resolve a T = 1 posterior.** Leave-one-out rms over the 32 best points is a median 29.8 in
+  T = 1 logL (≈ 60 in χ²), against a posterior that spans ΔlogL ~ 1. That χ² is the same as the measured
+  model-to-model jitter (OSARG: σ = 41 between two runs). So the T = 1 interval is the curvature of the GP's smoothed
+  mean, not a resolved likelihood.
+
+| galaxy | truth | tempered: median (16–84%), bias | T = 1: median (16–84%), bias, z | T = 1 φ_b | T = 1 bar_frac |
+|---|---|---|---|---|---|
+| t2 | 43.90 | 42.23 (40.12–44.52), -3.8% | 41.63 (41.36–41.91), -5.2%, z +8.1 | 15.1 | 0.71 |
+| t2.375 | 40.87 | 41.53 (39.21–44.28), +1.6% | 41.13 (40.82–41.45), +0.6%, z -0.8 | 15.5 | 0.64 |
+| t2.625 | 40.21 | 40.26 (38.10–42.70), +0.1% | 39.05 (38.69–39.43), -2.9%, z +3.1 | 15.1 | 0.64 |
+| t3 | 38.67 | 39.12 (37.14–41.27), +1.2% | 38.57 (38.26–38.86), -0.3%, z +0.4 | 15.1 | 0.56 |
+| t3.375 | 36.83 | 37.77 (35.91–40.04), +2.6% | 36.98 (36.72–37.24), +0.4%, z -0.6 | 15.8 | 0.82 |
+| t3.625 | 34.79 | 35.81 (33.90–38.08), +2.9% | 34.89 (34.55–35.21), +0.3%, z -0.3 | 15.1 | 0.54 |
+| t4 | 33.28 | 35.14 (32.64–37.34), +5.6% | 35.13 (34.79–35.49), +5.5%, z -5.5 | 29.9 | 1.23 |
+| t4.5 | 32.07 | 33.25 (30.79–35.23), +3.7% | 34.21 (33.81–34.60), +6.7%, z -5.4 | 29.6 | 1.18 |
+| t5 | 30.60 | 29.32 (27.70–32.11), -4.2% | 27.96 (27.77–28.15), -8.6%, z +14.3 | 15.1 | 0.75 |
+| t5.5 | 28.21 | 26.70 (25.75–27.82), -5.3% | 26.35 (26.19–26.51), -6.6%, z +11.7 | 19.1 | 0.70 |
+| t6.25 | 26.58 | 26.28 (25.11–27.67), -1.1% | 25.73 (25.55–25.90), -3.2%, z +5.0 | 15.2 | 0.77 |
+| t7 | 25.20 | 24.81 (23.98–25.71), -1.6% | 24.57 (24.45–24.71), -2.5%, z +4.7 | 15.1 | 0.48 |
+| au5 | 45.11 | 46.68 (41.89–51.61), +3.5% | 45.46 (44.61–46.32), +0.8%, z -0.4 | 15.3 | 0.63 |
+| au9 | 36.77 | 36.48 (34.27–38.97), -0.8% | 34.85 (34.54–35.17), -5.2%, z +6.1 | 15.1 | 0.73 |
+| au10 | 56.65 | 56.91 (54.75–59.31), +0.5% | 56.32 (55.98–56.66), -0.6%, z +0.9 | 15.0 | 0.74 |
+| au12 | 40.06 | 42.63 (38.91–46.30), +6.4% | 41.95 (41.38–42.54), +4.7%, z -3.3 | 16.7 | 0.63 |
+| au14 | 51.89 | 55.42 (51.42–59.40), +6.8% | 54.34 (53.70–54.99), +4.7%, z -3.9 | 15.5 | 0.73 |
+| au17 | 50.95 | 49.18 (47.07–51.39), -3.5% | 48.63 (48.31–48.95), -4.6%, z +7.3 | 15.1 | 0.47 |
+| au18 | 36.27 | 36.53 (34.14–39.32), +0.7% | 34.97 (34.64–35.30), -3.6%, z +4.0 | 17.4 | 0.80 |
+| au20 | 16.76 | 15.56 (14.26–17.11), -7.2% | 15.38 (15.15–15.63), -8.2%, z +5.5 | 26.5 | 0.93 |
+| au22 | 49.00 | 48.50 (45.63–51.67), -1.0% | 48.25 (47.70–48.75), -1.5%, z +1.5 | 15.7 | 0.84 |
+| au24 | 32.78 | 34.15 (31.46–36.82), +4.2% | 33.12 (32.74–33.48), +1.0%, z -0.9 | 15.2 | 0.58 |
+| au26 | 65.14 | 65.98 (62.17–69.86), +1.3% | 65.38 (64.75–66.04), +0.4%, z -0.4 | 15.2 | 0.66 |
+| au27 | 39.16 | 40.77 (37.25–44.45), +4.1% | 39.60 (39.04–40.16), +1.1%, z -0.8 | 15.1 | 0.79 |
+| au28 | 43.26 | 42.04 (39.89–44.45), -2.8% | 41.04 (40.72–41.36), -5.1%, z +6.8 | 15.1 | 0.79 |
+
+**Bar strength A2/A0(R)**: trial potential rebuilt at 300 draws of each chain. Only 13 galaxies: the 12 N-body
+snapshots and Au18. The other 12 Auriga potentials are not on this machine; they were computed elsewhere for the
+2026-11-06 figure. Seven N-body potentials (t = 2.375, 2.625, 3.375, 3.625, 4.5, 5, 6.25) were rebuilt from the
+USB snapshots with the pipeline scripts, with the same expansion settings as t = 2, 3, 7. The outputs are on the USB
+drive, symlinked into `mock/`.
+- **Tempered:** the truth at its peak lies inside the 16–84% band in 12 of 13; mean |error| 11.8%, mean −8.3%.
+- **T = 1:** inside in **1 of 13**; mean |error| 24.4%, mean **−20.3%**. The band is a thin line (e.g. t7: 0.254,
+  0.242–0.266, against a truth of 0.548).
+- The underestimate goes with the φ_b collapse: low φ_b pairs with low bar_frac (T = 1 median 0.73),
+  the φ_b–bar_frac degeneracy logged on 2026-11-06. The two exceptions show the same pairing in the other direction:
+  t4 and t4.5 land at φ_b 29.9 and 29.6 with bar_frac 1.23 and 1.18, and they are the two galaxies whose A2/A0 is
+  over-estimated at T = 1 (0.715 against 0.644; 0.759 against 0.654).
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
@@ -4729,6 +4803,9 @@ below is still found by `find figures -name <name>`; most of the Test 1b set is 
 | `test2_omega_scan_at_fixed_bar_osarg_vs_mock.png` | Ω_b scanned at a fixed bar (no emulator): predicted ⟨v_R⟩ quadrupole per Ω against the data, and the data's χ² change vs the predictions' change, for OSARG/H24, t = 7/H24 and t = 7/own (2026-11-21) |
 | `test2_t7_family_mismatch_omega_profile_vs_osarg.png` | Ω_b profiles (best evaluated logLs per bin): t = 7 in its own family, t = 7 in Hunter+24 on the OSARG design, and the OSARG data (2026-11-21) |
 | `test2_t7_pattern_speed_constraint_vs_gaia_rv_subsample.png` | recovered Ω_b and posterior width of those sub-samples against stars at R < 6, with the real OSARG run for reference (2026-11-21) |
+| `osarg_zhang2024_mw_hunter24_posterior_vs_chi2_scale.png` | OSARG marginal posteriors with the χ² scale √(2N) = 37.3 and the measured jitter σ₁ = 29.3, σ₂ = 41.3 (2026-11-22) |
+| `test2_pattern_speed_recovery_12p5pct_T1_vs_tempered.png` | 25 galaxies, recovered against true \|Ω_b\| and bias, T = 1 against the √(2N) tempering; coverage 0.36 against 0.96 (2026-11-21) |
+| `test2_bar_strength_profile_recovery_T1_vs_tempered.png` | A2/A0(R) truth against the T = 1 and tempered 16–84% bands for the 12 N-body snapshots and Au18 (2026-11-21) |
 | `presentation/osarg_zhang2024_face_on_number_density_and_mean_vR_black.{png,pdf}` | talk version: face-on number density (log, own scale 2.6–822 stars/kpc²) and ⟨v_R⟩ (±40 km/s; ≥ 15 stars in the kernel) of the 32,977 OSARGs at \|z\| < 3 kpc (paper's final sample), σ = 0.3 kpc smoothing on 0.2 kpc pixels over ±15 kpc; Sun, Galactic centre, and a 27° bar guide line (not fitted). `scripts/plot_presentation_osarg_mira_maps.py` (2026-11-12) |
 | `presentation/dr3_mira_face_on_number_density_black.{png,pdf}` | the same density map for the 53,693 DR3 Miras with DM_err < 0.4 at \|z\| < 3 kpc (own scale 6.5–2051 stars/kpc²) |
 | `presentation/dr3_mira_face_on_number_density_by_G_magnitude_black.{png,pdf}` | DR3 Miras (DM_err < 0.4, \|z\| < 3 kpc) split by Gaia G (`phot_g_mean_mag`): G < 14 (16,155 stars; 2,297 at x > 0), G < 16 (41,915; 14,720), all (53,693; 22,294), on one colour scale. The LPV `mean_mag_g_fov` is 0.28 mag brighter at the median and would give 21,078 at G < 14 (2026-11-18) |
