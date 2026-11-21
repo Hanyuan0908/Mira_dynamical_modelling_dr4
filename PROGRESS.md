@@ -4539,6 +4539,62 @@ be far smaller than √(2N).
   The √T scaling is an approximation; re-emulating at T = 11.3 would check it. Only Ω_b is calibrated; φ_b
   (Auriga −7°) and bar_frac need their own check. The mocks use their own potential family; OSARG uses Hunter+24.
 
+
+## 2026-11-22 — One model covariance from the best fit (user's design): OSARG's χ² excess is mostly model noise
+
+User: a covariance computed per model would differ between models, and χ² would then partly reward the noisier
+models. Instead, compute ONE model uncertainty at the best-fit model, by re-drawing the stars' distances from their
+errors and re-integrating, and use it for every model, so the comparison stays homogeneous. (The coverage-on-mocks
+calibration of T in the previous entry is not adopted: the user wants T from statistics, not from the mock suite.)
+
+`model_uncertainty_best_fit.py --case osarg_h24 --n-real 100`: OSARG best point (Ω 32.06, φ_b 20.46, S 0.949,
+bar_frac 1.495).
+- In each realisation every star's distance is re-drawn with its own σ_DM (median 0.2075), it is integrated in the
+  best-fit potential, and the library is scored exactly as the pipeline does, against the OBSERVED data (fixed); the
+  K = 10 seed changes per realisation.
+- A second covariance adds multinomial star weights to the same integrations.
+- Block-diagonal C_model, 17 × 17 scheme B terms per block; 30 min.
+- `library_fit_empirical` gained `star_w`/`seed` (reproduces the saved scores to 1e-11).
+- `rescore_with_model_covariance.py` re-scores all 384 points with C_data + C_model, no integration
+  (`results/osarg_zhang2024_mw_hunter24/evals_modelcov.csv`).
+
+**Size of the model noise.** Median over blocks of √(C_model / C_data) on the diagonal:
+
+| moment | distance re-draws | + star bootstrap |
+|---|---|---|
+| ⟨v_R⟩ m = 2, 4 | 0.29 | 0.42 |
+| ⟨v_φ⟩ m = 0, 2, 4 | 0.30 | 0.43 |
+| σ_R² m = 2, 4 | 0.38 | 0.52 |
+| σ_φ² m = 2, 4 | 0.33 | 0.46 |
+
+That is 8–14% of the data variance (18–27% with the star bootstrap).
+
+**Goodness of fit at the best point** (N = 680; the Hartlap factor is ambiguous for a sum of two estimated
+covariances: 0.94 for the 300 bootstraps, 0.82 for the 100 realisations):
+
+| covariance | χ²/N, Hartlap 0.94 | χ²/N, Hartlap 0.82 |
+|---|---|---|
+| C_data | 1.570 | 1.37 |
+| C_data + C_model | 1.29 | 1.119 |
+| C_data + C_model (star bootstrap) | 1.13 | 0.986 |
+
+So most of the χ² excess is the model's own noise. Little is left for a goodness-of-fit scaling: χ²/N ≈ 1.0–1.3.
+
+**But model noise also scatters χ² between models.** Over the 100 realisations of the SAME best-fit potential, with
+C_data + C_model, χ² has a std of 22–26 (distance re-draws) and 30–35 (+ star bootstrap). The difference between two
+models therefore scatters by σ ≈ 31–36 and 42–49 from model noise alone, independent of how different the models are.
+The data-noise part between neighbouring design points is 2Δ ≈ 35, comparable.
+
+**Raw Δχ² profile in Ω_b** (C_data + C_model, Hartlap 0.82, smallest per 2.5 km/s/kpc bin, 15 → 45):
+247 160 87 62 14 72 0 25 86 76 93 182.
+- Within about ±5 km/s/kpc of the best (14–86), the differences are 0.4–2.7 times the model-noise σ(Δχ²).
+- Only the ends (Ω ≲ 20, Ω ≳ 42.5) stand clear of it.
+
+At T ≈ 1 the shape of the posterior near the best would be set largely by library noise, not by the data. The jitter
+needs handling: quieter libraries (more orbits, snapshots, draws), or the measured σ entered as a fixed noise term in
+the emulator instead of a fitted one. Re-drawn realisations have χ²/N 1.70 against the original best's 1.57 with
+C_data, because they add a second distance error on top of the observed one.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
