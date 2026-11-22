@@ -4811,6 +4811,20 @@ Why: T = 1 emulator profile in φ_b (maximised over the other three parameters):
   the single best point (φ_b 20.46). Beyond 21° the bin minima scatter between 58 and 155, around 2σ of the measured
   two-run jitter (41).
 
+
+## 2026-11-23 — Did the emulator's peak move between T = 1 and the tempered scale? No; the T = 1 posterior only exposes where that peak is
+
+User: T = 1 is too much of a stretch, and the emulator may be broken since the peak is not the same as at T ~ 30.
+Checked with the saved maxima of all 26 runs (25 mocks + OSARG; `emulator_results_T1.json`). No new runs.
+- **The emulator maximum is the same at both scales:** the largest difference over the 26 runs is 0.002 km/s/kpc
+  in Ω_b, 0.005° in φ_b, 1e-4 in S and 4e-4 in bar_frac. The refit is a pure rescaling (identical length scales).
+- **What moves is the posterior median.** At the tempered scale the posterior is broad and its median sits away from
+  the peak: Ω_b by a mean of 0.84 km/s/kpc (max 1.64), and φ_b by a mean of +4.1° (into the box).
+- **The peak sits on the φ_b box edge more often than the evaluations do.** The emulator peak is within 1° of the
+  15° edge in 20 of 25 mocks. The best evaluated design point is within 3° of it in only 7 of 25, and the median
+  φ_b of the 10 best evaluated points is 20.7° (truth 27°). So the peak's φ_b comes from the emulator's smooth trend
+  carried to the boundary, not from the evaluated minima. T = 1 reports only the peak, so it shows this directly.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
