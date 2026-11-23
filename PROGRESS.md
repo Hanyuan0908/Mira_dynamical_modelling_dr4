@@ -4825,6 +4825,119 @@ Checked with the saved maxima of all 26 runs (25 mocks + OSARG; `emulator_result
   φ_b of the 10 best evaluated points is 20.7° (truth 27°). So the peak's φ_b comes from the emulator's smooth trend
   carried to the boundary, not from the evaluated minima. T = 1 reports only the peak, so it shows this directly.
 
+
+## 2026-11-24 — Why OSARG constrains Ω_b 5× worse than the mocks: the Milky Way family's rotation curve, not the data
+
+User: at the same tempering, the OSARG constraint (43%) and the mocks' (~9% at OSARG's coverage and N) differ hugely.
+Make apple-to-apple comparisons and find out why; think of OSARG as a random sample from a Milky Way simulation.
+
+**1. "OSARG sampled from a Milky Way simulation"** (`make_mw_hunter24_mock_from_osarg.py`).
+- **Construction:**
+  - the 26,630 OSARG stars, as observed, are phase-mixed for 6 Gyr in the Hunter+24 family at a known bar:
+    |Ω_b| 32.5, φ_b 25°, S = bar_frac = 1 (Jacobi integral drift: median 2e-5, 99% 2.5e-4);
+  - each orbit is sampled at 61 phases (3–6 Gyr, 50 Myr apart);
+  - observed with OSARG's σ_DM 0.2084;
+  - selected to OSARG's observed (x, y, z) distribution by 32-nearest-neighbour density ratio, at R_obs < 8.
+- **Result:** 26,564 stars from 16,428 distinct orbits (7,096 orbits used more than once).
+  `mock/mw_hunter24_mock_from_osarg_ics_sigmaDM0.208.hdf5`.
+- **Kinematics against OSARG** (R bins, |z| < 1):
+  - within 2–5 km/s beyond 4 kpc;
+  - inside 4 kpc the mock is hotter: σ_R 118.7 against 106.8 at R < 2, and σ_z 10–15 km/s higher. The initial
+    conditions already carry OSARG's distance errors and get smeared again, so if anything the mock is harder to
+    constrain.
+- **Run** EXACTLY as the OSARG data: galaxy mw, the OSARG 384-point design, 50 Myr, sfratio with K = 10, scheme B,
+  tempered emulator (`run_mw_hunter24_mock_from_osarg.sh`, run `mw_hunter24_mock_from_osarg_ics`; 1 h end to end).
+
+| run (same pipeline) | \|Ω_b\| (16–84%) | width | φ_b | S | bar_frac | best χ²/N |
+|---|---|---|---|---|---|---|
+| **steady-state mock, Hunter+24** (truth 32.5, 25, 1, 1) | 31.66 (23.54–38.12) | **46%** | 24.5 (21.3–28.2) | 0.86 (0.61–1.18) | 0.80 (0.59–1.17) | 1.36 |
+| real OSARG, Hunter+24 | 29.76 (23.85–36.74) | 43% | 23.4 (20.9–27.4) | 0.98 (0.75–1.21) | 1.03 (0.70–1.33) | 1.57 |
+| t = 7 mock, own family, OSARG coverage + N | 24.49 (23.48–25.63) | 8.8% | | | | 1.73 |
+
+- **A perfect steady-state sample of the Hunter+24 family, with OSARG's stars, coverage, N and errors, constrains
+  Ω_b as weakly as the real data.** Every truth is recovered within its 16–84% interval.
+- So the real data are not anomalous: not out of equilibrium, not a mixture, not a systematic.
+
+**2. Do the data follow the models?** (`compare_data_reaction_osarg_vs_mocks.py`; saved libraries whitened with the
+data covariance; Δ² = model separation from the best point; Δχ² = how much worse the data find it; tempered medians
+over design points 10–20% away in Ω_b, other parameters as the design gives them.)
+
+| case | Δ² slower / faster | Δχ²/Δ² slower / faster | posterior width |
+|---|---|---|---|
+| OSARG data, Hunter+24 | 6.1 / 7.0 | 0.63 / 0.62 | 43% |
+| steady-state mock, Hunter+24 | 4.0 / 4.6 | 0.40 / 0.52 | 46% |
+| t = 7, own family, OSARG coverage + N | 12.7 / 7.6 | 0.96 / 1.02 | 8.8% |
+| t = 7, own family, all stars | 15.9 / 10.2 | 0.98 / 1.14 | 6.9% |
+
+- **The "Wang null fails for OSARG" finding (2026-11-21) is reproduced by the steady-state mock,** so it is not
+  peculiar to the real data.
+- Small model separations sit near the library noise floor (~2.4 tempered between near-identical potentials), which
+  pulls Δχ²/Δ² below 1: (4.0 − 2.4)/4.0 ≈ 0.4 for the mock, (6.5 − 2.4)/6.5 ≈ 0.63 for OSARG.
+
+**3. Stars or potential?** (`cross_response_stars_vs_potential.py`; |Ω_b| changed in fractional steps at a fixed
+bar S = bar_frac = 1, around each family's own reference: t = 7 at 26.0, Hunter+24 at 32.5, both with corotation at
+~1.6 bar lengths.)
+- **Star sets,** all with OSARG's N and coverage:
+  - the t = 7 mock thinned to OSARG's coverage;
+  - OSARG;
+  - the steady-state mock.
+- **Hybrid families,** which swap the axisymmetric part (rotation curve) and the non-axisymmetric part
+  (baryon_full − baryon_axi, what bar_frac rescales).
+- **Metric:** D is the change of the PREDICTION, tempered. The library noise floor (D at ±0.8%) is 1.9–3.0 in every
+  cell.
+
+| family | D at −30% / −20% / +20% / +40% (range over star sets) | ⟨v_φ⟩ part at −20% |
+|---|---|---|
+| t = 7 rotation curve + t = 7 bar | 15.2–26.1 / 8.3–12.7 / 5.8–7.6 / 10.8–15.2 | 3.5–5.8 |
+| t = 7 rotation curve + Milky Way bar | 18.8–20.0 / 10.8–12.5 / 5.5–7.0 / 9.5–13.3 | 5.5 |
+| Milky Way rotation curve + t = 7 bar | 6.3–8.0 / 4.7–5.6 / 4.9–6.4 / 6.9–8.1 | 1.0–1.5 |
+| Milky Way family (Hunter+24 + Portail+17 bar) | 5.7–8.2 / 4.5–5.8 / 4.9–5.9 / 6.2–6.9 | 0.9–2.4 |
+
+- **The response follows the axisymmetric potential, not the bar and not the stars.** OSARG's stars in t = 7's
+  potential respond as strongly as t = 7's own stars (−30%: 22.9 against 26.1). Any star set in the Milky Way
+  rotation curve responds weakly, whichever bar it has.
+- **What it is not:**
+  - **The bar's force:** at S = bar_frac = 1 the Milky Way bar is a typical member of the suite
+    (`compare_bar_strength_and_resonances.py`):
+    - Q_b 0.31 against 0.12–0.28 (N-body) and 0.33 (Au18);
+    - Q_T at 4–6 kpc 0.096 against 0.065–0.117;
+    - R_CR/R_bar 1.59 at Ω_b = 32.5 against 1.18–1.65 (N-body) and 1.10–2.59 (Auriga, ground-truth files).
+  - **The tracers' temperature:** the t = 7 stars are hotter than OSARG (σ_R 156 against 107 km/s at R < 2 kpc, 120
+    against 90 at 2–4 kpc) and still constrain to 8.8%.
+- **What differs in the rotation curve:**
+  - v_c(2 kpc)/v_c(5 kpc) is 1.12–1.20 for all 12 N-body snapshots (peaked inner rotation curves) and 0.99 for Au18,
+    against 0.875 for Hunter+24 (rising; v_c 196 km/s at 2 kpc).
+  - Resonances (`resonances_vs_pattern_speed.py`):
+    - **t = 7 at 26.0:** the ILR is at 3.41 kpc, inside the fitted region, and moves 4.03 → 2.95 kpc for −20% →
+      +20%. Ω − κ/2 is 30.6, 21.0, 14.7 at R = 3, 4, 5 kpc, close to Ω_b.
+    - **Milky Way at 32.5:** the ILR is at 1.51 kpc (2.12 → 1.03), and Ω − κ/2 is 15.0, 12.9, 11.7, 10.4 at
+      R = 3–6 kpc, far below Ω_b. Corotation is at 7.04 kpc (8.8 → 5.8), at or outside the R < 6 kpc edge. So
+      2–6 kpc is non-resonant for any Ω_b within ±20%.
+    - This also matches the asymmetric OSARG scan of 2026-11-21: the response turns strong only for slow bars,
+      Ω_b → 15–20, where Ω_b meets the Ω − κ/2 plateau (12–15) at 3–6 kpc.
+  - **Not established:** that the ILR location is THE channel. Across the 25 mocks the ILR radius does not predict the
+    posterior width (Spearman −0.20, p = 0.33; the 25 ILRs are 1.72–3.46 kpc). Some galaxies with ILRs below 2 kpc
+    (Au10, Au12, Au14) still reach 8–18%. What IS established, by the hybrids, is that the Milky Way's axisymmetric
+    potential makes the R < 6 kpc kinematics insensitive to Ω_b.
+
+**What this means.**
+- The 25-galaxy suite does not sample a Milky-Way-like rotation curve: all 12 N-body snapshots have peaked inner
+  rotation curves. The Auriga rotation curves are not on this machine; only Au18 was measured (flat, 0.99). So the
+  suite's ~9% at OSARG's N and coverage does not transfer to the Milky Way.
+- Within this pipeline (R < 6 kpc, scheme B), OSARG-like data in a Hunter+24-like Galaxy give a ~45% Ω_b width.
+  More stars of the same kind (DR4 Miras) shrink the tempered width only as the data separate the models above the
+  library noise floor. That floor (D ≈ 2.4) is comparable to the whole Ω_b signal here (D − floor ≈ 2–5 at ±20–40%).
+- Candidate remedies, not tested yet: fit beyond 6 kpc (the coefficients go to 8 kpc, and corotation sweeps
+  5.8–8.8 kpc); reduce the library noise floor (more phases/draws per orbit); a prior on the rotation curve does not
+  help, since the family's axisymmetric part is already fixed.
+
+Figures: `figures/data_reaction_osarg_vs_mocks.png`, `figures/cross_response_stars_vs_potential.png`,
+`figures/bar_strength_and_resonances_mw_vs_mocks.png`, `figures/resonances_vs_pattern_speed_mw_vs_nbody.png`,
+`figures/mw_hunter24_mock_from_osarg_ics_emulator_{corner,slices,loo}_logLs_fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024_sfratio.png`.
+Tables: `results/data_reaction_osarg_vs_mocks.csv`, `results/cross_response_<stars>_<family>.npz`,
+`results/bar_strength_and_resonances.csv`, `results/resonances_vs_pattern_speed.csv`,
+`results/mw_hunter24_mock_from_osarg_ics/`.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
@@ -4877,6 +4990,11 @@ below is still found by `find figures -name <name>`; most of the Test 1b set is 
 | `osarg_zhang2024_mw_hunter24_corner_T1_vs_tempered.png` | the same over the √(2N) tempered posterior on the full prior box (2026-11-22) |
 | `osarg_zhang2024_mw_hunter24_corner_T1_phiprior25pm2.png` | OSARG at T = 1 re-sampled with a φ_b prior 25 ± 2°: still on the 20° edge (2026-11-22) |
 | `osarg_zhang2024_mw_hunter24_corner_T1_vs_tempered_phiprior25pm2.png` | the same over the tempered posterior with that prior, which moves to φ_b 24.6° (2026-11-22) |
+| `data_reaction_osarg_vs_mocks.png` | how far the predictions move from the best point (Δ²) and how much worse the data find them (Δχ²) against the fractional Ω_b offset: real OSARG, the steady-state OSARG-like mock in Hunter+24, and the t = 7 runs (2026-11-24) |
+| `cross_response_stars_vs_potential.png` | change of the prediction D (all terms; ⟨v_φ⟩ alone) against the fractional Ω_b change, three star sets × four families incl. the rotation-curve/bar hybrids (2026-11-24) |
+| `bar_strength_and_resonances_mw_vs_mocks.png` | v_c, Q_T and midplane A2/A0 of the Milky Way family against the 12 N-body snapshots and Au18 (2026-11-24) |
+| `resonances_vs_pattern_speed_mw_vs_nbody.png` | Ω, Ω ± κ/2 of the t = 7 and Milky Way families with the ±20% Ω_b band (2026-11-24) |
+| `mw_hunter24_mock_from_osarg_ics_emulator_corner_…_sfratio.png` | posterior of the steady-state OSARG-like mock in Hunter+24 (2026-11-24) |
 | `presentation/osarg_zhang2024_face_on_number_density_and_mean_vR_black.{png,pdf}` | talk version: face-on number density (log, own scale 2.6–822 stars/kpc²) and ⟨v_R⟩ (±40 km/s; ≥ 15 stars in the kernel) of the 32,977 OSARGs at \|z\| < 3 kpc (paper's final sample), σ = 0.3 kpc smoothing on 0.2 kpc pixels over ±15 kpc; Sun, Galactic centre, and a 27° bar guide line (not fitted). `scripts/plot_presentation_osarg_mira_maps.py` (2026-11-12) |
 | `presentation/dr3_mira_face_on_number_density_black.{png,pdf}` | the same density map for the 53,693 DR3 Miras with DM_err < 0.4 at \|z\| < 3 kpc (own scale 6.5–2051 stars/kpc²) |
 | `presentation/dr3_mira_face_on_number_density_by_G_magnitude_black.{png,pdf}` | DR3 Miras (DM_err < 0.4, \|z\| < 3 kpc) split by Gaia G (`phot_g_mean_mag`): G < 14 (16,155 stars; 2,297 at x > 0), G < 16 (41,915; 14,720), all (53,693; 22,294), on one colour scale. The LPV `mean_mag_g_fov` is 0.28 mag brighter at the median and would give 21,078 at G < 14 (2026-11-18) |
