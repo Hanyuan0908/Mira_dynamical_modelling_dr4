@@ -47,6 +47,8 @@ FAMILY = {
     "nbody": dict(file_prefix="Nbody", fixed=("dm_spherical",), bar=("bulge", "disc")),
     # the Milky Way (Hunter+24); its files are written by build_mw_potential.py, not by build_files
     "mw": dict(file_prefix="MW", fixed=("fixed",), bar=("baryon",)),
+    # the Milky Way (Sormani+22, spherical halo); written by build_sormani22_potential.py
+    "sormani22": dict(file_prefix="MW", fixed=("fixed",), bar=("baryon",)),
 }
 
 

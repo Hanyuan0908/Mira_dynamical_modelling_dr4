@@ -47,6 +47,10 @@ GALAXIES["nbody"] = _nbody_entry(NBODY_DEFAULT_TIME)
 # The real Milky Way: no star file and no truth, only the trial-potential family (build_mw_potential.py).
 GALAXIES["mw"] = dict(label="Milky Way (Hunter+24)", prefix="mw", pot_dir=MOCK_DIR / "mw_potential",
                       components=("MW_full",), truth=RESULTS_DIR / "mw_ground_truth_DOES_NOT_EXIST.json")
+# The same for Sormani+22 (build_sormani22_potential.py; its halo made spherical).
+GALAXIES["sormani22"] = dict(label="Milky Way (Sormani+22, spherical halo)", prefix="sormani22",
+                             pot_dir=MOCK_DIR / "sormani22_potential", components=("MW_full",),
+                             truth=RESULTS_DIR / "sormani22_ground_truth_DOES_NOT_EXIST.json")
 
 
 def galaxy(name):

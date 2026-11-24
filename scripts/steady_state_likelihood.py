@@ -50,6 +50,7 @@ BOX_Z = np.arange(-4.0, 4.0 + 1e-9, 0.5)
 PAIRS = ((0, 0), (1, 1), (2, 2), (0, 1), (0, 2), (1, 2))   # (v_R, v_phi, v_z) second-moment pairs
 NBODY_GRID = dict(gridSizeR=36, gridSizez=36, Rmin=0.03, Rmax=50.0, zmin=0.02, zmax=50.0)
 _CACHE = {}
+MW_LIKE = ("mw", "sormani22")   # Milky Way families exported with the bar along x (build_mw_potential.py, build_sormani22_potential.py)
 
 
 def bar_aligned_potential(bar_frac, S, galaxy="au18"):
@@ -64,7 +65,7 @@ def bar_aligned_potential(bar_frac, S, galaxy="au18"):
         pd = galaxy_info(galaxy)["pot_dir"]
         _CACHE[galaxy] = (agama.Potential(agama.Potential(str(pd / "dm.ini")),
                                           agama.Potential(str(pd / "bh.ini"))) if _is_auriga(galaxy)
-                          else agama.Potential(str(pd / "fixed.ini")) if galaxy == "mw"
+                          else agama.Potential(str(pd / "fixed.ini")) if galaxy in MW_LIKE
                           else agama.Potential(str(pd / "dm_spherical.ini")))
     if _is_auriga(galaxy):   # merged mmax-8 CylSpline for the baryons
         return make_static_fast(bar_frac, S, phi0=np.radians(BAR_ANGLE_DEG), mmax=8, symmetry="none",
@@ -72,7 +73,7 @@ def bar_aligned_potential(bar_frac, S, galaxy="au18"):
     # The mock galaxies' files hold the bar at -BAR_ANGLE_DEG (MW-like frame) and are turned onto x here.
     # The Milky Way model (build_mw_potential.py) is exported with its bar along x and is exactly
     # triaxial, so it is neither rotated nor re-expanded with odd or sine terms.
-    mw = galaxy == "mw"
+    mw = galaxy in MW_LIKE
     F = family_files(galaxy)
     bary = agama.Potential(agama.Potential(file=str(F["baryon_axi"])),
                            agama.Potential(file=str(F["baryon_full"]), scale=[bar_frac * S, S],

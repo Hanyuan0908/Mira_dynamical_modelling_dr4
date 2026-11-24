@@ -4959,6 +4959,112 @@ Emulator as the pipeline (`test1_gp_emulator.py --column logLs_…R0to8…`).
   the libraries' outer m = 2 pattern at 6–8 kpc drifts even in the correct potential, near corotation.
 - Not adopted. evals.csv backups before the new columns: `~/mira_dr4_runs/evals_backup_{mw_hunter24_mock,osarg}.csv`.
 
+
+## 2026-11-24 — Three follow-up tests: Sormani+22 as the Milky Way family, the library noise floor, and dropping ⟨v_φ⟩ m = 0
+
+Interruption first: from 10:05 to 10:29 every Terminal process was denied the Dropbox folder (macOS "System Policy"
+refusals; Dropbox itself healthy). It was cleared by a privacy-settings change. Nothing in the repo caused it; see
+memory `reference-dropbox-eperm-stale-tcc`.
+
+### (a) Rotation curves: Sormani+22 and the Auriga suite
+
+Measured on the published potentials (no runs). Note that ILR/CR is ~0.29 for a flat curve, lower for a rising one,
+higher for a falling one.
+
+| | v_c(2)/v_c(5) | Ω − κ/2 at R = 3–6 kpc | ILR / CR at Ω_b 32.5 | ILR/CR |
+|---|---|---|---|---|
+| Sormani+22 (Portail17.ini) | 0.884 | 15.1, 11.2, 9.5, 8.4 | 1.85 / 7.27 | 0.25 (0.25 at 37.5) |
+| Hunter+24 | 0.875 | 15.0, 12.9, 11.7, 10.4 | 1.51 / 7.04 | 0.21 (0.19 at 37.5) |
+| t = 7 N-body (at 26.0) | 1.195 | 30.6, 21.0, 14.7, 11.0 | 3.41 / 8.62 | 0.40 |
+| 12 N-body / 13 Auriga (ground-truth files) | 1.12–1.20 / Au18 0.99 | | | 0.38–0.41 / 0.28–0.43 |
+
+- The Milky Way families lie below the whole suite (lowest: Au20 0.28, Au18 0.30, Au28 0.30).
+- Within the suite, ILR/CR against posterior width gives Spearman −0.32 (p = 0.12): a weak trend only.
+
+### (b) The OSARG data in the Sormani+22 family
+
+`build_sormani22_potential.py` builds the family from Portail17.ini as `build_mw_potential.py` does from Hunter+24.
+Its halo is made spherical per the project rule (lmax 0 re-expansion of the q = 0.8 halo), which changes v_c by
+≤ 1 km/s. Forces agree with the published model to 2.6% (median), the bar lies along x, and the family is registered
+as galaxy `sormani22`. Run: `run_osarg_sormani22_local.sh`, the OSARG 384-point design, the same pipeline,
+1 h 5 min end to end.
+
+| family | \|Ω_b\| (16–84%) | width | φ_b | S | bar_frac | best χ²/N |
+|---|---|---|---|---|---|---|
+| Hunter+24 | 29.76 (23.85–36.74) | 43.3% | 23.4 (20.9–27.4) | 0.98 (0.75–1.21) | 1.03 (0.70–1.33) | 1.575 |
+| Sormani+22 | 31.77 (26.77–38.89) | 38.1% | 23.5 (21.0–27.6) | 1.01 (0.77–1.25) | 1.01 (0.67–1.34) | 1.567 |
+
+- **Equally weak, as the matching rotation curve predicts.**
+- **The fixed-bar response matches too:** OSARG stars, `cross_response_stars_vs_potential.py --cells osarg:sormani22`,
+  tempered change D at −30 / −20 / +20 / +40%:
+  - Sormani+22: 8.1, 5.1, 5.1, 7.3;
+  - Hunter+24: 8.2, 5.8, 5.7, 6.8.
+
+### (c) The library noise floor (`library_noise_floor_test.py`)
+
+Each Ω_b is integrated once for 4 Gyr at 25 Myr cadence, and the libraries are built from the same trajectories with
+the pipeline's float32 time grid (t = 0.25 Gyr excluded). `base` reproduces the earlier pipeline scans exactly.
+Hunter+24 family, φ_b 25°, Ω_ref 32.5.
+
+| library | phases | floor (mock / OSARG) | D −30% / +40%, mock | D −30% / +40%, OSARG | χ²/N at Ω_ref, mock (= truth) / OSARG |
+|---|---|---|---|---|---|
+| base: 1 Gyr, 50 Myr, K = 10 | 15 | 2.47 / 2.68 | 5.72 / 6.52 | 8.23 / 6.85 | 1.388 / 1.740 |
+| 1 Gyr, 25 Myr | 30 | 1.37 / 1.51 | 4.38 / 5.52 | 6.91 / 6.78 | 1.398 / 1.776 |
+| 4 Gyr, 100 Myr | 38 | 1.34 / 1.27 | 4.47 / 4.07 | 6.34 / 4.68 | 1.260 / 1.676 |
+| 4 Gyr, 50 Myr | 75 | **0.65 / 0.67** | 3.68 / 3.29 | 5.45 / 3.74 | **1.233 / 1.574** |
+| 1 Gyr, 50 Myr, K = 30 | 15 | 1.89 / 1.90 | 5.00 / 6.08 | 7.36 / 6.33 | 1.385 / 1.723 |
+
+- **The floor is phase sampling.** It falls roughly as 1/phases: 2.5 → 1.4 → 0.65 for 15 → 30 → 75 phases. Three
+  times the distance draws only take it to 1.9.
+- **The pattern-speed signal does not grow.** D − floor at ±30–40% is about the same: mock 3.3 / 4.1 (base) against
+  3.0 / 2.6 (75 phases). The Milky Way family's Ω_b differences are intrinsically ~3 tempered.
+- **A 4 Gyr window fits better:** χ²/N at the mock's truth falls 1.39 → 1.23, so a 1 Gyr library is not fully phase
+  mixed. More phases within 1 Gyr (25 Myr) do not help.
+- **The mock data reaction with 75 phases is still broad:** Δ (tempered) at −30 … +40% is 4.2, 2.6, 0.9, 0.7, 0.1, 0,
+  0.1, 0.4, 0.3, 0.7, 1.8, 2.6. A full-design run with this library is not done (about 4× the integration time).
+
+### (d) Without the ⟨v_φ⟩ m = 0 term (user: is the mocks' constraint just the mean rotation?)
+
+**Which terms carry the fixed-bar response** (from the saved cross-response libraries; D tempered at −30 / −20 / +20 /
++40%; floor 1.9–3.0):
+
+| family | all of scheme B | ⟨v_φ⟩ m = 0 alone | scheme B without it |
+|---|---|---|---|
+| t = 7 rotation curve (6 cells) | 15–26 / 8–13 / 5.5–7.6 / 9.5–15 | 2.3–11.8 / 1.9–3.7 / 0.6–2.0 / 1.5–5.6 | 8.5–16.5 / 5.9–8.3 / 4.0–5.0 / 5.4–7.1 |
+| Milky Way rotation curve (5 cells incl. Sormani+22) | 5.7–8.2 / 4.5–5.8 / 4.9–6.4 / 6.2–8.1 | 0.4–1.8 / 0.2–0.6 / 0.2–0.3 / 0.2–0.6 | 4.5–6.5 / 3.9–5.1 / 4.0–6.0 / 5.7–7.5 |
+
+- The mean-rotation term responds only in the N-body rotation curve, carrying up to ~45% of the change there.
+- Without it, the fast side is the same in both rotation curves; the slow side stays ~2× stronger in t = 7's.
+
+**Posteriors without it.** `rescore_without_vphi_m0.py` re-scores the saved libraries with 16 terms per block. The
+control reproduces scheme B's χ² to ≤ 5e-12 in every run; the Milky-Way-family runs need the data fit recomputed from
+the mock, since their fourier_000.npz data differ by up to Δχ² 53. One corrupt pre-existing row in test2_au22's
+evals.csv (idx 50675415794, kind "−234.27…") is skipped. Emulators were refitted via `run_without_vphi_m0_all.sh`;
+comparison in `compare_without_vphi_m0.py`.
+- **Runs:** 18 mock galaxies whose libraries are on the USB drive (12 N-body and Au5, 12, 14, 20, 22, 28). The
+  libraries of Au9, 10, 17, 18, 24, 26 and 27 are not on this machine.
+
+| 18 mocks | Ω_b width / mean \|bias\| / inside 16–84% | S width / mean bias / inside | bar_frac width / mean bias / inside | φ_b width / mean bias / inside |
+|---|---|---|---|---|
+| scheme B | 11.9% / 3.44% / 0.94 | 0.37 / +0.004 / 1.00 | 0.64 / −0.115 / 0.89 | 12.0° / −5.2° / 0.72 |
+| without ⟨v_φ⟩ m = 0 | 15.8% / 6.56% / 0.67 | 0.39 / +0.039 / 0.94 | 0.73 / −0.053 / 1.00 | 12.5° / −3.2° / 0.83 |
+
+- **Ω_b widens by a third and the N-body snapshots develop a low bias.** All 12 move down, to −2.8 … −13.1%
+  (t7 −1.5 → −4.3%; t2 −4.1 → −13.1%). The six Auriga barely move (−2.5 … +7.1%).
+- **The bar's shape parameters do not get worse.** S is unchanged. bar_frac and φ_b become LESS biased (−0.115 →
+  −0.053; −5.2° → −3.2°): the m = 0 term was pulling the φ_b–bar_frac degeneracy.
+- **The mocks still constrain Ω_b at ~16% without it, against OSARG's ~45–50%.** So the m = 0 term is a real part of
+  the mocks' advantage, not all of it.
+  - OSARG without it: 29.10 (22.96–37.72), 50%.
+  - The steady-state Hunter+24 mock: 27.83 (20.30–35.15), 53% (truth 32.5 inside).
+  - t7 at OSARG coverage + N: 24.92 (23.38–26.81), 14%.
+
+Figures: `figures/test2_pattern_speed_and_bar_recovery_without_vphi_m0.png`; emulator figures
+`figures/<run>_emulator_*_logLs_fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m24_sfratio*.png`;
+`figures/osarg_zhang2024_sormani22_emulator_*`. Tables: `results/without_vphi_m0_summary.csv`,
+`results/library_noise_floor_{h24mock,osarg}_mw.npz`, `results/cross_response_osarg_sormani22.npz`. evals.csv backups
+before the new columns: `~/mira_dr4_runs/evals_backups/`.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
@@ -5016,6 +5122,8 @@ below is still found by `find figures -name <name>`; most of the Test 1b set is 
 | `bar_strength_and_resonances_mw_vs_mocks.png` | v_c, Q_T and midplane A2/A0 of the Milky Way family against the 12 N-body snapshots and Au18 (2026-11-24) |
 | `resonances_vs_pattern_speed_mw_vs_nbody.png` | Ω, Ω ± κ/2 of the t = 7 and Milky Way families with the ±20% Ω_b band (2026-11-24) |
 | `mw_hunter24_mock_from_osarg_ics_emulator_corner_…_sfratio.png` | posterior of the steady-state OSARG-like mock in Hunter+24 (2026-11-24) |
+| `test2_pattern_speed_and_bar_recovery_without_vphi_m0.png` | 18 mocks: Ω_b bias, S and bar_frac with scheme B and without ⟨v_φ⟩ m = 0 (2026-11-24) |
+| `osarg_zhang2024_sormani22_emulator_corner_…_sfratio.png` | OSARG posterior in the Sormani+22 family (2026-11-24) |
 | `presentation/osarg_zhang2024_face_on_number_density_and_mean_vR_black.{png,pdf}` | talk version: face-on number density (log, own scale 2.6–822 stars/kpc²) and ⟨v_R⟩ (±40 km/s; ≥ 15 stars in the kernel) of the 32,977 OSARGs at \|z\| < 3 kpc (paper's final sample), σ = 0.3 kpc smoothing on 0.2 kpc pixels over ±15 kpc; Sun, Galactic centre, and a 27° bar guide line (not fitted). `scripts/plot_presentation_osarg_mira_maps.py` (2026-11-12) |
 | `presentation/dr3_mira_face_on_number_density_black.{png,pdf}` | the same density map for the 53,693 DR3 Miras with DM_err < 0.4 at \|z\| < 3 kpc (own scale 6.5–2051 stars/kpc²) |
 | `presentation/dr3_mira_face_on_number_density_by_G_magnitude_black.{png,pdf}` | DR3 Miras (DM_err < 0.4, \|z\| < 3 kpc) split by Gaia G (`phot_g_mean_mag`): G < 14 (16,155 stars; 2,297 at x > 0), G < 16 (41,915; 14,720), all (53,693; 22,294), on one colour scale. The LPV `mean_mag_g_fov` is 0.28 mag brighter at the median and would give 21,078 at G < 14 (2026-11-18) |

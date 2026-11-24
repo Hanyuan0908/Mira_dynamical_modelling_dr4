@@ -13,6 +13,7 @@ Two hybrid families separate the rotation curve (and so the resonances) from the
   hyb_mwaxi_t7bar   Hunter+24's axisymmetric potential + t = 7's non-axisymmetric part (Omega_ref 32.5)
   hyb_t7axi_mwbar   t = 7's axisymmetric potential + Hunter+24's (Portail+17) non-axisymmetric part (Omega_ref 26.0)
 The non-axisymmetric part of a family is baryon_full - baryon_axi, exactly what the family rescales with bar_frac.
+  sormani22         the Sormani+22 Milky Way family (build_sormani22_potential.py), Omega_ref 32.5 like Hunter+24
 |Omega_b| is varied in FRACTIONAL steps of Omega_ref with everything else fixed. phi_b is the star set's own
 (27 deg for t7cov, 25 deg for the other two). Scoring is the pipeline's (1 Gyr, 50 Myr, sfratio with K = 10 against
 the star set's own data, scheme B). Recorded per step, tempered by sqrt(2 N):
@@ -42,12 +43,12 @@ STARS = {
     "osarg": dict(mock="osarg_zhang2024_observed_R8.hdf5", keep=None, phi=25.0),
     "h24mock": dict(mock="mw_hunter24_mock_from_osarg_ics_sigmaDM0.208.hdf5", keep=None, phi=25.0),
 }
-FAMILY = {"nbody": 26.0, "mw": 32.5, "hyb_mwaxi_t7bar": 32.5, "hyb_t7axi_mwbar": 26.0}
+FAMILY = {"nbody": 26.0, "mw": 32.5, "sormani22": 32.5, "hyb_mwaxi_t7bar": 32.5, "hyb_t7axi_mwbar": 26.0}
 
 
 def family_potential(family):
     """The family at S = bar_frac = 1, bar along x; the hybrids swap the axisymmetric part and the bar."""
-    if family in ("nbody", "mw"):
+    if family in ("nbody", "mw", "sormani22"):
         return ssl.bar_aligned_potential(1.0, 1.0, family)
     import agama
     from potential_family import files as family_files
