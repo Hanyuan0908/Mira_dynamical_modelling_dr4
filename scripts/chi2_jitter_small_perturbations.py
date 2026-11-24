@@ -53,13 +53,21 @@ def main():
     dat = data_lbdR(mock)
     with h5py.File(mock, "r") as f:
         w = np.column_stack([f[k][:].astype(np.float64) for k in ("x", "y", "z", "vx", "vy", "vz")])
-    mu = np.load(RESULTS_DIR / f"model_uncertainty_{args.case}.npz")
-    cd0, Cd, ok = mu["coef_data"].reshape(fs.NB, -1), mu["cov_data"], mu["ok"]
+    mu_path = RESULTS_DIR / f"model_uncertainty_{args.case}.npz"
+    if mu_path.exists():
+        mu = np.load(mu_path)
+        cd0, Cd, ok = mu["coef_data"].reshape(fs.NB, -1), mu["cov_data"], mu["ok"]
+        covs = (("C_data", Cd), ("C_data + C_model", Cd + mu["cov_model"]))
+    else:                       # no model covariance for this case: the pipeline's data covariance only
+        boot = np.random.default_rng(fs.SEED).multinomial(len(w), np.full(len(w), 1 / len(w)), size=fs.N_BOOT).astype(float)
+        cd0, Cd, _, ok = fs.data_fit(w, BAR_ANGLE_DEG, boot)
+        cd0 = cd0.reshape(fs.NB, -1)
+        covs = (("C_data", Cd),)
     nr, spec = fs.SCHEMES[B]
     idx = [f * fs.NK + k for f, terms in spec.items() for k in terms]
     h = (fs.N_BOOT - len(idx) - 2) / (fs.N_BOOT - 1)
     Ws = {}
-    for tag, C in (("C_data", Cd), ("C_data + C_model", Cd + mu["cov_model"])):
+    for tag, C in covs:
         Ws[tag] = {b: np.linalg.inv(np.linalg.cholesky(C[b][np.ix_(idx, idx)]))      # scheme B: rings inside 6 kpc
                    for b in (r * fs.NL + z for r in range(nr) for z in range(fs.NL)) if ok[b]}
     ssl.ACCURACY = old.ACCURACY
@@ -88,8 +96,8 @@ def main():
             row[tag] = h * sum(float(np.sum((W[b] @ (cd0[b][idx] - cl[b][idx])) ** 2)) for b in blocks)
             row["n_blocks"] = len(blocks)
         rows.append(row)
-        print(f"  {par:10s} {dlt:+7.3f}: chi2 {row['C_data']:8.1f} | {row['C_data + C_model']:8.1f}  "
-              f"({time.time() - t0:.0f} s)", flush=True)
+        print(f"  {par:10s} {dlt:+7.3f}: chi2 " + " | ".join(f"{row[tag]:8.1f}" for tag in Ws) +
+              f"  ({time.time() - t0:.0f} s)", flush=True)
     t = pd.DataFrame(rows)
     t.to_csv(RESULTS_DIR / f"chi2_jitter_{args.case}{'_random' if args.random else ''}.csv", index=False)
     N = int(t.n_blocks.iloc[0]) * len(idx)

@@ -5065,6 +5065,48 @@ Figures: `figures/test2_pattern_speed_and_bar_recovery_without_vphi_m0.png`; emu
 `results/library_noise_floor_{h24mock,osarg}_mw.npz`, `results/cross_response_osarg_sormani22.npz`. evals.csv backups
 before the new columns: `~/mira_dr4_runs/evals_backups/`.
 
+
+## 2026-11-24 — Decision: Sormani+22 is the Milky Way family. Its temperature T from the model jitter at the best fit
+
+**Decision (user).** From now on the real-data runs use the Sormani+22 family (galaxy `sormani22`; halo made
+spherical). It gives the tighter constraint, 31.8 (26.8–38.9) against Hunter+24's 29.8 (23.9–36.7), and the value
+is more consistent with other Milky Way estimates. Hunter+24 runs stay for comparison.
+
+**T from the jitter, as for Hunter+24 on 2026-11-22.**
+`chi2_jitter_small_perturbations.py --case osarg_s22 --random 100`:
+- 100 runs at the best evaluated point, all four parameters perturbed together by Gaussians of 0.25 km/s/kpc,
+  0.15°, 0.007, 0.007 (seed 2123);
+- χ² with the pipeline's data covariance (no model covariance has been measured for this family);
+- control: the repeat gives 1092.1, the pipeline's value. `results/chi2_jitter_osarg_s22_random.csv`.
+
+| family | best point (Ω_b, φ_b, S, bar_frac) | σ₁: Δχ² vs best run | **σ₂: between two perturbed runs** | mean Δχ² vs best run | runs below best |
+|---|---|---|---|---|---|
+| Hunter+24 | 32.06, 20.46, 0.949, 1.495 | 29.3 (27.0–31.2) | 41.3 (38.0–44.0) | +10.3 | 39% |
+| **Sormani+22** | the same design point | 31.7 (29.6–33.4) | **44.8 (41.6–47.1)** | +54.2 | 5% |
+
+(Ranges: 68%, bootstrap over the 100 runs. √(2N) = 37.3, N = 697.)
+- **T = σ₂ = 44.8** is the scale on which two design points' χ² differ by noise alone, since both carry their own
+  library jitter. σ₁ is the scale against one fixed reference run.
+- **The Sormani+22 best run is a lucky draw.** A linear-plus-quadratic fit of Δχ² in the four offsets explains only
+  26% of the scatter, and its value at zero offset is +49.9 (Hunter+24: +5.1). So the best point's χ² sits ~50, or
+  1.6σ₁, below what the same model typically scores: the minimum of 384 noisy evaluations. σ₂ is unaffected.
+- The best evaluated point lies at the edge of the φ_b and bar_frac box (20.46 of 20–30; 1.495 of 0.5–1.5), as for
+  Hunter+24.
+
+**Posterior at that T** (`posterior_with_jitter_scale.py --run osarg_zhang2024_sormani22 --case osarg_s22`;
+emulator refitted per scale; `figures/osarg_zhang2024_sormani22_posterior_vs_chi2_scale.png`):
+
+| χ² scale | \|Ω_b\| (16–84%) | width | φ_b | S | bar_frac |
+|---|---|---|---|---|---|
+| √(2N) = 37.3 (old) | 31.72 (26.67–39.15) | 39% | 23.4 (20.9–27.4) | 1.01 (0.77–1.25) | 1.03 (0.70–1.34) |
+| σ₁ = 31.7 | 31.57 (26.76–38.90) | 38% | 23.1 (20.8–26.9) | 1.04 (0.82–1.25) | 1.01 (0.67–1.34) |
+| **σ₂ = 44.8** | **31.66 (26.31–39.45)** | **42%** | 23.7 (21.0–27.6) | 1.01 (0.76–1.25) | 0.99 (0.66–1.31) |
+
+- With T = σ₂ the Milky Way pattern speed from OSARG is **|Ω_b| = 31.7 (+7.8 / −5.4) km/s/kpc**.
+- The three scales differ by ≤ 1.4×, so the posteriors differ little (widths 38–42%).
+- Caveats: σ is measured at one point and assumed to hold across the design; it uses the data covariance only; and the
+  posterior is still bounded by the φ_b and bar_frac box on one side.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
@@ -5124,6 +5166,7 @@ below is still found by `find figures -name <name>`; most of the Test 1b set is 
 | `mw_hunter24_mock_from_osarg_ics_emulator_corner_…_sfratio.png` | posterior of the steady-state OSARG-like mock in Hunter+24 (2026-11-24) |
 | `test2_pattern_speed_and_bar_recovery_without_vphi_m0.png` | 18 mocks: Ω_b bias, S and bar_frac with scheme B and without ⟨v_φ⟩ m = 0 (2026-11-24) |
 | `osarg_zhang2024_sormani22_emulator_corner_…_sfratio.png` | OSARG posterior in the Sormani+22 family (2026-11-24) |
+| `osarg_zhang2024_sormani22_posterior_vs_chi2_scale.png` | OSARG in Sormani+22: marginals at √(2N) = 37.3, σ₁ = 31.7 and σ₂ = 44.8 (the adopted T) (2026-11-24) |
 | `presentation/osarg_zhang2024_face_on_number_density_and_mean_vR_black.{png,pdf}` | talk version: face-on number density (log, own scale 2.6–822 stars/kpc²) and ⟨v_R⟩ (±40 km/s; ≥ 15 stars in the kernel) of the 32,977 OSARGs at \|z\| < 3 kpc (paper's final sample), σ = 0.3 kpc smoothing on 0.2 kpc pixels over ±15 kpc; Sun, Galactic centre, and a 27° bar guide line (not fitted). `scripts/plot_presentation_osarg_mira_maps.py` (2026-11-12) |
 | `presentation/dr3_mira_face_on_number_density_black.{png,pdf}` | the same density map for the 53,693 DR3 Miras with DM_err < 0.4 at \|z\| < 3 kpc (own scale 6.5–2051 stars/kpc²) |
 | `presentation/dr3_mira_face_on_number_density_by_G_magnitude_black.{png,pdf}` | DR3 Miras (DM_err < 0.4, \|z\| < 3 kpc) split by Gaia G (`phot_g_mean_mag`): G < 14 (16,155 stars; 2,297 at x > 0), G < 16 (41,915; 14,720), all (53,693; 22,294), on one colour scale. The LPV `mean_mag_g_fov` is 0.28 mag brighter at the median and would give 21,078 at G < 14 (2026-11-18) |

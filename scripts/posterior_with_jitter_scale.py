@@ -9,9 +9,10 @@ The emulator (test1_gp_emulator.Emulator: quadratic mean + Matérn-5/2 GP + whit
 on the 384 evaluated χ² (pipeline covariance, sfratio, K = 10, scheme B); posterior by emcee as in the pipeline.
 The old √(2N) scale is included for comparison.
 
-Usage: python posterior_with_jitter_scale.py
-Output: results/osarg_zhang2024_mw_hunter24/posterior_jitter_scale.json, figures/osarg_zhang2024_mw_hunter24_posterior_vs_chi2_scale.png
+Usage: python posterior_with_jitter_scale.py [--run osarg_zhang2024_sormani22 --case osarg_s22]
+Output: results/<run>/posterior_jitter_scale.json, figures/<run>_posterior_vs_chi2_scale.png
 """
+import argparse
 import json
 
 import numpy as np
@@ -46,10 +47,14 @@ def posterior(df, scale):
 
 
 def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--run", default=RUN)
+    ap.add_argument("--case", default="osarg_h24", help="the chi2_jitter_<case>_random.csv to take sigma from")
+    args = ap.parse_args()
     set_style()
-    ge.use_run(RUN)
-    df = pd.read_csv(RESULTS_DIR / RUN / "evals.csv")
-    jit = pd.read_csv(RESULTS_DIR / "chi2_jitter_osarg_h24_random.csv")
+    ge.use_run(args.run)
+    df = pd.read_csv(RESULTS_DIR / args.run / "evals.csv")
+    jit = pd.read_csv(RESULTS_DIR / f"chi2_jitter_{args.case}_random.csv")
     x = jit.loc[jit.param == "random", "C_data"].values
     x0 = float(jit.loc[jit.param == "repeat", "C_data"].iloc[0])
     sig1 = float(np.std(x - x0, ddof=1))
@@ -72,10 +77,10 @@ def main():
         ax.set_xlabel(ge.NAMES[j])
         ax.set_yticks([])
     axes[0].legend(frameon=False, fontsize=8.5, loc="upper right")
-    fig.suptitle("OSARG posterior with the χ² scale from √(2N) (old) and from the measured model jitter", color=INK,
-                 y=1.02, fontsize=11)
-    savefig(fig, "osarg_zhang2024_mw_hunter24_posterior_vs_chi2_scale")
-    json.dump(res, open(RESULTS_DIR / RUN / "posterior_jitter_scale.json", "w"), indent=2)
+    fig.suptitle(f"{args.run}: posterior with the χ² scale from √(2N) (old) and from the measured model jitter",
+                 color=INK, y=1.02, fontsize=11)
+    savefig(fig, f"{args.run}_posterior_vs_chi2_scale")
+    json.dump(res, open(RESULTS_DIR / args.run / "posterior_jitter_scale.json", "w"), indent=2)
 
 
 if __name__ == "__main__":
