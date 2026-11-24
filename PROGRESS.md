@@ -5107,6 +5107,57 @@ emulator refitted per scale; `figures/osarg_zhang2024_sormani22_posterior_vs_chi
 - Caveats: σ is measured at one point and assumed to hold across the design; it uses the data covariance only; and the
   posterior is still bounded by the φ_b and bar_frac box on one side.
 
+
+## 2026-11-24 — The second |Ω_b| peak (~38–39) of the OSARG Sormani+22 posterior: real or emulator?
+
+User: the marginal posterior has a second peak near 37–39, not seen in the mocks, and the emulator's leave-one-out
+plot is poor (rms 0.57 tempered, with the 32 best points hardly ranked). `check_bimodality_sormani22.py` and
+`check_bimodality_peaks_direct.py`; numbers in `results/osarg_zhang2024_sormani22/bimodality_*.json`. One run's jitter
+is σ₁/T = 31.7/74.7 = 0.42 tempered, and 0.60 for a difference of two runs.
+
+1. **Evaluated points only, no emulator.** The best logLs per 2.5 km/s/kpc bin from 15 to 45 is −6.46 −4.05 −2.96
+   −2.38 −0.32 −0.81 0.00 −1.19 −0.57 −0.85 −0.41 −2.54. That is flat from 25 to 42.5 to within ~1.2, about twice
+   the jitter. The 20 best points spread over 25.2–40.9, with no gap.
+2. **The emulator has one maximum, at |Ω_b| 37.6** (φ_b on the 20° box edge, S 1.16, bar_frac 1.43). Within
+   25–33.5 its best value lies at the window's upper edge. So the peak near 30 is NOT a local maximum: it holds more
+   posterior mass because a larger volume of (φ_b, S, bar_frac) fits nearly as well there. The second peak is a
+   narrower, slightly higher region pinned to the φ_b edge.
+3. **Jackknife** (10 refits, each without a random 10% of the design): the second peak recurs in every refit at
+   ~39.5, holding 20–22% of the chain above 38.5. The main peak sits at 28.5–31.5. It is a stable feature of the
+   emulator fit, which does not by itself make it a feature of the likelihood.
+4. **Direct χ²** (integrated and scored as the pipeline, 12 runs each: the point plus 11 tiny perturbations):
+
+   | point | where | χ² (s.e.) | scatter over the 12 runs | emulator logL |
+   |---|---|---|---|---|
+   | Ω 30.07, φ 23.65, S 0.942, f 1.013 | median of the chain in 28–32 | 1186.5 (6.2) | 21.6 | −1.20 |
+   | Ω 33.50, φ 20.00, S 1.052, f 1.473 | emulator max in 25–33.5 | 1129.5 (7.4) | 25.5 | −0.21 |
+   | Ω 34.51, φ 22.94, S 1.087, f 1.190 | median of the chain in 33.5–35.5 | 1205.8 (7.0) | 24.1 | −1.11 |
+   | Ω 37.64, φ 20.00, S 1.158, f 1.432 | emulator global max | 1130.5 (8.6) | 29.8 | −0.03 |
+   | Ω 39.44, φ 22.95, S 1.144, f 1.161 | median of the chain in 38–41 | 1171.6 (12.1) | 42.1 | −0.92 |
+
+   - **The emulator's relative heights hold.** Peak ~39 against peak ~30: directly +0.20 ± 0.18 tempered, predicted
+     +0.28. The two maxima at 33.5 and 37.6: −0.01 ± 0.15, predicted +0.19.
+   - **The second peak is not a fake high spot,** but it is not significantly better than the first.
+   - **The dip between them** scores 0.26 ± 0.13 below peak ~30 at its chain-median parameters. Chain medians in a
+     window can fall between two nuisance ridges, though, so this does not cleanly test the marginal's dip.
+   - **The library jitter is NOT homogeneous.** The scatter of χ² over the 12 runs grows with |Ω_b|: 22 (30), 24–26
+     (33.5–34.5), 30 (37.6), 42 (39.4), each ±~20%. Faster bars move corotation to ~6 kpc (6.1 at 37.5 in Sormani+22),
+     at the fitted region's edge, where libraries are noisier. So the single T measured at the best point
+     understates the noise at high |Ω_b|.
+
+**Answer.** The true χ² differs by ≤ ~0.5 tempered (≤ ~35 in χ², below the two-run jitter σ₂ = 45) across
+|Ω_b| ≈ 30–39. The emulator's leave-one-out error (0.57) is the same size. So whether the posterior is two bumps or one
+broad plateau is not resolved by these evaluations, and the bimodality should not be interpreted; the 16–84% range
+(26.3–39.5 at T = σ₂) is the robust statement.
+
+**Why the mocks do not show this.** Their surfaces are steep (Ω_b widths ~12%, the tempered logL falls by several
+units over the posterior), so emulator errors of ~0.5–1 cannot create a second mode. Here the whole 26–41 range
+spans ≲ 1 logL.
+
+**Possible remedies (not run).** A second-stage design concentrated in the high-posterior region (lowers the
+emulator error where it matters); the 4 Gyr library (floor 2.5 → 0.65); widening the φ_b box below 20°, since both
+emulator maxima sit on that edge.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
