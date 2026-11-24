@@ -5158,6 +5158,70 @@ spans ≲ 1 logL.
 emulator error where it matters); the 4 Gyr library (floor 2.5 → 0.65); widening the φ_b box below 20°, since both
 emulator maxima sit on that edge.
 
+
+## 2026-11-24 — Fourier-grid strategies for signal/noise, each judged at its own T: one |z| < 2 layer helps by ~20%
+
+User: test grid strategies to raise the signal/noise and see whether the constraint improves.
+- **Reasoning.** Library (Monte Carlo) noise adds roughly a fixed amount per data term, so its χ² floor grows with N,
+  while a pattern-speed signal that varies smoothly over neighbouring blocks keeps its χ² when blocks are merged.
+- **Pitfall.** The old √(2N) tempering favours coarse grids for no reason (fewer terms, less tempering). So every grid
+  is judged at its OWN T = σ₂, the χ² jitter between two near-identical models.
+- **How σ₂ was measured** (`chi2_jitter_per_grid.py`): 40 runs at the best point, the same tiny perturbations as
+  before, trajectories integrated once and scored on every grid.
+- **Grids** (`fs.set_grid` gained a layer width; `run_grid_tests.sh <run>` re-scores saved trajectories, no
+  integration): G1 0.5 kpc rings, |z| 0–1, 1–2; G2 0.5 kpc, one layer |z| < 2; G3 1 kpc, |z| < 2; G4 0.5 kpc, |z| < 3;
+  G5 0.3 kpc, |z| < 2.
+- **Comparison:** `compare_grid_strategies.py`.
+
+**OSARG, Sormani+22** (`figures/osarg_zhang2024_sormani22_pattern_speed_posterior_by_grid.png`):
+
+| grid | N_data | best χ²/N | T = σ₂ (√2N) | \|Ω_b\| at T (16–84%) | width | at √(2N) | S | bar_frac |
+|---|---|---|---|---|---|---|---|---|
+| current: 0.3 kpc, 3 layers | 697 | 1.567 | 45.4 (37.3) | 31.59 (26.12–39.38) | 42.0% | 38.1% | 0.98 (0.74–1.24) | 1.01 (0.67–1.32) |
+| 0.5 kpc, 2 layers | 408 | 1.790 | 31.9 (28.6) | 31.19 (27.07–38.30) | 36.0% | 33.4% | 1.02 | 0.99 |
+| 0.5 kpc, \|z\| < 2 | 204 | 1.851 | 19.5 (20.2) | 31.05 (27.40–37.34) | 32.0% | 31.7% | 1.05 | 1.04 |
+| 1 kpc, \|z\| < 2 | 102 | **2.602** | 13.6 (14.3) | 30.69 (27.73–36.03) | 27.0% | 27.1% | 1.06 | 1.08 |
+| 0.5 kpc, \|z\| < 3 | 204 | 1.919 | 21.0 (20.2) | 30.96 (27.34–37.02) | 31.3% | 31.5% | 1.02 | 1.06 |
+| **0.3 kpc, \|z\| < 2** | 340 | **1.579** | 21.8 (26.1) | **31.88 (27.54–38.37)** | **34.0%** | 33.8% | 1.04 (0.82–1.27) | 1.03 (0.71–1.33) |
+
+- **Emulator-free check:** the best evaluated χ² per 2.5 km/s/kpc bin, above the best, in units of the grid's σ₂.
+  - At Ω_b 15–17.5 it rises from 10.6 (current grid) to 17.9 (0.3 kpc, |z| < 2) and 25.2 (1 kpc).
+  - At 42.5–45 it rises from 4.2 to 6.6 and 13.3.
+  - Across 25–42 it stays within ~1–2 σ₂ for every grid.
+- **So the gain is in the tails;** the flat middle remains.
+
+**Validation on the steady-state OSARG-like mock** (Hunter+24 family, truth |Ω_b| 32.5, φ_b 25, S = bar_frac = 1;
+`figures/mw_hunter24_mock_from_osarg_ics_pattern_speed_posterior_by_grid.png`):
+
+| grid | best χ²/N | T = σ₂ (√2N) | \|Ω_b\| at T | width | bias | S | bar_frac |
+|---|---|---|---|---|---|---|---|
+| current | 1.363 | 32.4 (40.0) | 31.38 (23.39–37.00) | 43.4% | −3.5% | 0.84 | 0.82 |
+| 0.5 kpc, 2 layers | 1.353 | 20.8 (28.6) | 32.26 (24.44–36.47) | 37.3% | −0.7% | 0.92 | 0.85 |
+| 0.5 kpc, \|z\| < 2 | 1.393 | 14.8 (20.2) | 32.32 (24.94–36.40) | 35.5% | −0.5% | 0.93 | 0.85 |
+| 1 kpc, \|z\| < 2 | **1.654** | 12.6 (14.3) | 33.17 (25.76–36.35) | 31.9% | +2.1% | 0.97 | 0.86 |
+| 0.5 kpc, \|z\| < 3 | 1.366 | 13.9 (20.2) | 32.58 (25.36–36.37) | 33.8% | +0.2% | 0.96 | 0.86 |
+| **0.3 kpc, \|z\| < 2** | **1.291** | 14.9 (26.1) | 32.68 (25.32–36.66) | 34.7% | +0.5% | 0.93 | 0.82 |
+
+- **Every grid stays unbiased,** with the truth inside 16–84%. Widths fall from 43% to 32–37%.
+- **The 1 kpc rings fit worse even for a mock whose truth is in the family** (χ²/N 1.65 against 1.36), so they are too
+  coarse: mixing the radial gradients within a ring makes the moments depend on the in-ring distribution of stars.
+- **The mock's posterior also has a secondary bump** (near 23–25 on the current grid), so the lumpiness of the OSARG
+  posterior belongs to the flat Milky Way likelihood, not to the data.
+- **Recommendation (not yet adopted):** 0.3 kpc rings with ONE layer |z| < 2.
+  - It keeps the radial resolution and the fit quality (OSARG χ²/N 1.579 against 1.567; mock 1.291 against 1.363),
+    halves the jitter, and narrows Ω_b by ~20% (OSARG 42% → 34%, mock 43% → 35%) without bias on the mock.
+  - OSARG would then give |Ω_b| = 31.9 (27.5–38.4) km/s/kpc.
+  - Caveat: one mock realisation.
+
+**Bug found and fixed.** Every `rescore_empirical_selection.py` worker merged its results into the run's evals.csv
+on finishing. With six workers finishing together, OSARG's evals.csv was corrupted on the second grid (one row with
+144 fields, one with 45; kept at `~/mira_dr4_runs/evals_backups/osarg_zhang2024_sormani22__evals_corrupted_2026-11-24.csv`).
+- Workers with stride > 1 no longer merge; only the caller's explicit `--merge` writes.
+- evals.csv was restored from git and the five grids folded one at a time. The default χ² is unchanged (best 1092.1),
+  and a control matched (0.5 kpc / 2 layers best χ² 730.4 = the jitter run at the same point).
+- Earlier runs are unaffected: their final explicit `--merge` always wrote last, and a corrupted table cannot be
+  parsed.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
@@ -5218,6 +5282,8 @@ below is still found by `find figures -name <name>`; most of the Test 1b set is 
 | `test2_pattern_speed_and_bar_recovery_without_vphi_m0.png` | 18 mocks: Ω_b bias, S and bar_frac with scheme B and without ⟨v_φ⟩ m = 0 (2026-11-24) |
 | `osarg_zhang2024_sormani22_emulator_corner_…_sfratio.png` | OSARG posterior in the Sormani+22 family (2026-11-24) |
 | `osarg_zhang2024_sormani22_posterior_vs_chi2_scale.png` | OSARG in Sormani+22: marginals at √(2N) = 37.3, σ₁ = 31.7 and σ₂ = 44.8 (the adopted T) (2026-11-24) |
+| `osarg_zhang2024_sormani22_pattern_speed_posterior_by_grid.png` | OSARG in Sormani+22: |Ω_b| posterior for six Fourier grids, each at its own T = σ₂ (2026-11-24) |
+| `mw_hunter24_mock_from_osarg_ics_pattern_speed_posterior_by_grid.png` | the same for the steady-state mock, truth 32.5 marked (2026-11-24) |
 | `presentation/osarg_zhang2024_face_on_number_density_and_mean_vR_black.{png,pdf}` | talk version: face-on number density (log, own scale 2.6–822 stars/kpc²) and ⟨v_R⟩ (±40 km/s; ≥ 15 stars in the kernel) of the 32,977 OSARGs at \|z\| < 3 kpc (paper's final sample), σ = 0.3 kpc smoothing on 0.2 kpc pixels over ±15 kpc; Sun, Galactic centre, and a 27° bar guide line (not fitted). `scripts/plot_presentation_osarg_mira_maps.py` (2026-11-12) |
 | `presentation/dr3_mira_face_on_number_density_black.{png,pdf}` | the same density map for the 53,693 DR3 Miras with DM_err < 0.4 at \|z\| < 3 kpc (own scale 6.5–2051 stars/kpc²) |
 | `presentation/dr3_mira_face_on_number_density_by_G_magnitude_black.{png,pdf}` | DR3 Miras (DM_err < 0.4, \|z\| < 3 kpc) split by Gaia G (`phot_g_mean_mag`): G < 14 (16,155 stars; 2,297 at x > 0), G < 16 (41,915; 14,720), all (53,693; 22,294), on one colour scale. The LPV `mean_mag_g_fov` is 0.28 mag brighter at the median and would give 21,078 at G < 14 (2026-11-18) |

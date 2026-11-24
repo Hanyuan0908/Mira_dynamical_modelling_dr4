@@ -129,7 +129,9 @@ def main():
     ap.add_argument("--ring-width", type=float, default=0.3,
                     help="Fourier ring width inside 6 kpc (default 0.3, the validated grid)")
     ap.add_argument("--z-max", type=float, default=3.0,
-                    help="top of the |z| layers, 1 kpc each (default 3)")
+                    help="top of the |z| layers (default 3)")
+    ap.add_argument("--layer-width", type=float, default=1.0,
+                    help="|z| layer thickness (default 1 kpc); e.g. --z-max 2 --layer-width 2 is one layer |z| < 2")
     ap.add_argument("--keep", default=None, metavar="NPY",
                     help="boolean mask over the mock's stars: score only these, dropping the same rows from the "
                          "data and from every saved trajectory. Orbits are test particles, so this is exactly a "
@@ -144,7 +146,7 @@ def main():
         raise SystemExit("--keep and --keep-tag go together")
     global VARIANT
     # a non-default grid gets its own variant name (e.g. sfratio_r0.5_z2), so default results are never overwritten
-    VARIANT = ESTIMATORS[args.estimator] + fs.set_grid(args.ring_width, args.z_max) + \
+    VARIANT = ESTIMATORS[args.estimator] + fs.set_grid(args.ring_width, args.z_max, args.layer_width) + \
         (f"_{args.keep_tag}" if args.keep else "") + (f"_sdm{args.sigma_dm:g}" if args.sigma_dm else "")
 
     res_dir = ROOT / "results" / args.run
@@ -213,7 +215,10 @@ def main():
         done += 1
         if done % 10 == 0 or done == 1:
             print(f"  [{done}/{len(todo)}] idx {i:3d}  ({(time.time() - t0) / 60:.1f} min)", flush=True)
-    merge(design, out_dir, evals)
+    # Parallel workers (stride > 1) must not merge: each merge rewrites evals.csv, and workers that finish together
+    # corrupted it on 2026-11-24 (two rows interleaved). The caller's single --merge does it afterwards.
+    if args.stride == 1:
+        merge(design, out_dir, evals)
     print(f"done: {done} points in {(time.time() - t0) / 60:.1f} min", flush=True)
 
 

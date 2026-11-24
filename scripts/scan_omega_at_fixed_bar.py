@@ -41,6 +41,8 @@ CASES = {
                    mock="nbody_mock_selection_sigmaDM0.271_N50k.hdf5", omegas=np.arange(15.0, 45.01, 2.5)),
     "osarg_s22": dict(label="OSARG data, Sormani+22 family", run="osarg_zhang2024_sormani22", galaxy="sormani22",
                       mock="osarg_zhang2024_observed_R8.hdf5", omegas=np.arange(15.0, 45.01, 2.5)),
+    "h24mock": dict(label="steady-state OSARG-like mock, Hunter+24 family (truth 32.5)", run="mw_hunter24_mock_from_osarg_ics",
+                    galaxy="mw", mock="mw_hunter24_mock_from_osarg_ics_sigmaDM0.208.hdf5", omegas=np.arange(15.0, 45.01, 2.5)),
     "t7_own": dict(label="t = 7 mock, own family (truth 25.20)", run="test2_t7_sf_12p5pct", galaxy="nbody",
                    mock="nbody_mock_selection_sigmaDM0.271_N50k.hdf5", omegas=np.arange(15.0, 40.01, 2.5)),
 }
