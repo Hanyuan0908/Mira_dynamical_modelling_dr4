@@ -5283,8 +5283,48 @@ T = σ₂ = 44.8, φ_b N(25, 2°), ESS fraction 0.67; 300 weighted draws, trial 
 - The 95% band exceeds 1 near 2 kpc for compressed strong bars (S < 1). With the factor-2 normalisation, A2/A0 > 1
   is possible for a strongly elongated, non-negative density.
 
-The gradient (Fisher) analysis of why the Milky Way family couples the bar to Ω_b (`fisher_gradients_by_family.py`)
-is running; results to follow.
+**5. Why — gradients of the predictions** (`fisher_gradients_by_family.py`; at S = bar_frac = 1, the star set's φ_b,
+Ω_ref 26 for the t7 rotation curve and 32.5 for the Milky Way's; central differences Ω_b ±10%, φ_b ±3°, S ±0.15,
+bar_frac ±0.25; 4 Gyr, 75-phase libraries; whitened with each star set's data covariance;
+`results/fisher_gradients_by_family.json`).
+
+| cell (stars in family) | change for one step: Ω / φ / S / f | noise of a difference | cos(Ω, f) | cos(S, f) | Fisher corr Ω–S / Ω–f / φ–f | Fisher sd Ω, S, f |
+|---|---|---|---|---|---|---|
+| t7 in t7 | 1.52 / 0.32 / 0.83 / 0.61 | 0.59 | −0.60 | +0.57 | +0.16 / +0.47 / +0.05 | 10.3%, 0.20, 0.45 |
+| OSARG in t7 | 1.69 / 0.35 / 0.60 / 0.84 | 1.02 | −0.19 | +0.51 | +0.09 / +0.12 / +0.04 | 7.9%, 0.23, 0.32 |
+| OSARG in t7 rotation curve + Milky Way bar | 1.41 / 0.30 / 0.94 / 0.91 | 0.81 | −0.23 | +0.59 | +0.25 / +0.04 / −0.01 | 9.0%, 0.20, 0.33 |
+| OSARG in Sormani+22 | 0.61 / 0.22 / 0.42 / 0.45 | 0.63 | −0.25 | +0.46 | −0.07 / +0.25 / +0.01 | 13.2%, 0.26, 0.43 |
+| steady-state mock in Hunter+24 | 0.42 / 0.16 / 0.32 / 0.38 | 0.65 | −0.28 | +0.44 | −0.02 / +0.26 / +0.01 | 16.1%, 0.30, 0.47 |
+| OSARG in Milky Way rotation curve + t7 bar | 0.57 / 0.23 / 0.38 / 0.52 | 0.69 | −0.28 | +0.37 | −0.11 / +0.30 / +0.05 | 13.9%, 0.26, 0.39 |
+
+- **The pattern speed follows the rotation curve.** A ±10% step changes the prediction by 1.4–1.7 (tempered) with the
+  t7 rotation curve, whatever the stars or bar, and by 0.42–0.61 with the Milky Way's. That gives a local Ω_b sd of
+  13–16% against 8–10%. This confirms the hybrids of the morning.
+- **There is no LOCAL φ_b–bar_frac degeneracy in any family,** the mocks' own included (Fisher corr ≤ 0.05).
+  Caveat: ±3° in φ_b changes the prediction by only 0.16–0.35, below the library noise of a difference (0.6–1.0), so
+  the φ_b gradient is noise-dominated. Noise also biases every cosine toward 0, more so for the weaker Milky Way
+  gradients.
+- **The mocks' posterior φ_b–bar_frac correlation comes with a φ_b BIAS.** φ_b posterior medians minus the truth:
+  N-body −5.1° (−2.1 … −9.6), Auriga −6.5° (−1.4 … −10.5), t7 variants −4.3°. Across the 25 mocks, the lower φ_b,
+  the lower bar_frac (Spearman +0.70, p < 0.001). The φ_b prior pulls φ_b back and bar_frac with it: a bias
+  correction (section 2).
+- **The steady-state mock, an exact equilibrium of its family, has no φ_b bias** (−0.5°), so the prior has nothing to
+  correct. That the mocks' bias comes from their snapshots not being steady states of their trial families is
+  consistent with this one case but not established.
+- **Bar length and strength are locally ~30% less constrained** with the Milky Way rotation curve (S sd 0.26–0.30
+  against 0.20–0.23), matching the posteriors.
+- **Ω_b–bar_frac:** the Ω_b gradient partly aligns with bar_frac's in every family (cos −0.19 to −0.60). Where the
+  Ω_b signal is strong this does not matter; where it is weak (Milky Way) it appears as a posterior Ω_b–bar_frac
+  correlation (Fisher +0.25–0.30; posterior +0.23–0.41).
+- **Ω_b–S:** the posterior correlation (+0.30–0.41) does not appear locally (Fisher −0.11 to −0.02). It comes from the
+  posterior's broad extent over Ω_b 24–40 (e.g. the Ω_b ~ 38 region prefers S ~ 1.15).
+
+**Summary for the user's question.**
+- In the mocks, "a φ_b prior constrains the bar" was mostly the prior removing a φ_b bias and the bar_frac bias that
+  follows it; widths changed by 10–20%.
+- The Milky Way family has no such bias to remove.
+- Its bar shape is only ~30% less constrained than the mocks'.
+- What really differs is the pattern speed, through the rotation curve.
 
 ## Figure index (Test 1b, N-body, perfect mock)
 
