@@ -4927,9 +4927,9 @@ bar S = bar_frac = 1, around each family's own reference: t = 7 at 26.0, Hunter+
 - Within this pipeline (R < 6 kpc, scheme B), OSARG-like data in a Hunter+24-like Galaxy give a ~45% Ω_b width.
   More stars of the same kind (DR4 Miras) shrink the tempered width only as the data separate the models above the
   library noise floor. That floor (D ≈ 2.4) is comparable to the whole Ω_b signal here (D − floor ≈ 2–5 at ±20–40%).
-- Candidate remedies, not tested yet: fit beyond 6 kpc (the coefficients go to 8 kpc, and corotation sweeps
-  5.8–8.8 kpc); reduce the library noise floor (more phases/draws per orbit); a prior on the rotation curve does not
-  help, since the family's axisymmetric part is already fixed.
+- Candidate remedies: fitting beyond 6 kpc was tested and does not help (next entry). Untested: reducing the
+  library noise floor (more phases/draws per orbit). A prior on the rotation curve does not help, since the family's
+  axisymmetric part is already fixed.
 
 Figures: `figures/data_reaction_osarg_vs_mocks.png`, `figures/cross_response_stars_vs_potential.png`,
 `figures/bar_strength_and_resonances_mw_vs_mocks.png`, `figures/resonances_vs_pattern_speed_mw_vs_nbody.png`,
@@ -4937,6 +4937,27 @@ Figures: `figures/data_reaction_osarg_vs_mocks.png`, `figures/cross_response_sta
 Tables: `results/data_reaction_osarg_vs_mocks.csv`, `results/cross_response_<stars>_<family>.npz`,
 `results/bar_strength_and_resonances.csv`, `results/resonances_vs_pattern_speed.csv`,
 `results/mw_hunter24_mock_from_osarg_ics/`.
+
+
+## 2026-11-24 — Remedy test: scheme B out to R < 8 kpc (corotation sweeps 5.8–8.8 kpc). It does not help
+
+`rescore_scheme_b_to_8kpc.py` re-scores the saved library coefficients with the 6–8 kpc rings added. No integration:
+- the same terms, joint block covariance, Hartlap factor and per-point block validity as scheme B;
+- column `logLs_fourier_stars_R0to8_vR_sigR_sigphi_m24_vphi_m024_sfratio` in evals.csv;
+- control: the R < 6 χ² recomputed this way matches evals.csv to 3e-12.
+
+Emulator as the pipeline (`test1_gp_emulator.py --column logLs_…R0to8…`).
+
+| run | R < 6: \|Ω_b\|, width, best χ²/N | R < 8: \|Ω_b\|, width, best χ²/N |
+|---|---|---|
+| steady-state mock, Hunter+24 (truth 32.5) | 31.66 (23.54–38.12), 46%, 1.36 | 32.76 (21.38–40.82), 59%, 1.52 |
+| OSARG, Hunter+24 | 29.76 (23.85–36.74), 43%, 1.58 | 34.46 (22.96–39.97), 49%, 1.77 |
+
+- **Wider, not narrower, and the fit worsens even for the mock** whose truth is in the family. The larger N alone
+  (√(2N) 40 → 45) would broaden by only ~6% (46 → ~49%).
+- So the 6–8 kpc rings add misfit rather than pattern-speed information. That matches the 2026-11-12 observation that
+  the libraries' outer m = 2 pattern at 6–8 kpc drifts even in the correct potential, near corotation.
+- Not adopted. evals.csv backups before the new columns: `~/mira_dr4_runs/evals_backup_{mw_hunter24_mock,osarg}.csv`.
 
 ## Figure index (Test 1b, N-body, perfect mock)
 
