@@ -5222,6 +5222,70 @@ on finishing. With six workers finishing together, OSARG's evals.csv was corrupt
 - Earlier runs are unaffected: their final explicit `--merge` always wrote last, and a corrupted table cannot be
   parsed.
 
+
+## 2026-11-24 — Degeneracies: the Milky Way family couples the bar to Ω_b, not to φ_b; and the OSARG bar profile with a φ_b prior
+
+**User:** in the mocks a bar-angle prior constrains bar length and strength, and Ω_b is constrained either way; for
+the OSARGs neither holds. Why?
+
+**1. Posterior degeneracies, measured the same way for every run** (`posterior_degeneracies.py`; emulator chains at
+the pipeline's √(2N); a φ_b prior N(φ_0, 2°) by importance weighting; `results/posterior_degeneracies.csv`,
+`figures/posterior_degeneracies_mocks_vs_osarg.png`). Medians:
+
+| group | r(φ_b, bar_frac) | r(S, bar_frac) | r(Ω_b, S) | r(Ω_b, bar_frac) | Ω_b width | bar_frac width with / without the φ_b prior |
+|---|---|---|---|---|---|---|
+| 12 N-body, own family | +0.60 | −0.58 | 0.00 | +0.23 | 11% | 0.75 |
+| 13 Auriga, own family | +0.47 | −0.43 | +0.04 | +0.14 | 14% | 0.79 |
+| t7 at OSARG coverage + N, own family | +0.50 | −0.66 | −0.05 | +0.14 | 9% | 0.86 |
+| t7 stars in Hunter+24 | −0.03 | −0.42 | +0.28 | +0.51 | 17% | 1.02 |
+| steady-state mock, Hunter+24 | +0.02 | −0.24 | +0.41 | +0.23 | 46% | 1.01 |
+| OSARG, Hunter+24 / Sormani+22 | −0.11 / −0.06 | −0.14 / −0.12 | +0.31 / +0.30 | +0.37 / +0.41 | 43% / 38% | 1.00 / 1.00 |
+
+- **The pattern belongs to the potential family, not to the data.** The same t7 stars switch to the Milky Way pattern
+  in Hunter+24, and the steady-state mock (truth in the family) reproduces OSARG's exactly. In the mocks' families
+  bar_frac trades against φ_b; in the Milky Way family bar_frac and S trade against Ω_b instead.
+- **The φ_b box is narrower in the Milky Way runs** (20–30° against 15–39°). Cut to that box, the mocks' r(φ_b,
+  bar_frac) falls to 0.36 (N-body) and 0.30 (Auriga) but stays positive. r(S, bar_frac) −0.59 / −0.49 and r(Ω_b, S)
+  0.02 / 0.05 are unchanged by the cut, so the coupling to Ω_b is not a box effect.
+
+**2. What a prior buys** (`conditional_priors_bar_shape.py`; S and bar_frac with flat, φ_b ±2°, Ω_b ±2 priors):
+- **In the mocks the φ_b prior mainly REMOVES A BIAS; it narrows little.**
+  - t7: bar_frac 0.79 → 1.04 (truth 1), width 0.78 → 0.68; S width unchanged (0.44 → 0.45).
+  - Au18: bar_frac 0.96 → 1.07, width 0.57 → 0.47; S 0.55 → 0.55.
+  - This agrees with 2026-11-06 (bar_frac bias −0.143 → +0.031).
+- **In the Milky Way family the φ_b prior changes nothing,** and the steady-state mock has no angle bias to remove
+  (φ_b 24.5, truth 25).
+- **What narrows the bar there is an Ω_b prior.** OSARG with Ω_b 37.5 ± 2: S 1.13 (0.93–1.32), width 0.47 → 0.39;
+  bar_frac 1.18 (0.90–1.40), width 0.67 → 0.51.
+- **The Milky Way bar-shape widths are only modestly wider than the mocks'.** OSARG: S ±0.24, bar_frac ±0.33.
+  Mocks with the φ_b prior: S ±0.22–0.28, bar_frac ±0.24–0.34. The large shortfall is Ω_b.
+
+**3. Do any simulations look like the Milky Way?** Partly: features appear singly, never together.
+- Weak φ_b–bar_frac coupling: Au10 0.17, Au22 0.21, Au12 0.30, Au5 0.37; for Au5, Au12 and Au22 the φ_b prior
+  shrinks bar_frac by only 7–11%.
+- Ω_b–bar_frac coupling: Au18 +0.45, t5 +0.44, t6.25 +0.42, Au20 +0.35.
+- Ω_b–S coupling ≥ 0.3 (Milky Way +0.34): none; the largest is t4.5 at +0.27.
+- Widest Ω_b: Au5 21%, Au20, Au27 and Au12 17–18% (Milky Way 42%).
+- The galaxies with the most Milky-Way-like rotation curves (lowest ILR/CR: Au20, Au12, Au27) are among the closest.
+  Spearman(ILR/CR, distance to the Milky Way pattern) +0.38 (p = 0.06).
+
+**4. The OSARG bar strength profile with a φ_b prior** (`plot_bar_strength_profile_osarg.py`; Sormani+22,
+T = σ₂ = 44.8, φ_b N(25, 2°), ESS fraction 0.67; 300 weighted draws, trial potential rebuilt per draw;
+`figures/osarg_zhang2024_sormani22_bar_strength_profile_phib25pm2.png`):
+- **Posterior:** |Ω_b| 33.1 (26.5–39.1), φ_b 24.4 (22.4–26.4), S 1.03 (0.80–1.27), bar_frac 0.97 (0.65–1.29).
+- **Negative densities:** 13 of 300 draws (4%; all bar_frac ≥ 1.24, with S < 1) have negative midplane density
+  somewhere. They are unphysical and left out; at S = 1, no bar_frac up to 1.5 goes negative.
+- **Profile against the published bar:**
+  - The median follows the published Sormani+22 bar: peak 0.62 at 0.7 kpc against 0.68.
+  - Peak A2/A0 is 0.745 (0.49–0.99), at R 0.9 (0.7–2.1) kpc.
+  - Half-peak radius beyond the peak: 3.1 (2.3–3.9) kpc, against 3.86 published.
+  - The published bar's secondary bump at 2.7–3 kpc (0.52) lies above the median (0.40) but inside the 68% band.
+- The 95% band exceeds 1 near 2 kpc for compressed strong bars (S < 1). With the factor-2 normalisation, A2/A0 > 1
+  is possible for a strongly elongated, non-negative density.
+
+The gradient (Fisher) analysis of why the Milky Way family couples the bar to Ω_b (`fisher_gradients_by_family.py`)
+is running; results to follow.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
@@ -5284,6 +5348,8 @@ below is still found by `find figures -name <name>`; most of the Test 1b set is 
 | `osarg_zhang2024_sormani22_posterior_vs_chi2_scale.png` | OSARG in Sormani+22: marginals at √(2N) = 37.3, σ₁ = 31.7 and σ₂ = 44.8 (the adopted T) (2026-11-24) |
 | `osarg_zhang2024_sormani22_pattern_speed_posterior_by_grid.png` | OSARG in Sormani+22: |Ω_b| posterior for six Fourier grids, each at its own T = σ₂ (2026-11-24) |
 | `mw_hunter24_mock_from_osarg_ics_pattern_speed_posterior_by_grid.png` | the same for the steady-state mock, truth 32.5 marked (2026-11-24) |
+| `posterior_degeneracies_mocks_vs_osarg.png` | posterior correlations (φ_b–bar_frac, φ_b–S, Ω_b–S, Ω_b–bar_frac) and what a ±2° φ_b prior buys, for the 25 mocks, the t7 variants and the Milky Way-family runs (2026-11-24) |
+| `osarg_zhang2024_sormani22_bar_strength_profile_phib25pm2.png` | the Milky Way bar's A2/A0(R) from the OSARGs (Sormani+22, T = σ₂, φ_b 25 ± 2°) against the published Sormani+22 and Hunter+24 bars (2026-11-24) |
 | `presentation/osarg_zhang2024_face_on_number_density_and_mean_vR_black.{png,pdf}` | talk version: face-on number density (log, own scale 2.6–822 stars/kpc²) and ⟨v_R⟩ (±40 km/s; ≥ 15 stars in the kernel) of the 32,977 OSARGs at \|z\| < 3 kpc (paper's final sample), σ = 0.3 kpc smoothing on 0.2 kpc pixels over ±15 kpc; Sun, Galactic centre, and a 27° bar guide line (not fitted). `scripts/plot_presentation_osarg_mira_maps.py` (2026-11-12) |
 | `presentation/dr3_mira_face_on_number_density_black.{png,pdf}` | the same density map for the 53,693 DR3 Miras with DM_err < 0.4 at \|z\| < 3 kpc (own scale 6.5–2051 stars/kpc²) |
 | `presentation/dr3_mira_face_on_number_density_by_G_magnitude_black.{png,pdf}` | DR3 Miras (DM_err < 0.4, \|z\| < 3 kpc) split by Gaia G (`phot_g_mean_mag`): G < 14 (16,155 stars; 2,297 at x > 0), G < 16 (41,915; 14,720), all (53,693; 22,294), on one colour scale. The LPV `mean_mag_g_fov` is 0.28 mag brighter at the median and would give 21,078 at G < 14 (2026-11-18) |
