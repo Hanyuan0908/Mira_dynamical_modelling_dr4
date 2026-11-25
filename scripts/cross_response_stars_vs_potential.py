@@ -42,8 +42,15 @@ STARS = {
                   keep="results/rv_selection_masks/nbody_mock_selection_sigmaDM0.271_N50k__osarg_cover.npy", phi=27.0),
     "osarg": dict(mock="osarg_zhang2024_observed_R8.hdf5", keep=None, phi=25.0),
     "h24mock": dict(mock="mw_hunter24_mock_from_osarg_ics_sigmaDM0.208.hdf5", keep=None, phi=25.0),
+    # the t = 4 N-body mock (DR3-Mira-like selection) at 12.5% and 20% distance error, thinned at random to OSARG's N
+    # (user, 2026-11-25: does a larger distance error make a mock as unresponsive as the Milky Way?)
+    "t4m12p5": dict(mock="nbody_t4_mock_selection_sigmaDM0.271_N50k.hdf5",
+                    keep="results/t4_distance_error_test/nbody_t4_mock_selection_sigmaDM0.271_N50k__osargN.npy", phi=27.0),
+    "t4m20": dict(mock="nbody_t4_mock_selection_sigmaDM0.434_N50k.hdf5",
+                  keep="results/t4_distance_error_test/nbody_t4_mock_selection_sigmaDM0.434_N50k__osargN.npy", phi=27.0),
 }
-FAMILY = {"nbody": 26.0, "mw": 32.5, "sormani22": 32.5, "hyb_mwaxi_t7bar": 32.5, "hyb_t7axi_mwbar": 26.0}
+FAMILY = {"nbody": 26.0, "mw": 32.5, "sormani22": 32.5, "hyb_mwaxi_t7bar": 32.5, "hyb_t7axi_mwbar": 26.0,
+          "nbody_t4_clusteraxifix": 33.28}   # t = 4's own family (axi files rebuilt), its finite-difference pattern speed
 # Rotation-curve swaps under the Sormani+22 bar, with the simulation's rotation curve RESCALED to the Milky Way's
 # magnitude (user, 2026-11-25): axisymmetric part = the snapshot's spherical halo + its baryons re-expanded here with
 # symmetry axisymmetric (the cluster-built *_axi files of t = 2, 3, 4, 5.5 are not axisymmetric), both multiplied by
@@ -135,7 +142,7 @@ def family_potential(family):
     """The family at S = bar_frac = 1, bar along x; the hybrids swap the axisymmetric part and the bar."""
     if family in CORE_HYB:
         return core_hybrid(family)
-    if family in ("nbody", "mw", "sormani22"):
+    if family in ("nbody", "mw", "sormani22", "nbody_t4_clusteraxifix"):
         return ssl.bar_aligned_potential(1.0, 1.0, family)
     if family in SNAP_HYB:
         return snapshot_hybrid(family)

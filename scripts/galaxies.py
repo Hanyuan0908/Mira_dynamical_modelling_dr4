@@ -49,6 +49,10 @@ GALAXIES["nbody"] = _nbody_entry(NBODY_DEFAULT_TIME)
 GALAXIES["nbody_clusteraxifix"] = dict(_nbody_entry(NBODY_DEFAULT_TIME),
                                        label="N-body (t = 7), cluster family with axisymmetric baryons rebuilt",
                                        pot_dir=MOCK_DIR / "nbody_clusteraxifix_potential")
+# The same correction for the t = 4 snapshot (cluster files of 2026-10-30, axi files rebuilt and checked).
+GALAXIES["nbody_t4_clusteraxifix"] = dict(_nbody_entry(4.0),
+                                          label="N-body (t = 4), cluster family with axisymmetric baryons rebuilt",
+                                          pot_dir=MOCK_DIR / "nbody_t4_clusteraxifix_potential")
 
 # The real Milky Way: no star file and no truth, only the trial-potential family (build_mw_potential.py).
 GALAXIES["mw"] = dict(label="Milky Way (Hunter+24)", prefix="mw", pot_dir=MOCK_DIR / "mw_potential",

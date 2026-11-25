@@ -6077,6 +6077,42 @@ until its per-point outputs are complete.
   - Their orbit libraries are on the drive, so a library-only check is possible: does the time-averaged library m = 2
     phase follow bar_frac?
 
+
+## 2026-11-25 — Does a larger distance error make a mock as unresponsive as the Milky Way? t = 4 at 12.5% vs 20%: only on the fast side
+
+**User:** would a mock with 20% distance errors (instead of 12.5%) lose constraining power like the Milky Way? Use
+t = 4, whose pattern speed (33.3) is closer to the Milky Way's.
+- **Mocks:** `make_mock_selection.py --galaxy nbody_t4 --frac 0.125 / 0.20` → `mock/nbody_t4_mock_selection_sigmaDM{0.271,0.434}_N50k.hdf5`.
+  - Same seeds, so the 20% errors are the 12.5% draws scaled. The DR3-Mira-like selection is matched for both
+    (median distance 8.0 kpc, median R 3.33 kpc).
+  - Each thinned at random to OSARG's 26,630 stars (`results/t4_distance_error_test/*__osargN.npy`).
+- **Trial family:** t = 4's own, its cluster files with the axi files rebuilt: galaxy `nbody_t4_clusteraxifix`. It
+  passes `check_axisymmetric`; bar_frac rescales the bar exactly (×0.500 / 1.500, rotation 0.0°).
+- **Measurement:** `cross_response_stars_vs_potential.py --cells t4m12p5:nbody_t4_clusteraxifix t4m20:nbody_t4_clusteraxifix`.
+  The bar is held at the truth; Ω_b is stepped around 33.28; the pipeline's scoring is used.
+  - Tables: `results/cross_response_t4m{12p5,20}_nbody_t4_clusteraxifix.npz`; log
+    `…/osarg_zhang2024_sormani22_widebar/logs/cross_response_t4_distance_error.log`.
+
+| stars in their family (N 26,630) | data Δχ² at −30 / −20 / +20 / +40% | prediction change above the floor | floor (D at ±0.8%) | χ²/N at the truth |
+|---|---|---|---|---|
+| t = 4 mock, 12.5% | 18.98 / 6.21 / 3.00 / 5.12 | 15.3 / 6.4 / 5.0 / 6.2 | 4.88 | 2.154 |
+| t = 4 mock, 20% | 13.60 / 8.62 / 0.18 / 0.84 | 10.6 / 8.7 / 2.7 / 4.7 | 3.97 | 2.225 |
+| OSARG, Sormani+22 (9.6%) | 3.04 / 0.26 / 0.06 / 2.24 | 5.6 / 2.6 / 2.6 / 4.7 | 2.51 | 1.758 |
+| steady-state mock, Hunter+24 (9.6%) | 2.90 / 1.87 / 1.67 / 2.31 | 3.3 / 2.1 / 2.4 / 4.1 | 2.47 | 1.388 |
+
+(Tempered by 2√(2N), as all cross-response numbers.)
+
+- **Slow side:** the 20% mock still rejects a slower bar strongly (13.6 / 8.6), 4–30× OSARG's 3.0 / 0.3. A larger
+  distance error does not reproduce OSARG's flat low side.
+- **Fast side:** at 20% the data barely notice a faster bar (0.18 / 0.84), like OSARG (0.06 / 2.24); at 12.5% they did
+  (3.0 / 5.1). Suggestive, not established: the 12.5% values lie close to this measurement's noise (D floor ~4–5;
+  data Δχ² at ±0.8% up to 2.3).
+- **So** distance error can mimic the Milky Way's weak response to a faster bar but not its two-sided flatness. That
+  is reproduced only by the Milky Way potential (the steady-state mock).
+- **Caveat:** t = 4's own rotation curve is N-body-like (peaked; v_c(2)/v_c(5) = 1.16), not Milky-Way-like.
+- **Not run:** full posteriors of both t = 4 error levels in the corrected family (257 points each, ~1.5–2 h each at
+  OSARG's N).
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
