@@ -5690,6 +5690,28 @@ point; `results/bimodality_origin_h24mock.{json,npz}`; figure `figures/bimodalit
    geo20 one-layer) were copied to the drive and checked (1,536 files, 5.47 GB, 0 md5 mismatches). Then the search,
    the two geo20 grids, T1 per grid at the new best point (`--case osarg_s22w`), and the comparison.
 
+
+## 2026-11-25 — OSARG in Sormani+22 on the geometric grid with two 1 kpc layers: looser than one layer
+
+User: try the geo20 rings with |z| split into 0–1 and 1–2 kpc (2 kpc felt too coarse). Re-scored from the existing
+Sormani+22 library (`run_grid_test_scheme.sh osarg_zhang2024_sormani22 geo20 2 1`); T1 from the 40 jitter
+trajectories (`chi2_jitter_per_grid.py --case osarg_s22 --only-schemes`); posterior at T1
+(`compare_grid_strategies.py`); corner `figures/corner_plots_by_grid/osarg_zhang2024_sormani22/10_geometric_20_rings_two_layers_z0to1_z1to2.png`.
+
+| grid | N_data | best χ²/N | T1 | Ω_b at T1 | width | S | bar_frac |
+|---|---|---|---|---|---|---|---|
+| geo20, \|z\| < 2 | 323 | 1.624 | 11.6 | 30.53 (28.10–36.07) | 26.1% | 1.05 (0.88–1.24) | 1.08 (0.80–1.34) |
+| geo20, \|z\| 0–1, 1–2 | 544 | 1.667 | 24.8 | 31.87 (28.11–38.24) | 31.8% | 1.04 (0.82–1.26) | 1.08 (0.74–1.35) |
+
+- **Splitting the layer loosens Ω_b** (26 → 32%).
+- **The jitter more than doubles** (T1 11.6 → 24.8) for 1.7× the terms, while the separation does not grow.
+- **The high-Ω_b side flattens.** Best evaluated χ² per 2.5 bin above the best, in T1, Ω 15 → 45:
+  - two layers: 16.9 10.5 7.1 5.1 1.0 0.0 0.6 1.0 0.5 1.2 0.5 5.8;
+  - one layer: 30.8 20.7 11.0 9.5 0.6 0.0 1.3 2.9 2.5 2.4 2.9 14.9.
+- Hypothesis, untested: the sparse 1–2 kpc blocks add library noise of their own without adding pattern-speed signal,
+  as in the mock, where the sparse high-|z| blocks carried the false mode.
+- **The one-layer geo20 remains the narrowest grid that keeps the fit.**
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
@@ -5755,6 +5777,7 @@ below is still found by `find figures -name <name>`; most of the Test 1b set is 
 | `osarg_zhang2024_sormani22_all_posteriors_by_grid_design.png` | OSARG in Sormani+22: one row per Fourier grid — the grid drawn to scale in (R, \|z\|) with N_data, T1, χ²/N, then the marginal posteriors of \|Ω_b\|, φ_b, S, bar_frac with median and 16–84% (2026-11-25, T1) |
 | `mw_hunter24_mock_from_osarg_ics_all_posteriors_by_grid_design.png` | the same for the steady-state mock, truths marked (2026-11-25, T1) |
 | `corner_plots_by_grid/<run>/NN_<grid>.png` | one corner plot per Fourier grid (nine) for OSARG in Sormani+22 and for the steady-state mock, each grid at its own T1, on the full prior box, with the grid's design described and drawn to scale (2026-11-25) |
+| `bimodality_spatial_origin_h24mock.png` | steady-state mock in Hunter+24: Δχ² per (R, \|z\|) block and per field between the false low-Ω_b mode, the main mode and the truth, three grids (2026-11-25) |
 | `posterior_degeneracies_mocks_vs_osarg.png` | posterior correlations (φ_b–bar_frac, φ_b–S, Ω_b–S, Ω_b–bar_frac) and what a ±2° φ_b prior buys, for the 25 mocks, the t7 variants and the Milky Way-family runs (2026-11-24) |
 | `osarg_zhang2024_sormani22_bar_strength_profile_phib25pm2.png` | the Milky Way bar's A2/A0(R) from the OSARGs (Sormani+22, T = σ₂, φ_b 25 ± 2°) against the published Sormani+22 and Hunter+24 bars (2026-11-24) |
 | `presentation/osarg_zhang2024_face_on_number_density_and_mean_vR_black.{png,pdf}` | talk version: face-on number density (log, own scale 2.6–822 stars/kpc²) and ⟨v_R⟩ (±40 km/s; ≥ 15 stars in the kernel) of the 32,977 OSARGs at \|z\| < 3 kpc (paper's final sample), σ = 0.3 kpc smoothing on 0.2 kpc pixels over ±15 kpc; Sun, Galactic centre, and a 27° bar guide line (not fitted). `scripts/plot_presentation_osarg_mira_maps.py` (2026-11-12) |
