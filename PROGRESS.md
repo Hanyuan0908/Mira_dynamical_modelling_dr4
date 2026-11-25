@@ -6011,6 +6011,49 @@ whether the rotation curve is the real cause. Auriga's potentials are on the clu
   - The 13 Auriga rotation curves have not been checked (their potentials are on the cluster). Au18's is flat:
     v_c(2)/v_c(5) = 0.99.
 
+
+## 2026-11-25 (evening) — The defect's exact mechanism: bar_frac ROTATES the trial bar; Auriga potentials not on the drive; repeated lockouts
+
+**User:** what is "the defect", and what did I change?
+
+**The mechanism** (cluster code from the drive, `steady_state_likelihood.bar_aligned_potential`, N-body branch):
+- The trial baryons are `baryon_axi + bar_frac·[baryon_full(x/S) rotated by 27° − baryon_axi(x/S)]`. The 27° rotation
+  brings the bar, which the files hold at the Milky-Way-like angle, onto the x-axis. The axisymmetric file needs no
+  rotation, if it is axisymmetric.
+- In the cluster-built files (t = 2, 3, 4, 5.5, 7; 10-29/30), `bulge_axi.ini` and `disc_axi.ini` carry the full bar
+  (m = 2 force ratio to `bulge.ini` / `disc.ini` 1.000 at 2–5 kpc; header `symmetry=None`). They are not rotated.
+- So at S = 1 the trial bar is (1 − bar_frac) × the bar at the original angle + bar_frac × the bar on x.
+  `bar_frac` rescales AND rotates the bar. Measured, R = 3, 4, 5 kpc identical, matching the prediction
+  |(1 − f) e^{−2i·27°} + f| to three decimals:
+
+  | bar_frac | bar amplitude / truth | bar rotated by |
+  |---|---|---|
+  | 0.5 | 0.891 | +13.5° |
+  | 1.0 | 1.000 | 0° |
+  | 1.5 | 1.272 | −9.3° |
+
+- **At bar_frac = 1 the potential is exactly right,** so truth-point checks never caught it. Away from 1, a change of
+  bar strength turns the bar, which φ_b can undo. That is the φ_b–bar_frac correlation of those runs (+0.70; +0.09 once
+  fixed) and part of their φ_b bias. (The earlier "62% fixed" was a fit to the amplitude alone.)
+- **Rebuilt files** (`nbody_clusteraxifix`): `symmetry=Axisymmetric`, m = 2 ratio 0.000.
+- **What was changed:** nothing in the existing files, runs or results. A copy of the cluster t = 7 folder
+  (`mock/nbody_clusteraxifix_potential` → the drive) had only its three axi files regenerated with
+  `potential_family.build_files`. One entry was added to `galaxies.py`. The new run is
+  `test2_t7_sf_12p5pct_clusteraxifix`.
+
+**The Auriga potentials are not on the portable drive.** Searched all 74,558 files under `/Volumes/USB/hanyuan`
+(477 GB):
+- `.ini` files exist only in the N-body potential folders (and `mock/Nbody/potential_ic.ini`);
+- the only archive is the conda environment;
+- the Auriga material is run output only (`runs/` and `results/test2_au*_sf_12p5pct{,_scat}`: trajectories, fourier and
+  sfratio files, posteriors).
+- Not transferred: `mock/au*_potential/` and the Auriga mock catalogues. The laptop has only `mock/au18_potential`.
+- Needed from the cluster for the Auriga rotation curves and the Auriga defect check.
+
+**Repeated Dropbox lockouts:** 13:56–14:34, ~19:58–20:04, and again from ~20:06. The wide-box search stopped at 1,023 of
+1,374 points the second time. It was resumed with `chain_B_resume.sh`: every stage waits for repo access and repeats
+until its per-point outputs are complete.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
