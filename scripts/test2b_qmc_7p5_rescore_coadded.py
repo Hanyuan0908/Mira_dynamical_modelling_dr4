@@ -8,6 +8,7 @@ and the error as T C T^T (checked against the data fits saved at each angle). ch
 terms are whole cos/sin pairs, so the transform is exact), Hartlap with 300; tempered logLs with N_data at the truth.
 Writes results/test2b_qmc_7p5/evals_coadded.csv for the points finished so far.
 """
+import re
 import json
 
 import numpy as np
@@ -58,7 +59,9 @@ def main():
     C0 = c_mc(s0["n_stars"] >= fs.N_MIN_BLOCK) + p0["cov_data_joint"].reshape(fs.NB, 30, 30)
     cd0 = s0["coef_data"].reshape(fs.NB, -1)
     rows, check = [], []
-    for f in sorted(OUT_DIR.glob("fourier_[0-9][0-9][0-9].npz")):
+    for f in sorted(OUT_DIR.glob("fourier_*.npz")):
+        if not re.fullmatch(r"fourier_\d+", f.stem):
+            continue
         i = int(f.stem.split("_")[1])
         s = np.load(f)
         p = design.loc[i]

@@ -24,7 +24,7 @@ for TAG in random_osargN osarg_cover g16 g15 g14 grvs14; do
     pids="$pids $!"; w=$(( w + 1 ))
   done
   for p in $pids; do wait "$p"; done
-  n=$(ls "$MIRA_DR4_RUNS/$RUN"/sfratio_${TAG}_[0-9][0-9][0-9].npz 2>/dev/null | wc -l | tr -d ' ')
+  n=$(ls "$MIRA_DR4_RUNS/$RUN" 2>/dev/null | grep -E "^sfratio_${TAG}_[0-9]+\.npz$" | wc -l | tr -d ' ')
   echo "$TAG: $n/257 re-scored"
   if [ "$n" -ne 257 ]; then echo "FAILED $TAG"; grep -h -E "Error|Trace" "$LOGS/${TAG}"_w*.log | head -5; exit 1; fi
   "$PY" -W ignore rescore_empirical_selection.py --run "$RUN" --estimator ratio --n-draw 10 --cadence-step 2 \

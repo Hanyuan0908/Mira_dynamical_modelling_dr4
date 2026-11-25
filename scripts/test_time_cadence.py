@@ -16,6 +16,7 @@ name `cad<step>`, so test1_gp_emulator.py reads it directly.
 
 Usage: python test_time_cadence.py --run test2_t7_sf_12p5pct [--step 2] [--stride N --offset K] [--merge]
 """
+import re
 import argparse
 import json
 import os
@@ -39,7 +40,9 @@ OBS_SEED = 11
 
 def merge(design, out_dir, path, variant, res_dir):
     rows = []
-    for f in sorted(out_dir.glob(f"{variant}_[0-9][0-9][0-9].npz")):
+    for f in sorted(out_dir.glob(f"{variant}_*.npz")):
+        if not re.fullmatch(rf"{re.escape(variant)}_\d+", f.stem):
+            continue
         i = int(f.stem.split("_")[1])
         s = np.load(f)
         p = design.set_index("idx").loc[i]

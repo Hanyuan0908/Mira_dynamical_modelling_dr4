@@ -6113,6 +6113,23 @@ t = 4, whose pattern speed (33.3) is closer to the Milky Way's.
 - **Not run:** full posteriors of both t = 4 error levels in the corrected family (257 points each, ~1.5–2 h each at
   OSARG's N).
 
+
+## 2026-11-25 — Bug fixed: merges and completeness checks ignored design points with index ≥ 1000
+
+The wide-bar-box run (1,374 points) stalled at "search: 1000/1374 … FAILED search", so its re-score never ran:
+- **Cause 1, the bug.** The merges and run-script checks matched exactly three digits
+  (`fourier_[0-9][0-9][0-9].npz`, `{variant}_[0-9][0-9][0-9].npz`). Points 1000–1373 were never merged or counted.
+  This is the first design with more than 1,000 points, so earlier runs are unaffected.
+- **Cause 2:** four claim locks (points 1023, 1024, 1033, 1034) were orphaned by workers killed in the Dropbox lockouts,
+  so those points were skipped for ever.
+- **Fixed in** `test2b_qmc_distance_error_run.py`, `rescore_empirical_selection.py`, `test_time_cadence.py`,
+  `test2b_qmc_7p5_rescore_coadded.py` (regex `^<variant>_\d+$`, which also excludes other variants' files) and in
+  `run_osarg_sormani22_local.sh`, `run_mw_hunter24_mock_from_osarg.sh`, `run_rv_scenarios_t7.sh`,
+  `run_t7_in_mw_hunter24_family.sh`.
+- **Recovery:** the four orphaned locks (no .npz beside them) were removed; the finish chain clears such locks before
+  every attempt.
+- **Result:** the search now merges 1374/1374; the default re-score, the geo20 grid, T1 and the comparison are running.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name

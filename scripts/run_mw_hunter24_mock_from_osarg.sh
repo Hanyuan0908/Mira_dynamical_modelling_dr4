@@ -26,7 +26,7 @@ while [ "$w" -lt "$WORKERS" ]; do
   pids="$pids $!"; w=$(( w + 1 ))
 done
 for p in $pids; do wait "$p"; done
-n=$(ls "$MIRA_DR4_RUNS/$RUN"/fourier_[0-9][0-9][0-9].npz 2>/dev/null | wc -l | tr -d ' ')
+n=$(ls "$MIRA_DR4_RUNS/$RUN" 2>/dev/null | grep -E "^fourier_[0-9]+\.npz$" | wc -l | tr -d ' ')
 echo "search: $n/$N"
 if [ "$n" -ne "$N" ]; then echo "FAILED search"; grep -h -E "Error|Trace" "$LOGS"/search_w*.log | head -5; exit 1; fi
 "$PY" -W ignore test2b_qmc_distance_error_run.py --mock "$MOCK" --run "$RUN" --galaxy mw --design "$DESIGN" \
@@ -39,7 +39,7 @@ while [ "$w" -lt "$RS_WORKERS" ]; do
   pids="$pids $!"; w=$(( w + 1 ))
 done
 for p in $pids; do wait "$p"; done
-n=$(ls "$MIRA_DR4_RUNS/$RUN"/sfratio_[0-9][0-9][0-9].npz 2>/dev/null | wc -l | tr -d ' ')
+n=$(ls "$MIRA_DR4_RUNS/$RUN" 2>/dev/null | grep -E "^sfratio_[0-9]+\.npz$" | wc -l | tr -d ' ')
 echo "re-score: $n/$N"
 if [ "$n" -ne "$N" ]; then echo "FAILED re-score"; grep -h -E "Error|Trace" "$LOGS"/rescore_w*.log | head -5; exit 1; fi
 "$PY" -W ignore rescore_empirical_selection.py --run "$RUN" --estimator ratio --n-draw 10 --cadence-step 1 --merge | tail -1

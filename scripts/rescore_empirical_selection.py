@@ -20,6 +20,7 @@ so test1_gp_emulator.py can read it directly.
 
 Usage: python rescore_empirical_selection.py --run test2_t7_sf_10pct [--stride N --offset K] [--merge]
 """
+import re
 import argparse
 import json
 import os
@@ -74,7 +75,9 @@ def library_fit_empirical(traj, phi_deg, sigma_dm, dat, ok, n_draw=10, estimator
 
 def merge(design, out_dir, path):
     rows = []
-    for f in sorted(out_dir.glob(f"{VARIANT}_[0-9][0-9][0-9].npz")):
+    for f in sorted(out_dir.glob(f"{VARIANT}_*.npz")):
+        if not re.fullmatch(rf"{re.escape(VARIANT)}_\d+", f.stem):   # any digits; not other variants' files
+            continue
         i = int(f.stem.rsplit("_", 1)[1])
         s = np.load(f)
         p = design.set_index("idx").loc[i]

@@ -32,6 +32,7 @@ Usage:
     python test2b_qmc_distance_error_run.py --run <name> --stride 12 --offset 3   # one worker of twelve
     python test2b_qmc_distance_error_run.py --run <name> --merge                  # build evals.csv
 """
+import re
 import argparse
 import json
 import os
@@ -127,7 +128,9 @@ def claim(path):
 def merge_evals(design, out_dir, evals_path, variants):
     """Build evals.csv from whatever per-point fourier_NNN.npz exist (PIPELINE section 7.7)."""
     rows = []
-    for f in sorted(out_dir.glob("fourier_[0-9][0-9][0-9].npz")):
+    for f in sorted(out_dir.glob("fourier_*.npz")):
+        if not re.fullmatch(r"fourier_\d+", f.stem):     # any number of digits (designs > 1000 points, 2026-11-25)
+            continue
         i = int(f.stem.split("_")[1])
         s = np.load(f)
         p = design.set_index("idx").loc[i]
