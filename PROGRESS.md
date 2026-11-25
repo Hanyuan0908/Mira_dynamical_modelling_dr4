@@ -5367,6 +5367,44 @@ prediction D (tempered) at −30 / −20 / +20 / +40%, and what lies above the n
   kinematics respond weakly to Ω_b. The time-averaged response itself is weaker, as the rotation-curve hybrids
   showed.
 
+
+## 2026-11-25 — How a rotation curve sets the pattern-speed sensitivity: the resonance denominator
+
+**User:** could it matter that stars at different radii complete different numbers of orbits (fix the number of periods
+per star and reweight)? Otherwise, how can the rotation curve's shape affect χ² at all?
+
+**Reweighting by periods.** The library samples each orbit equally in time and gives every orbit the same total weight
+(1/τ per orbit, whatever its number of snapshots). Different numbers of completed periods therefore change only the
+Monte Carlo noise of each orbit's contribution, not its expectation; a fixed-number-of-periods scheme converges to the
+same time average. The 4 Gyr test (2026-11-25) already gives every star in the fitted region several bar revolutions
+(~6.5 at 4–6 kpc in the Milky Way potential), and the pattern-speed signal did not change. Not run separately.
+
+**The mechanism** (`linear_response_sensitivity.py`; rotation curves only, no stars, no integration;
+`results/linear_response_sensitivity.csv`):
+- **The response.** A near-circular orbit forced by an m = 2 bar responds ∝ 1/D, with D = κ² − 4(Ω − Ω_b)², which is
+  0 at the Lindblad resonances.
+- **Its sensitivity to the pattern speed** is s(R) = |d ln(1/D) / d ln Ω_b| = |8 Ω_b (Ω − Ω_b) / D|. It is large near
+  a resonance and small far from one.
+
+| family (Ω_b) | ILR | s at R = 2 / 3 / 3.5 / 4 / 5 kpc | median s, 2–6 kpc | 2–6 kpc with s > 5 | Q_T·s peak |
+|---|---|---|---|---|---|
+| t7 N-body (26.0) | 3.40 kpc | 1.5 / 5.9 / 32 / 4.8 / 1.8 | 2.6 | 26% | 3.7 at 3.5 kpc |
+| Sormani+22 (32.5) | 1.84 kpc | 17 / 1.5 / 1.2 / 1.0 / 0.7 | 1.0 | 6% | 4.8 at 2.0 kpc |
+| Hunter+24 (32.5) | 1.50 kpc | 5.9 / 1.5 / 1.3 / 1.1 / 0.8 | 1.1 | 2% | at 1.5 kpc |
+
+- **Where the sensitive zone falls.** The rotation curve sets where Ω − κ/2 meets Ω_b. In the N-body potential (v_c
+  peaked at 1 kpc, falling) this ILR lies at 3.4 kpc, in the middle of the fitted disc. A ±10–20% change of Ω_b moves
+  it through densely populated rings, where the response is 2–30× more sensitive than elsewhere.
+- **In the Milky Way potentials** (rising v_c) the ILR sits at 1.5–1.8 kpc, inside the hot central region, where
+  epicyclic theory and resonant trapping are diluted by σ ~ 105–120 km/s and distance errors are largest. The whole
+  2.5–6 kpc band is non-resonant: s ≈ 0.4–2.5.
+- **This is how the rotation curve reaches χ².** It decides how far the fitted stars sit from a resonance, hence how
+  much their time-averaged orbits change when Ω_b changes. That is independent of integration time, consistent with
+  the 4 Gyr test.
+- Linear theory is only indicative near resonances (it diverges where orbits are actually trapped), but it reproduces
+  the ordering measured directly: the hybrid with t7's rotation curve responds like t7's family, the hybrid with the
+  Milky Way's like the Milky Way family.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
