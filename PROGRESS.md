@@ -5528,6 +5528,38 @@ each mode, from the same samples):
   and amplitude should remove these modes. This is consistent with the ±10% bar prior test, which halved the mock's
   Ω_b width.
 
+
+## 2026-11-25 — Decision (user): working rules recorded in CLAUDE.md; catch-up after every compaction
+
+**User:** catch up by re-reading the transcript, the Markdown files and the scripts. Results are recorded in
+PROGRESS.md. Never claim anything without evidence (numbers or figures), and show it every time; guesses and hypotheses
+are fine if labelled clearly. Record these as the project's rules, and redo the catch-up after every compaction.
+
+**Rules.** `CLAUDE.md` (new, repo root; loaded by Claude Code at every session start and after compaction):
+1. evidence;
+2. PROGRESS.md bookkeeping;
+3. the catch-up procedure;
+4. deliver what was asked (e.g. a "corner plot" is a full corner plot);
+5. the standing technical decisions: astro312, spherical halo, Sormani+22, scheme B / sfratio / K = 10 / 50 Myr, T1
+   per grid, and the bar strength and length as goals.
+
+**Catch-up tooling.**
+- `scripts/extract_user_messages.py <transcript.jsonl> [--since-last-compaction]` prints every user message with
+  timestamps and compaction marks.
+- The catch-up done now: 179 user messages and 5 compactions (2026-10-27, 10-28, 11-06, 11-21, 11-25) in the
+  210 MB transcript. Also re-read: README.md, PIPELINE.md, PROGRESS.md (conventions, the 2026-11-05 pipeline entry,
+  the mock-suite results and every entry since 2026-11-11), and the docstrings of all 165 scripts.
+- A local SessionStart hook (matcher `compact`; `.claude/settings.local.json` → `.claude/hooks/catch_up_after_compact.py`)
+  injects the procedure after every compaction. It is gitignored because it is personal, so it does not fire for the
+  cluster agents. Pipe-tested: exit 0, valid SessionStart output, the transcript path filled in.
+
+**Stale records found during the catch-up.**
+- `PIPELINE.md` describes the 2026-10-29 state: √(2N) tempering, and no library selection weighting. It is not yet
+  updated to the 2026-11-05 configuration or to T1.
+- `chi2_jitter_per_grid.py`'s docstring still said T = σ₂; corrected (code unchanged).
+- `plot_bar_strength_profile_osarg.py` (the OSARG A2/A0 profile) still uses σ₂ and the default grid. It is already
+  listed under next steps to redo at T1.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
@@ -5657,7 +5689,8 @@ The steady-state mock (truth 32.5, 25°, 1, 1) is just as loose:
      predicted density constrain the bar. This is a larger change: test it on the mocks first.
    - **d. Fallback:** literature priors on the bar's length and mass. The Sormani+22 / Portail+17 bar is a fit to star
      counts; with ±10% on both, OSARG gives Ω_b 30.6 (28.3–35.6) on the 0.3 kpc |z| < 2 grid.
-3. **Redo at T1 what was made at σ₂:**
+3. **Bring PIPELINE.md up to date** (it describes 2026-10-29: √(2N) tempering, no selection weighting); then
+   **redo at T1 what was made at σ₂:**
    - the OSARG A2/A0(R) profile with the φ_b prior (`plot_bar_strength_profile_osarg.py` still reads σ₂);
    - the OSARG corner plots and the degeneracy tables.
    - The 25-mock suite has no per-mock T1 yet; each needs its own jitter run.

@@ -15,3 +15,7 @@ results/**/*.npz
 # external code and local scratch (machine-specific; symlinks or checkouts)
 external/
 runs/
+
+# Claude Code: personal settings and hook scripts (the rules themselves are in CLAUDE.md)
+.claude/settings.local.json
+.claude/hooks/

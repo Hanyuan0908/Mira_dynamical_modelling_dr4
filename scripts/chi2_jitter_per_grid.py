@@ -1,4 +1,7 @@
-"""The temperature T = sigma_2 (chi2 jitter between two near-identical models) for each Fourier grid.
+"""The chi2 jitter of each Fourier grid: T1 = sigma_1, the adopted temperature (user, 2026-11-25), and sigma_2.
+
+(Before 2026-11-25 sigma_2 was used as T; both are still printed and stored, so results/chi2_jitter_per_grid_<case>.csv
+gives either. sigma_1 is computed from those rows as std(chi2 - chi2 of run 0).)
 
 A coarser grid has fewer data terms, so both the chi2 jitter and the old sqrt(2N) shrink; comparing grids at the
 sqrt(2N) tempering would favour coarse grids for no reason. This measures each grid's own jitter, the user's
