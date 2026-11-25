@@ -6204,6 +6204,33 @@ the pipeline on both grids. `results/extreme_bar_strength_{osarg_s22,h24mock}.cs
 - **A quadrupole remains with no bar** (6.5–7.0 km/s in both). Hypothesis, untested: the signature of observing an
   axisymmetric disc with distance errors and the sfratio weighting.
 
+
+## 2026-11-26 — Mis-specified distance error: 20% data modelled as 10%: a much worse fit, a weaker low side, still not OSARG-like
+
+**User:** what if the 20% distance error were interpreted as 10%?
+- **Set-up:** the same 20% t = 4 stars (N 26,630, `nbody_t4_clusteraxifix` family, bar at the truth), with the
+  library re-observed with σ_DM 0.2171 (10%) instead of 0.4343. New star set `t4m20as10` in
+  `cross_response_stars_vs_potential.py` (option `sigma_dm_lib`).
+- **Outputs:** `results/cross_response_t4m20as10_nbody_t4_clusteraxifix.npz`.
+- **Measure:** the data Δχ² is taken relative to the mean of the ±0.8% neighbours, which removes each cell's
+  reference-library draw (here the reference sat 2.25–2.74 above its neighbours). Tempered by 2√(2N).
+
+| t = 4 mock | χ²/N at the truth | −30 / −20% | +10 / +20 / +30 / +40% | best-scoring step | D floor |
+|---|---|---|---|---|---|
+| 12.5% data, 12.5% library | 2.154 | 17.43 / 4.65 | −1.73 / 1.44 / 2.21 / 3.57 | +5% | 4.88 |
+| 20% data, 20% library | 2.225 | 13.60 / 8.62 | 0.04 / 0.19 / −0.07 / 0.85 | −0.8% | 3.97 |
+| 20% data, library as 10% | **3.289** | 8.97 / 5.31 | −0.34 / 1.18 / 0.31 / 3.03 | +5% | 7.24 |
+| OSARG, Sormani+22 | 1.758 | 3.02 / 0.24 | 0.23 / 0.04 / 1.21 / 2.22 | −10% | 2.51 |
+
+- **The mis-specification shows in the fit:** χ²/N 2.23 → 3.29 (~+700 in χ² for N 663). OSARG fits at 1.76, better than
+  either matched mock, so it shows no such sign. Re-scoring OSARG as if 12.5% (2026-11-21) improved it only to 1.48.
+- **The low side weakens by ~35–40%** (13.6 → 9.0 at −30%) but stays 3–20× OSARG's. The fast side stays flat, as it
+  already was at 20% with the right model.
+- **Bias:** the best-scoring step is +5%, the same as the matched 12.5% cell. With this cell's larger noise floor
+  (7.2), the measurement cannot resolve a bias of that size.
+- **So** an underestimated distance error is not a plausible explanation for OSARG's weak constraint: it would show as
+  a much worse fit.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name

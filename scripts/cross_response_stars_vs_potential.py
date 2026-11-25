@@ -48,6 +48,11 @@ STARS = {
                     keep="results/t4_distance_error_test/nbody_t4_mock_selection_sigmaDM0.271_N50k__osargN.npy", phi=27.0),
     "t4m20": dict(mock="nbody_t4_mock_selection_sigmaDM0.434_N50k.hdf5",
                   keep="results/t4_distance_error_test/nbody_t4_mock_selection_sigmaDM0.434_N50k__osargN.npy", phi=27.0),
+    # the same 20% stars, but the library re-observed as if the error were 10% (sigma_DM 0.2171): a mis-specified
+    # error model (user, 2026-11-26)
+    "t4m20as10": dict(mock="nbody_t4_mock_selection_sigmaDM0.434_N50k.hdf5",
+                      keep="results/t4_distance_error_test/nbody_t4_mock_selection_sigmaDM0.434_N50k__osargN.npy", phi=27.0,
+                      sigma_dm_lib=0.10 * 5.0 / np.log(10)),
 }
 FAMILY = {"nbody": 26.0, "mw": 32.5, "sormani22": 32.5, "hyb_mwaxi_t7bar": 32.5, "hyb_t7axi_mwbar": 26.0,
           "nbody_t4_clusteraxifix": 33.28}   # t = 4's own family (axi files rebuilt), its finite-difference pattern speed
@@ -199,11 +204,12 @@ def run_cell(stars, family):
     om_ref = FAMILY[family]
     omegas = om_ref * (1 + FRACS)
     libs, chi2 = [], []
-    print(f"{stars} in {family}: {len(w):,} stars, sigma_DM {sigma_dm:.4f}, phi_b {phi}, Omega_ref {om_ref}", flush=True)
+    print(f"{stars} in {family}: {len(w):,} stars, sigma_DM {sigma_dm:.4f} (library smeared with "
+          f"{st.get('sigma_dm_lib', sigma_dm):.4f}), phi_b {phi}, Omega_ref {om_ref}", flush=True)
     for om in omegas:
         t0 = time.time()
         _, traj = ssl.integrate(pot, ic, -abs(om))
-        cl, _ = library_fit_empirical(np.ascontiguousarray(traj[:, ::2]), phi, sigma_dm, dat, ok)
+        cl, _ = library_fit_empirical(np.ascontiguousarray(traj[:, ::2]), phi, st.get("sigma_dm_lib", sigma_dm), dat, ok)
         cl = cl.reshape(fs.NB, 6, fs.NK)
         valid = ok & np.all(np.isfinite(cd), axis=(1, 2)) & np.all(np.isfinite(cl), axis=(1, 2))
         x2, nd = fs.scheme_chi2(cd, cl, cov, valid, fs.SCHEMES[B])
