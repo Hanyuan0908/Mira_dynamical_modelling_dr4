@@ -8,9 +8,9 @@ set -u
 cd "$(dirname "$0")"
 PY=${PYTHON:-$HOME/miniforge3/envs/astro312/bin/python}
 export MIRA_DR4_RUNS=${MIRA_DR4_RUNS:-$HOME/mira_dr4_runs}
-RUN=osarg_zhang2024_sormani22
+RUN=${RUN:-osarg_zhang2024_sormani22}   # RUN=osarg_zhang2024_sormani22_widebar for the wider bar box (2026-11-25)
 MOCK=osarg_zhang2024_observed_R8.hdf5
-DESIGN=results/osarg_zhang2024_mw_hunter24/design.csv
+DESIGN=${DESIGN:-results/osarg_zhang2024_mw_hunter24/design.csv}   # the shared OSARG design
 THREADS=${THREADS:-7}; WORKERS=${WORKERS:-2}; RS_WORKERS=${RS_WORKERS:-6}
 B=fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024
 N=$(( $(wc -l < "../$DESIGN") - 1 ))

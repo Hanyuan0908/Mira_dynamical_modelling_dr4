@@ -5627,6 +5627,69 @@ family; `bar_aligned_potential(f, S, "mw").density`):
   - Best evaluated χ² per 2.5 km/s/kpc bin (15 → 45), in T1 above the best: 10.8 7.4 5.0 2.7 0.7 3.4 0.0 1.0 3.8 2.8
     4.2 7.8. Each bin minimum carries about ±1 T1 of jitter, so this alone does not settle it.
 
+
+## 2026-11-25 (afternoon) — Decision (user): back to Sormani+22; Hunter+24 work stopped; what the stopped work left
+
+**Decision (user).** The Milky Way family is **Sormani+22** again. The user had mistaken the corner-plot folder of
+the steady-state mock (a Hunter+24 equilibrium) for OSARG-in-Hunter+24. All Hunter+24 jobs were stopped at 13:33.
+
+**What finished before the stop** (kept as results):
+- OSARG in Hunter+24, re-scored on geo20 |z| < 2 (`_geo20_z2_dz2`) and on geo20 with layers 0–1, 1–2 (`_geo20_z2`).
+  The columns are merged into `results/osarg_zhang2024_mw_hunter24/evals.csv`. No T1 was measured for them.
+- The steady-state mock, re-scored on `_geo20_z2` (merged). It was stopped at its pipeline-emulator step, which does
+  not affect the merged χ².
+- The direct second-mode test on the steady-state mock (below).
+
+**Stopped before it started:**
+- the OSARG-in-Hunter+24 second-mode test;
+- the T1 jitter of OSARG in Hunter+24 per grid;
+- the Hunter+24 wide-bar-box search. Its design (`results/osarg_zhang2024_mw_hunter24_widebar/`) and a verified
+  5.43 GB copy of the 384 finished points (`…/runs/osarg_zhang2024_mw_hunter24_widebar/` on the drive) remain,
+  unused; delete on request.
+
+**Finished result: the steady-state mock's false low-Ω_b mode is real in χ², and on the default grid it is carried by
+the sparse |z| 2–3 kpc layer** (`bimodality_spatial_origin.py --case h24mock --split 28`; 12 replicate runs per
+point; `results/bimodality_origin_h24mock.{json,npz}`; figure `figures/bimodality_spatial_origin_h24mock.png`).
+- **The points:**
+  - low mode (emulator max below 28): Ω_b 23.95, φ_b 20.0, S 1.13, bar_frac 0.50 (both on box edges);
+  - main mode: Ω_b 33.71, φ_b 30.0 (edge), S 1.15, bar_frac 0.80;
+  - truth: 32.5, 25, 1, 1.
+
+| grid | χ² main / low / truth (mean ± s.e.) | low − main | main − truth |
+|---|---|---|---|
+| default (T1 25.2) | 1133.3 ± 10.4 / 1139.3 ± 8.7 / 1174.5 ± 11.0 | **+6.0 ± 13.6 (+0.24 T1)** | −41.2 ± 15.1 (−1.63 T1) |
+| geo20, \|z\| < 2 (T1 10.6) | 414.9 ± 2.6 / 439.8 ± 2.1 / 432.0 ± 2.9 | **+25.0 ± 3.3 (+2.35 T1)** | −17.2 ± 3.9 (−1.61 T1) |
+| geo20, \|z\| 0–1, 1–2 (T1 not measured) | 750.9 ± 3.2 / 786.8 ± 4.3 / 788.5 ± 5.8 | **+35.9 ± 5.4** | −37.7 ± 6.6 |
+
+- **Not an emulator artefact.** On the default grid the true χ² of the false mode equals the main mode's
+  (+6 ± 14).
+- **Where it comes from, default grid** (Δχ² low − main per R band and layer; negative = prefers the false mode):
+  - The |z| 2–3 layer at R 3–6 kpc gives −16.7 ± 2.7 and −18.5 ± 9.0.
+  - The inner disc (R < 2, |z| < 1) gives −1.4 and −3.0.
+  - Against them, R 2–3 at |z| 1–2 gives +20.1 ± 2.5 and R 4–6 at |z| < 1 gives +11.2 ± 4.6.
+  - By field: σ_R² −18.1 favours the false mode; σ_φ² +18.7 and ⟨v_φ⟩ +7.1 favour the main mode.
+- **Without the |z| 2–3 layer the false mode is disfavoured.** Removing those blocks from the default-grid sum gives
+  +38 (arithmetic on the table above). The geo20 grids, which have no |z| > 2 data, give +25 ± 3 and +36 ± 5.
+  - Hypothesis, untested: the |z| 2–3 blocks are sparse (often < 50 stars for OSARG, where most are dropped), so
+    their 17-term bootstrap covariances are poorly estimated. That is the known sparse-block problem (χ²/N 1.25 at
+    |z| 1–2).
+- **The data prefer the main mode over the truth** by 1.6 T1 on every grid. Almost all of it is ⟨v_φ⟩ at R 4–6 kpc,
+  |z| < 1 (−43 ± 7 default, −19 ± 3 and −39 ± 4 on the geo20 grids).
+  - Hypothesis, untested: the library re-observes stars that already carry their observed distance error (double
+    smearing), which changes its ⟨v_φ⟩ in the outer disc relative to the data. The 2026-11-22 entry measured that
+    re-drawn libraries score χ²/N 1.70 against 1.57.
+
+**Running (Sormani+22), unattended from 13:35.** Bulky outputs on the drive under
+`…/runs/osarg_zhang2024_sormani22_widebar/`; log `logs/s22_chain.log`. Steps:
+1. geo20 with layers 0–1, 1–2 on `osarg_zhang2024_sormani22`;
+2. T1 for the radial schemes (existing jitter trajectories);
+3. the grid comparison at T1;
+4. the second-mode test on OSARG in Sormani+22: the high-Ω_b shoulder, `--split 34.5 --second high`;
+5. the wide-bar-box run `osarg_zhang2024_sormani22_widebar`: bar_frac 0.1–2.0, S 0.4–1.7; the same 1,374-point
+   design (identical to the abandoned Hunter+24 one). The 384 finished Sormani+22 points (traj, fourier, sfratio,
+   geo20 one-layer) were copied to the drive and checked (1,536 files, 5.47 GB, 0 md5 mismatches). Then the search,
+   the two geo20 grids, T1 per grid at the new best point (`--case osarg_s22w`), and the comparison.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
@@ -5705,8 +5768,8 @@ below is still found by `find figures -name <name>`; most of the Test 1b set is 
 ### Current status and next steps (2026-11-25)
 
 **Adopted set-up.**
-- **Family:** Hunter+24 (`mw`, spherical halo; user decision 2026-11-25, reverting the Sormani+22 choice of
-  2026-11-24). Wider bar box being run: bar_frac 0.1–2.0, S 0.4–1.7 (entry of 2026-11-25).
+- **Family:** Sormani+22 (`sormani22`, spherical halo; user decision 2026-11-24, briefly reverted to Hunter+24
+  and restored on the afternoon of 2026-11-25). Wider bar box being run: bar_frac 0.1–2.0, S 0.4–1.7.
 - **Temperature:** T1 = σ₁ of each grid (user decision 2026-11-25).
 - **Likelihood:** scheme B, rings < 6 kpc, sfratio selection, K = 10 distance draws.
 - **Grid:** the 0.3 kpc rings with one |z| < 2 layer are not yet adopted; the radial test below decides.

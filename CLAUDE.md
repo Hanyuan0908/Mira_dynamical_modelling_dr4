@@ -58,9 +58,9 @@ is not in git.
 - **Environment:** `astro312` conda. Watch memory to avoid running out of it. Wrap long runs in `caffeinate -i -s`.
   In zsh, never pass CLI options through one unquoted variable.
 - **Trial potentials:** the DM halo is spherical in both the truth and the trial potentials. The Milky Way family is
-  **Hunter+24** (galaxy `mw`; decision of 2026-11-25, reverting Sormani+22 of 2026-11-24, which is kept for
-  comparison). The OSARG prior box is being widened to bar_frac 0.1–2.0 and S 0.4–1.7 (run
-  `osarg_zhang2024_mw_hunter24_widebar`).
+  **Sormani+22** (galaxy `sormani22`; decision of 2026-11-24, restored on 2026-11-25 after a brief switch to
+  Hunter+24, which is kept for comparison only). The OSARG prior box is being widened to bar_frac 0.1–2.0 and
+  S 0.4–1.7 (run `osarg_zhang2024_sormani22_widebar`).
 - **Bulky outputs** of new runs go on the portable drive:
   `/Volumes/USB/hanyuan/projects/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/runs/` (`MIRA_DR4_RUNS`). The drive
   is exFAT, so no symlinks can be made on it.

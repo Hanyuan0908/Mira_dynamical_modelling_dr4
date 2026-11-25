@@ -2,9 +2,10 @@
 (user, 2026-11-25)
 
 Stage "points" (emulator, no integration). The run's chi2 on the default grid, at that grid's T1 (logL = -dchi2/2T1),
-emulated as the pipeline does. Its maximum is found separately in a low window (|Omega_b| < --split) and in the rest.
-A low-window maximum that sits ON the window edge is the slope of the main mode (a tail). One inside the window is a
-separate mode. Printed with the chain fraction in each window.
+emulated as the pipeline does. Its maximum is found separately in the window of the second mode (|Omega_b| < --split
+with --second low, > --split with --second high) and in the rest (the main mode). A second-window maximum that sits ON
+the window edge is the slope of the main mode (a tail); one inside the window is a separate mode. Printed with the
+chain fraction in each window. (The first run, h24mock, labelled the second mode "low".)
 
 Stage "direct". At each point (the two window maxima, and the truth for a mock), N_REP runs are integrated: the point
 itself plus N_REP - 1 tiny random perturbations (the widths of chi2_jitter_small_perturbations.py). Each is scored
@@ -17,7 +18,7 @@ Delta(block) = mean over runs of chi2_block(point B) - chi2_block(point A), with
 scatter, on the blocks valid in every run. Negative Delta: that block's data prefer B.
 
 Usage: python bimodality_spatial_origin.py --case h24mock --split 28 [--n-rep 12]
-       python bimodality_spatial_origin.py --case osarg_h24 --split 27
+       python bimodality_spatial_origin.py --case osarg_s22 --split 34.5 --second high
 Output: results/bimodality_origin_<case>.npz and .json (points, totals, per-block Delta), printed tables.
         Trajectories: $MIRA_DR4_RUNS (default ~/mira_dr4_runs)/bimodality_traj_<case>/.
 """
@@ -64,7 +65,7 @@ def t1_default(case):
     return float(np.std(x, ddof=1)), f"chi2_jitter_{case}_random.csv"
 
 
-def find_points(run, case, split):
+def find_points(run, case, split, second="low"):
     ge.use_run(run)
     ev = pd.read_csv(RESULTS_DIR / run / "evals.csv")
     tr = ev[ev.kind == "qmc"].reset_index(drop=True)
@@ -74,7 +75,8 @@ def find_points(run, case, split):
     emu = ge.Emulator(u, y)
     us = (split - ge.LO[0]) / (ge.HI[0] - ge.LO[0])
     out = {}
-    for lab, lo, hi in (("low", 0.0, us), ("main", us, 1.0)):
+    wins = (("second", 0.0, us), ("main", us, 1.0)) if second == "low" else (("main", 0.0, us), ("second", us, 1.0))
+    for lab, lo, hi in wins:
         best = None
         inside = (u[:, 0] >= lo) & (u[:, 0] <= hi)
         starts = np.vstack([u[inside][np.argsort(-y[inside])[:10]],
@@ -88,9 +90,9 @@ def find_points(run, case, split):
         out[lab] = dict(Omega=float(p[0]), phi=float(p[1]), S=float(p[2]), f=float(p[3]), logL=float(-best.fun),
                         on_window_edge=bool(edge))
     P = posterior(u, y)
-    m = P[:, 0] < split
-    info = dict(T1=T1, T1_source=src, split=split, chain_frac_low=float(m.mean()),
-                chain_low=dict(S=float(np.median(P[m, 2])), f=float(np.median(P[m, 3]))),
+    m = P[:, 0] < split if second == "low" else P[:, 0] > split
+    info = dict(T1=T1, T1_source=src, split=split, second_side=second, chain_frac_second=float(m.mean()),
+                chain_second=dict(S=float(np.median(P[m, 2])), f=float(np.median(P[m, 3]))),
                 chain_main=dict(S=float(np.median(P[~m, 2])), f=float(np.median(P[~m, 3]))))
     return out, info
 
@@ -121,18 +123,20 @@ def main():
     ap.add_argument("--case", required=True, choices=list(CASES))
     ap.add_argument("--split", type=float, required=True, help="|Omega_b| separating the low window from the rest")
     ap.add_argument("--n-rep", type=int, default=12)
+    ap.add_argument("--second", choices=["low", "high"], default="low", help="side of --split the second mode lies on")
     args = ap.parse_args()
     c = CASES[args.case]
     run = c["run"]
-    pts, info = find_points(run, args.case, args.split)
-    print(f"[{args.case}] default grid, T1 = {info['T1']:.1f} ({info['T1_source']}); chain below {args.split}: "
-          f"{info['chain_frac_low']:.2f} (S {info['chain_low']['S']:.2f}, f {info['chain_low']['f']:.2f}; rest S "
+    pts, info = find_points(run, args.case, args.split, args.second)
+    side = "below" if args.second == "low" else "above"
+    print(f"[{args.case}] default grid, T1 = {info['T1']:.1f} ({info['T1_source']}); chain {side} {args.split}: "
+          f"{info['chain_frac_second']:.2f} (S {info['chain_second']['S']:.2f}, f {info['chain_second']['f']:.2f}; rest S "
           f"{info['chain_main']['S']:.2f}, f {info['chain_main']['f']:.2f})")
     for k, p in pts.items():
-        print(f"   emulator max, {k:4s} window: Omega {p['Omega']:.2f} phi {p['phi']:.2f} S {p['S']:.3f} f {p['f']:.3f}  "
+        print(f"   emulator max, {k:6s} window: Omega {p['Omega']:.2f} phi {p['phi']:.2f} S {p['S']:.3f} f {p['f']:.3f}  "
               f"logL {p['logL']:+.2f}  {'ON THE WINDOW EDGE (a tail, not a separate maximum)' if p['on_window_edge'] else 'interior (a separate maximum)'}",
               flush=True)
-    points = {"main": pts["main"], "low": pts["low"]}
+    points = {"main": pts["main"], "second": pts["second"]}
     if args.case in TRUTH:
         o, ph, s, f = TRUTH[args.case]
         points["truth"] = dict(Omega=o, phi=ph, S=s, f=f)
@@ -148,7 +152,7 @@ def main():
     ssl.ACCURACY = old.ACCURACY
     runs = {}
     for lab, p in points.items():
-        rng = np.random.default_rng({"main": 101, "low": 202, "truth": 303}[lab])
+        rng = np.random.default_rng({"main": 101, "second": 202, "low": 202, "truth": 303}[lab])
         runs[lab] = []
         for r in range(args.n_rep):
             q = dict(Omega_abs=p["Omega"], phi_b_deg=p["phi"], S=p["S"], bar_frac=p["f"])
@@ -205,7 +209,7 @@ def main():
             if len(jj) > 2:
                 T1g = float(np.std(jj.chi2.values[1:] - jj.chi2.iloc[0], ddof=1))
         g["T1"] = T1g
-        pairs = [("low", "main")] + ([("main", "truth"), ("low", "truth")] if "truth" in per else [])
+        pairs = [("second", "main")] + ([("main", "truth"), ("second", "truth")] if "truth" in per else [])
         g["pairs"] = {}
         for b_, a_ in pairs:
             D = per[b_][:, common] .mean(0) - per[a_][:, common].mean(0)          # (n_common, 4)
