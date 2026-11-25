@@ -6054,6 +6054,29 @@ whether the rotation curve is the real cause. Auriga's potentials are on the clu
 1,374 points the second time. It was resumed with `chain_B_resume.sh`: every stage waits for repo access and repeats
 until its per-point outputs are complete.
 
+
+## 2026-11-25 — Which runs the bar defect touches: NOT Test 1, NOT the OSARG runs; the cluster-built Test 2 families
+
+**User:** does the defect affect the OSARG application, and Test 1 (whose bar angle was well constrained)?
+
+- **The OSARG families are correct.** Current code and this laptop's files: `sormani22` and `mw` (and the laptop's
+  `nbody`) rescale the bar exactly, amplitude ×0.500 / 1.500 / 2.000 at R = 2–5 kpc for bar_frac 0.5 / 1.5 / 2.0, with
+  rotation 0.0°. All OSARG runs, the steady-state mock and the Sormani+22 / Hunter+24 posteriors used correct families.
+- **Test 1 used the correct family** (laptop, 2026-10-27/28; provenance by reproduction).
+  - Method: 2,000 stars restarted from each saved trajectory's own first snapshot, integrated in the correct t = 7
+    family and in a two-bar replica of the defect built from the same local files.
+  - Points (bar_frac far from 1): idx 6 and 9 (first batch, `~/mira_dr4_runs/test1_nbody`), idx 65 and 68 (focused
+    batch); bar_frac 0.57, 0.59, 1.95, 0.45.
+  - Median position offset from the saved orbits at 100 Myr: correct family 1.6–2.3e-4 kpc (0.02–0.07 kpc at 1 Gyr);
+    two-bar replica 0.45–1.2 kpc (1.7–2.5 kpc at 1 Gyr).
+  - So Test 1's single bar was correctly rescaled, and its bar-angle constraint is genuine.
+- **Affected:** runs with the families built on the cluster/workstation on 2026-10-29/30, confirmed for t = 2, 3, 4,
+  5.5 and 7. That includes their Test 2 mock-suite runs (the original t = 7 run verified by reproduction).
+  - **Unknown:** the cluster families of the other seven snapshots and of the 13 Auriga galaxies; their potential
+    files are not on this machine.
+  - Their orbit libraries are on the drive, so a library-only check is possible: does the time-averaged library m = 2
+    phase follow bar_frac?
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
