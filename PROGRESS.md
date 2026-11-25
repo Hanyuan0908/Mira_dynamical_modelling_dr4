@@ -5405,6 +5405,37 @@ same time average. The 4 Gyr test (2026-11-25) already gives every star in the f
   the ordering measured directly: the hybrid with t7's rotation curve responds like t7's family, the hybrid with the
   Milky Way's like the Milky Way family.
 
+
+## 2026-11-25 — Decision: temperature T1 (= σ₁, per grid); and how much of the Ω_b width is the unconstrained bar
+
+**Decision (user).** The temperature is T1 = σ₁: the std of χ² − χ²(best run) over tiny random perturbations at the
+best fit, measured for each Fourier grid (`chi2_jitter_per_grid.py`). σ₂ (between two perturbed runs, ≈ √2 T1) is no
+longer used.
+- T1 per grid, OSARG in Sormani+22: current 0.3 kpc / 3 layers 32.1; 0.5 kpc / 2 layers 22.6; 0.5 kpc |z| < 2 13.8;
+  1 kpc |z| < 2 9.7; 0.5 kpc |z| < 3 14.9; 0.3 kpc |z| < 2 15.4.
+- Steady-state mock: current 25.2; 0.3 kpc |z| < 2 10.7.
+
+**Is the weak Ω_b mainly the unconstrained bar strength? (user)** `bar_strength_prior_effect.py`: posteriors at T1,
+importance-weighted with priors on bar_frac and S (1 ± 0.1, the published bar; the truth for the mock) and φ_b
+(25 ± 2°); `results/bar_strength_prior_effect.csv`.
+
+| case | grid | no prior | bar_frac ±0.1 | S ±0.1 | both | both + φ_b |
+|---|---|---|---|---|---|---|
+| OSARG, Sormani+22 | current | 32.09 (26.91–39.30), 38.6% | 36.0% | 38.7% | 31.58 (27.88–39.21), 35.9% | 35.9% |
+| OSARG, Sormani+22 | 0.3 kpc, \|z\| < 2 | 32.14 (28.15–37.81), 30.1% | 28.8% | 28.8% | 30.63 (28.30–35.60), 23.8% | 25.2% |
+| steady-state mock (truth 32.5) | current | 31.43 (23.52–36.14), 40.1%, −3.3% | 35.5% | 35.2% | 33.32 (30.28–36.90), 19.9%, +2.5% | 20.3% |
+| steady-state mock | 0.3 kpc, \|z\| < 2 | 32.92 (26.07–36.01), 30.2%, +1.3% | 22.7% | 20.2% | 34.23 (31.75–36.96), 15.2%, +5.3% | 14.8% |
+
+- **Yes for the mock:** fixing the bar's length and strength to ±10% halves the Ω_b width, and the truth stays inside.
+- **Partly for OSARG:** 30% → 24% on the single-layer grid, 39% → 36% on the current one. The real data constrain
+  less even with the bar fixed.
+- **The φ_b prior adds nothing,** as expected from the degeneracy analysis.
+- **Ways to constrain the bar strength (proposed, not run):**
+  1. Literature priors on the bar's length and mass (the Sormani+22 / Portail+17 bar is itself a fit to star counts).
+  2. Extra kinematic terms from the saved libraries (all six fields, the dispersions' m = 0, the vertical terms), each
+     scheme at its own T1.
+  3. Use the tracers' m = 2 density structure, which the empirical selection function (sfratio) now absorbs.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name

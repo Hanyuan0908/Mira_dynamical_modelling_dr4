@@ -27,7 +27,10 @@ import test1_gp_emulator as ge
 B = "fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024"
 GRIDS = [("default", "", "0.3 kpc rings, |z| 0-1, 1-2, 2-3"), ("_r0.5_z2", "_r0.5_z2", "0.5 kpc, |z| 0-1, 1-2"),
          ("_r0.5_z2_dz2", "_r0.5_z2_dz2", "0.5 kpc, |z| < 2"), ("_r1_z2_dz2", "_r1_z2_dz2", "1 kpc, |z| < 2"),
-         ("_r0.5_z3_dz3", "_r0.5_z3_dz3", "0.5 kpc, |z| < 3"), ("_r0.3_z2_dz2", "_r0.3_z2_dz2", "0.3 kpc, |z| < 2")]
+         ("_r0.5_z3_dz3", "_r0.5_z3_dz3", "0.5 kpc, |z| < 3"), ("_r0.3_z2_dz2", "_r0.3_z2_dz2", "0.3 kpc, |z| < 2"),
+         ("_geo20_z2_dz2", "_geo20_z2_dz2", "geometric 20 rings, |z| < 2"),
+         ("_geo32_z2_dz2", "_geo32_z2_dz2", "geometric 32 rings, |z| < 2"),
+         ("_ilr01_z2_dz2", "_ilr01_z2_dz2", "0.1 kpc at 1.2-2.4 kpc, |z| < 2")]
 
 
 def posterior(u, y):
@@ -96,7 +99,7 @@ def main():
     pd.DataFrame(rows).to_csv(RESULTS_DIR / args.run / "grid_strategies.csv", index=False)
 
     fig, ax = plt.subplots(figsize=(8.5, 5))
-    cols = [INK, BLUE_RAMP[2], BLUE_RAMP[4], BLUE_RAMP[6], ACCENT, INK_MUTED]
+    cols = [INK, BLUE_RAMP[2], BLUE_RAMP[4], BLUE_RAMP[6], ACCENT, INK_MUTED, "#E8A33D", "#8E44AD", "#2E8B57"]
     for (label, tag, desc), c in zip(GRIDS, cols):
         if label in chains:
             ax.hist(chains[label][:, 0], bins=np.arange(15, 45.01, 1.0), histtype="step", density=True, lw=2 if label == "default" else 1.5,

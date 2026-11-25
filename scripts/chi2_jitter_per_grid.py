@@ -31,13 +31,16 @@ from scan_omega_at_fixed_bar import CASES
 from chi2_jitter_small_perturbations import RANDOM_WIDTH
 
 B = "fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024"
-GRIDS = [(0.3, 3.0, 1.0), (0.5, 2.0, 1.0), (0.5, 2.0, 2.0), (1.0, 2.0, 2.0), (0.5, 3.0, 3.0), (0.3, 2.0, 2.0)]
+GRIDS = [(0.3, 3.0, 1.0, None), (0.5, 2.0, 1.0, None), (0.5, 2.0, 2.0, None), (1.0, 2.0, 2.0, None), (0.5, 3.0, 3.0, None),
+         (0.3, 2.0, 2.0, None), (0.3, 2.0, 2.0, "geo20"), (0.3, 2.0, 2.0, "geo32"), (0.3, 2.0, 2.0, "ilr01")]
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--case", default="osarg_s22", choices=list(CASES))
     ap.add_argument("--n", type=int, default=40)
+    ap.add_argument("--only-schemes", action="store_true", help="score only the named radial schemes (the others are "
+                    "already in the csv); rows are appended")
     args = ap.parse_args()
     c = CASES[args.case]
     meta = json.load(open(RESULTS_DIR / c["run"] / "run_meta.json"))
@@ -68,8 +71,9 @@ def main():
             print(f"integrated run {r} ({time.time() - t0:.0f} s)", flush=True)
         runs.append((r, float(q.phi_b_deg), path))
     boot = np.random.default_rng(fs.SEED).multinomial(len(w), np.full(len(w), 1 / len(w)), size=fs.N_BOOT).astype(float)
-    rows = []
-    for g in GRIDS:
+    out = RESULTS_DIR / f"chi2_jitter_per_grid_{args.case}.csv"
+    rows = pd.read_csv(out).to_dict("records") if (args.only_schemes and out.exists()) else []
+    for g in (x for x in GRIDS if (x[3] is not None or not args.only_schemes)):
         tag = fs.set_grid(*g) or "default"
         cd0, cov0, _, ok = fs.data_fit(w, BAR_ANGLE_DEG, boot)
         cd0 = cd0.reshape(fs.NB, 6, fs.NK)
@@ -89,7 +93,7 @@ def main():
               f"{np.std(x - x0, ddof=1):5.1f}, sigma_2 {np.std(pairs, ddof=1):5.1f}, sqrt(2N) {np.sqrt(2 * nd):5.1f}  "
               f"({time.time() - t0:.0f} s)", flush=True)
     fs.set_grid()
-    pd.DataFrame(rows).to_csv(RESULTS_DIR / f"chi2_jitter_per_grid_{args.case}.csv", index=False)
+    pd.DataFrame(rows).drop_duplicates(subset=["grid", "run"], keep="last").to_csv(out, index=False)
 
 
 if __name__ == "__main__":

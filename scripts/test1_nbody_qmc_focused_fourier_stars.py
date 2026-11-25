@@ -54,22 +54,37 @@ SCHEMES = {   # name: (rings used, {field: kept terms})
 }
 
 
-def set_grid(ring_width=0.3, z_max=3.0, layer_width=1.0):
-    """Switch the module to another (ring, layer) grid: rings of ring_width out to 6 kpc (then the usual 0.5 kpc rings
-    to 8), |z| layers of layer_width up to z_max. Every function here reads the grid at call time, and the schemes'
-    "R0to6" ring count follows. Returns a tag for variant names ("" for the default grid; "_dz<w>" is added only when
-    the layers are not 1 kpc, so earlier variant names are unchanged)."""
+def _geometric(n, r_in=0.2, r_out=6.0):
+    return np.r_[0.0, r_in * (r_out / r_in) ** (np.arange(n) / (n - 1))]
+
+
+# named radial schemes inside 6 kpc (user, 2026-11-25: refine around the Milky Way's ILR at ~1.5-1.8 kpc)
+RING_SCHEMES = {
+    "geo20": _geometric(20),                                   # 20 rings, ratio 1.20, ~0.3 kpc wide at 1.6 kpc
+    "geo32": _geometric(32),                                   # 32 rings, ratio 1.115, ~0.18 kpc wide at 1.6 kpc
+    "ilr01": np.r_[np.arange(0.0, 1.2, 0.3), np.arange(1.2, 2.4 - 1e-9, 0.1), np.arange(2.4, 6.0 + 1e-9, 0.3)],
+}
+
+
+def set_grid(ring_width=0.3, z_max=3.0, layer_width=1.0, ring_scheme=None):
+    """Switch the module to another (ring, layer) grid: rings of ring_width out to 6 kpc, or the named RING_SCHEMES
+    edges (then the usual 0.5 kpc rings to 8), |z| layers of layer_width up to z_max. Every function here reads the
+    grid at call time, and the schemes' "R0to6" ring count follows. Returns a tag for variant names ("" for the
+    default grid; "_dz<w>" is added only when the layers are not 1 kpc, and "_<scheme>" replaces "_r<width>" for a
+    named radial scheme, so earlier variant names are unchanged)."""
     global RING_EDGES, LAYER_EDGES, NR, NL, NB, N_RING_DEFAULT
-    RING_EDGES = np.round(np.r_[np.arange(0.0, 6.0 + 1e-9, ring_width), [6.5, 7.0, 7.5, 8.0]], 6)
+    inner = RING_SCHEMES[ring_scheme] if ring_scheme else np.arange(0.0, 6.0 + 1e-9, ring_width)
+    RING_EDGES = np.round(np.r_[inner, [6.5, 7.0, 7.5, 8.0]], 6)
     LAYER_EDGES = np.arange(0.0, z_max + 1e-9, layer_width)
     NR, NL = len(RING_EDGES) - 1, len(LAYER_EDGES) - 1
     NB = NR * NL
-    old_n, N_RING_DEFAULT = N_RING_DEFAULT, int(round(6.0 / ring_width))
+    old_n, N_RING_DEFAULT = N_RING_DEFAULT, len(inner) - 1
     for name, (n_ring, spec) in list(SCHEMES.items()):
         SCHEMES[name] = (N_RING_DEFAULT if n_ring == old_n else NR, spec)
-    if abs(ring_width - 0.3) < 1e-9 and abs(z_max - 3.0) < 1e-9 and abs(layer_width - 1.0) < 1e-9:
+    if ring_scheme is None and abs(ring_width - 0.3) < 1e-9 and abs(z_max - 3.0) < 1e-9 and abs(layer_width - 1.0) < 1e-9:
         return ""
-    return f"_r{ring_width:g}_z{z_max:g}" + (f"_dz{layer_width:g}" if abs(layer_width - 1.0) > 1e-9 else "")
+    radial = f"_{ring_scheme}" if ring_scheme else f"_r{ring_width:g}"
+    return f"{radial}_z{z_max:g}" + (f"_dz{layer_width:g}" if abs(layer_width - 1.0) > 1e-9 else "")
 
 
 def prepare(w):

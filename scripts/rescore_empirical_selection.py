@@ -130,6 +130,8 @@ def main():
                     help="Fourier ring width inside 6 kpc (default 0.3, the validated grid)")
     ap.add_argument("--z-max", type=float, default=3.0,
                     help="top of the |z| layers (default 3)")
+    ap.add_argument("--ring-scheme", default=None, choices=list(fs.RING_SCHEMES),
+                    help="a named radial scheme inside 6 kpc instead of --ring-width (e.g. geo20, geo32, ilr01)")
     ap.add_argument("--layer-width", type=float, default=1.0,
                     help="|z| layer thickness (default 1 kpc); e.g. --z-max 2 --layer-width 2 is one layer |z| < 2")
     ap.add_argument("--keep", default=None, metavar="NPY",
@@ -146,7 +148,7 @@ def main():
         raise SystemExit("--keep and --keep-tag go together")
     global VARIANT
     # a non-default grid gets its own variant name (e.g. sfratio_r0.5_z2), so default results are never overwritten
-    VARIANT = ESTIMATORS[args.estimator] + fs.set_grid(args.ring_width, args.z_max, args.layer_width) + \
+    VARIANT = ESTIMATORS[args.estimator] + fs.set_grid(args.ring_width, args.z_max, args.layer_width, args.ring_scheme) + \
         (f"_{args.keep_tag}" if args.keep else "") + (f"_sdm{args.sigma_dm:g}" if args.sigma_dm else "")
 
     res_dir = ROOT / "results" / args.run
