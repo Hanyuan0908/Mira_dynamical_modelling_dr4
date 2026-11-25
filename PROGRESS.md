@@ -6130,6 +6130,37 @@ The wide-bar-box run (1,374 points) stalled at "search: 1000/1374 … FAILED sea
   every attempt.
 - **Result:** the search now merges 1374/1374; the default re-score, the geo20 grid, T1 and the comparison are running.
 
+
+## 2026-11-25 (night) — Sormani+22 with the WIDE bar box (bar_frac 0.1–2, S 0.4–1.7): the bar strength runs to the new edge along the Ω_b ridge
+
+**Run:** `osarg_zhang2024_sormani22_widebar`, 1,374 points (384 old + 990 new outside the old box; outputs on the
+portable drive).
+- Searched and re-scored (sfratio, K = 10, scheme B) on the default grid and on geo20 |z| < 2; T1 per grid at the best
+  point (`chi2_jitter_per_grid.py --case osarg_s22w`); posteriors at T1 (`compare_grid_strategies.py`).
+- The best point is unchanged on both grids (idx 207 default, idx 51 geo20), so T1 is the same: 32.1 and 11.6.
+- The best point in the NEW region is idx 846: Ω_b 38.32, φ_b 21.4, S 1.107, bar_frac 1.607. It is +21.9 in χ² on
+  the default grid (0.7 T1) and +26.6 on geo20 (2.3 T1).
+- Interrupted by two Dropbox lockouts and the ≥1000-index bug (previous entries); recovered without re-integration.
+
+| OSARG, Sormani+22, T1 | Ω_b | width | S | bar_frac | chain with bar_frac > 1.5 / < 0.5 |
+|---|---|---|---|---|---|
+| default, old box | 32.09 (26.91–39.30) | 38.6% | 1.03 (0.79–1.24) | 1.05 (0.71–1.35) | (box edge 1.5) |
+| default, wide box | 32.63 (26.04–39.85) | 42.3% | 1.02 (0.78–1.30) | 1.13 (0.54–1.61) | 0.23 / 0.14 |
+| geo20, old box | 30.53 (28.10–36.07) | 26.1% | 1.05 (0.88–1.24) | 1.08 (0.80–1.34) | (box edge 1.5) |
+| geo20, wide box | 32.03 (28.46–37.81) | 29.2% | 1.02 (0.86–1.21) | 1.22 (0.84–1.65) | 0.25 / 0.02 |
+
+- **The old box truncated the bar strength.** A quarter of the posterior now lies above bar_frac 1.5, and on geo20 the
+  95% contour reaches the new edge at 2.0. The data do not bound bar_frac from above.
+- **Ω_b and bar_frac lie on one ridge,** from about (26, 0.6) to (40, 2.0) (corner below). The two Ω_b peaks (~30 and
+  ~37–38) are its two ends, as found by the second-peak test. The wider box lets the ridge continue, so Ω_b widens a
+  little (geo20 26.1 → 29.2%) and its median rises (30.5 → 32.0).
+- **S (bar length)** is unchanged and well inside the box (1.02, 0.86–1.21); it was never box-limited.
+- **φ_b still piles at the 20° edge** (not widened, per the user).
+- **Figures:**
+  - `figures/corner_plots_by_grid/osarg_zhang2024_sormani22_widebar/{01_current_default_0.3kpc_rings_3_layers,07_geometric_20_rings_one_layer_z2}.png`;
+  - `figures/osarg_zhang2024_sormani22_widebar_pattern_speed_posterior_by_grid.png`.
+  - `plot_corner_by_grid.py` now reads the run's own prior box from `design_box.json`.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name

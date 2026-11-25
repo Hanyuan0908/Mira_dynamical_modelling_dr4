@@ -43,6 +43,12 @@ def main():
     args = ap.parse_args()
     set_style()
     chains = np.load(RESULTS_DIR / args.run / "grid_strategies_chains.npz")
+    global BOX
+    bj = RESULTS_DIR / args.run / "design_box.json"
+    if bj.exists():          # the run's own prior box (e.g. the wide bar box), S and bar_frac stored as ln
+        import json
+        bx = json.load(open(bj))["box"]
+        BOX = [tuple(bx["Omega_abs"]), tuple(bx["phi_b_deg"]), tuple(np.exp(bx["lnS"])), tuple(np.exp(bx["lnf"]))]
     summ = pd.read_csv(RESULTS_DIR / args.run / "grid_strategies.csv").set_index("tag")
     for lab, gargs, title, note in GRIDS:
         if lab not in chains.files:
