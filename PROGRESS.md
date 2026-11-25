@@ -5712,6 +5712,148 @@ trajectories (`chi2_jitter_per_grid.py --case osarg_s22 --only-schemes`); poster
   as in the mock, where the sparse high-|z| blocks carried the false mode.
 - **The one-layer geo20 remains the narrowest grid that keeps the fit.**
 
+
+## 2026-11-25 (afternoon, Dropbox lockout 13:56–14:34) — Milky Way rotation curves; the ILR explanation withdrawn; a defect in the cluster-built trial families
+
+From ~13:56 the repo was unreadable to every Terminal-launched process: "Operation not permitted", the same as on
+2026-11-24 (memory `reference-dropbox-eperm-stale-tcc`). New files could be created, but existing ones could not be
+read. Lost: the OSARG-in-Sormani+22 second-peak test (stage 4) and the wide-bar-box run (stages 5–6); they failed at
+13:57. Nothing was half-written. Stages 1–3 (geo20 with two layers, its T1, the comparison) had finished and are in
+c2f0c98.
+
+### 1. Rotation curves of published Milky Way potentials (user request)
+
+- **Scripts:** `scripts/plot_milky_way_rotation_curves.py` → `figures/milky_way_rotation_curves_and_resonances.png`,
+  `results/milky_way_rotation_curves_and_resonances.csv`.
+- **Models:**
+  - McMillan17, Sormani+22 (Portail17_axi), Hunter+24 (MWPotentialHunter24_axi);
+  - two post-2017 Gaia-DR2-based models shipped with AGAMA: Cautun+20 (contracted halo fitted to the Gaia DR2
+    rotation curve; arXiv:1911.04557) and gala MilkyWayPotential2022 (disc fitted to the Eilers+2019 circular
+    velocities inside ~15 kpc).
+- **Resonances at Ω_b = 30.53** (OSARG, Sormani+22, geo20 |z| < 2, T1):
+
+| model | v_c 1 / 2 / 5 / 8.1 / 15 kpc | v_c(2)/v_c(5) | ILR (band 28.1–36.1) | CR |
+|---|---|---|---|---|
+| McMillan17 | 165 / 196 / 226 / 233 / 227 | 0.865 | 1.11 (0.83–1.29) | 7.63 |
+| Sormani+22 | 191 / 194 / 219 / 239 / 219 | 0.884 | 2.01 (1.61–2.17) | 7.80 |
+| Hunter+24 | 180 / 196 / 224 / 229 / 216 | 0.875 | 1.67 (1.23–1.89) | 7.50 |
+| Cautun+20 | 173 / 197 / 230 / 237 / 219 | 0.859 | 1.37 (1.05–1.56) | 7.78 |
+| gala MWP2022 | 153 / 180 / 225 / 229 / 217 | 0.802 | 1.15 (0.99–1.24) | 7.53 |
+
+All five Milky Way models rise in the inner 5 kpc, and their ILR lies at 1.1–2.0 kpc.
+
+### 2. N-body test galaxies against the Milky Way (user request)
+
+- **Script:** `scripts/plot_rotation_curves_mocks_vs_milky_way.py` → `figures/rotation_curves_nbody_mocks_vs_milky_way.png`,
+  `results/rotation_curves_nbody_mocks_vs_milky_way.csv`.
+- **Curves:** each snapshot's trial-family axisymmetric part (spherical halo + baryons), azimuthally averaged (see 5).
+- **The 12 snapshots:** v_c peaks at 255–274 km/s at R ≈ 1–1.5 kpc and falls to 220–228 at 5 kpc;
+  v_c(2)/v_c(5) = 1.13–1.19, ILR 1.95–3.48 kpc, ILR/CR 0.36–0.41.
+- **The Milky Way models:** 153–191 km/s at 1 kpc, rising to 219–230 at 5 kpc; v_c(2)/v_c(5) 0.80–0.88.
+- **Beyond ~4.5 kpc** all agree to ~10 km/s.
+
+### 3. Resonances against the constraint, all 25 simulations (user: "are none of the Auriga Milky-Way-like?")
+
+- **Script:** `scripts/plot_resonances_vs_constraint_simulations_and_milky_way.py` →
+  `figures/resonances_vs_pattern_speed_constraint_simulations_and_milky_way.png`.
+- **Data:** Auriga ILR and CR from the cluster ground-truth files (tabulated 2026-11-23/24); widths at the √(2N)
+  tempering.
+- **No simulation reaches the Milky Way's ILR/CR** (0.15–0.26). The lowest Auriga values are Au20 0.28, Au18 0.30,
+  Au28 0.30, Au12 0.31 and Au27 0.31.
+- **But the ILR radius does not explain the gap.** Au12 1.72, Au10 1.79, Au14 1.85, Au5 1.92, Au26 1.93 and Au22
+  1.97 kpc have Sormani+22-like ILRs (2.01) yet widths of 8–22%, against 38–46% for every Milky Way run.
+  - Au28 (ILR 2.16, CR 7.10, 0.30) gives 10.5%; Au18 (2.15, 7.19, 0.30) 14.3%; Sormani+22 (2.01, 7.80, 0.26) 38.1%.
+- **"The ILR lies outside the fitted disc" is WITHDRAWN as the mechanism.**
+
+### 4. The frequency gap does not explain it either
+
+- **Script:** `scripts/frequency_gap_nbody_vs_milky_way.py` → `results/frequency_gap_nbody_vs_milky_way.csv`.
+- **N-body t = 2 against Sormani+22:**
+  - ILR 1.95 / 2.01;
+  - (Ω − κ/2)/Ω_b at 2–5 kpc: alike;
+  - mean gap 0.51 / 0.56; median linear sensitivity 0.91 / 1.09;
+  - width 10% / 38%.
+- **Over the 12 snapshots,** none of ILR, gap, median s, fraction s > 5 or the v_c slope correlates with the width
+  (|Spearman| ≤ 0.30, p ≥ 0.34).
+- **The linear epicyclic picture does not separate a 10% galaxy from a 38% one.**
+
+### 5. DEFECT FOUND: the cluster-built N-body "axisymmetric" baryon files are not axisymmetric
+
+| N-body potential files (portable drive) | built | m=2(baryon_axi)/m=2(baryon_full), R 3–5 kpc | m=2(full − axi)/m=2(full) |
+|---|---|---|---|
+| t = 2, 3, 4, 5.5, 7 | 2026-10-29/30, cluster (copy of 11-02) | **1.000** | **0.000–0.001** |
+| t = 2.375, 2.625, 3.375, 3.625, 4.5, 5, 6.25 | 2026-11-21, rebuilt on this laptop | 0.000 | 1.000 |
+
+- The headers of the cluster files say `symmetry=None`. The building code (`potential_family.build_files`, commit
+  3215b45) asks AGAMA for `symmetry="axisymmetric"`.
+  - Hypothesis, untested: the cluster's older AGAMA (1.0, May 2024, numpy 1.26) ignored that keyword; the laptop
+    rebuilds (AGAMA 1.0.156) are correct.
+- **Effect on the trial family** (cluster code and files from the drive; m=2/m=0 of F_R at 5 kpc):
+  - t = 7 (cluster-built): 0.057, 0.064, 0.082 at bar_frac 0.5, 1.0, 1.5.
+  - t = 4.5 (rebuilt): 0.046, 0.092, 0.138.
+  - Fitting m2 = c + bar_frac·d gives, for t = 7, **62% of the bar FIXED at the truth and 38% rescaled**, at R = 3,
+    4 and 5 kpc alike. In the rebuilt family, 100% is rescaled.
+  - The Milky Way `_axi` files are exactly axisymmetric (m = 2 = 0.0000), so their whole bar varies.
+- **Hypothesis, to be tested:** if the mock runs used such families, the trial bar was largely pinned to the truth.
+  That removes the bar–Ω_b degeneracy that loosens the Milky Way runs, and makes the mocks' bar recovery partly
+  circular. It would explain why the mocks constrain Ω_b, and the bar, much better.
+- **Unknown:**
+  - which files the cluster runs of the other 7 snapshots and the 13 Auriga used (not on this machine);
+  - whether the laptop's own `mock/nbody_potential` (used for the 11-24 hybrids, the A2/A0 profiles and the cross
+    response) is affected.
+- **Correction:** the N-body rotation curves above were first drawn from `dm_spherical + Nbody_baryon_axi` at one
+  azimuth, which for the cluster-built files includes the bar. They are now azimuthal averages (the m = 0 parts of
+  axi and full agree to 0.003%). Changes are small (t = 2: ILR 1.89 → 1.95, v_c(2)/v_c(5) 1.116 → 1.129).
+- **Construction check for the requested hybrid test** (simulation rotation curve rescaled to the Milky Way +
+  Sormani+22 bar):
+  - bar = Portail17 − Portail17_axi reproduces the published non-axisymmetric force to 1.6e-12 and has zero m = 0;
+  - rescaling the N-body axisymmetric part by k² ≈ 0.79 matches Sormani+22's mean v_c over 2–6 kpc (208.1 km/s)
+    with the shape unchanged.
+  - The hybrid test itself needs the repo (OSARG data, `cross_response_stars_vs_potential.py`) and the Auriga
+    potentials from the cluster.
+
+### 6. Queued (watcher started; launches when the repo is readable; memory-capped, RS_WORKERS=4, sequential)
+
+- **A.** The second-peak test on OSARG in Sormani+22 (`--split 34.5 --second high`). Already from its emulator stage:
+  the only interior maximum is at Ω_b 37.64 (φ_b on the 20° edge, S 1.16, bar_frac 1.43); the main window's maximum
+  sits on the window edge at 34.5.
+- **B.** The wide-bar-box run `osarg_zhang2024_sormani22_widebar` (bar_frac 0.1–2.0, S 0.4–1.7; 1,374 points, 990
+  new; outputs on the portable drive), geo20 |z| < 2, T1 per grid at the new best point, comparison at T1.
+- **C (next, after B; needs code written once the repo is readable).** Re-run the t = 7 mock (12.5%, sfratio, K =
+  10, scheme B, focused 257-point design) with a correctly axisymmetrised trial family. Compare Ω_b, S and bar_frac
+  with the original cluster run: the direct test of section 5.
+
+### 7. Provenance: the original t = 7 mock run used the defective family
+
+- **The test:** 2,000 of the mock's stars re-integrated at design point 0 (the truth, bar_frac = S = 1), compared
+  with that run's saved `traj_000.npy` after 1 Gyr (`/tmp/provenance_check.py`).
+  - The drive's cluster code and files: median offset 0.012 kpc (90%: 0.51, chaotic growth). They reproduce the run.
+  - The laptop's t = 7 family: median 1.7 kpc. It is a different model.
+- **Where the laptop and cluster t = 7 families differ:**
+  - the baryon files are byte-identical in size and force (bar orientation identical);
+  - the spherical halo is not: the laptop's pulls 24% harder at 1 kpc, 4.7% at 3 kpc and 2% at 5 kpc;
+  - and only the cluster's axi baryons are defective.
+- **Laptop-built families are correctly axisymmetric** (m = 2 = 0.000): `au18`, `mw`, `nbody` (t = 7), `sormani22`
+  and the seven 11-21 rebuilds. So the hybrids, cross-response, Fisher and OSARG analyses on this laptop are clean.
+  - The cluster-built t = 2, 3, 4 and 5.5, symlinked into `mock/`, are defective. They enter the 11-21 A2/A0
+    profiles of those snapshots.
+
+### 8. The corrected cluster t = 7 family, and the decisive re-run (RUNNING)
+
+- **The family:** galaxy `nbody_clusteraxifix` (`galaxies.py`). Folder
+  `mock/nbody_clusteraxifix_potential` → the drive. It is the cluster's t = 7 files with only `bulge_axi`,
+  `disc_axi` and `Nbody_baryon_axi` rebuilt by `potential_family.build_files` with this laptop's AGAMA.
+- **Checks:**
+  - the axi baryons have m = 2 = 0.000 and m = 0 equal to the full baryons to 1e-4;
+  - the halo and full baryons are byte-identical to the cluster's;
+  - bar_frac 0.5 / 1 / 1.5 gives a bar force m=2/m=0 at 5 kpc of 0.032 / 0.064 / 0.097 (fully proportional;
+    identical to the cluster family at bar_frac = 1);
+  - the truth-point orbits reproduce the original run's saved trajectory (median 0.011 kpc).
+- **Re-run** `test2_t7_sf_12p5pct_clusteraxifix`: the original configuration (12.5% mock, focused 257-point design,
+  50 Myr, sfratio, K = 10, scheme B) with only the defect fixed. Then compare Ω_b, S, bar_frac and φ_b with
+  `test2_t7_sf_12p5pct`.
+  - Chain `chain_C_then_B.sh`: memory-capped, sequential, log on the drive. After it, the Sormani+22 wide-box run (B).
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
@@ -5777,6 +5919,9 @@ below is still found by `find figures -name <name>`; most of the Test 1b set is 
 | `osarg_zhang2024_sormani22_all_posteriors_by_grid_design.png` | OSARG in Sormani+22: one row per Fourier grid — the grid drawn to scale in (R, \|z\|) with N_data, T1, χ²/N, then the marginal posteriors of \|Ω_b\|, φ_b, S, bar_frac with median and 16–84% (2026-11-25, T1) |
 | `mw_hunter24_mock_from_osarg_ics_all_posteriors_by_grid_design.png` | the same for the steady-state mock, truths marked (2026-11-25, T1) |
 | `corner_plots_by_grid/<run>/NN_<grid>.png` | one corner plot per Fourier grid (nine) for OSARG in Sormani+22 and for the steady-state mock, each grid at its own T1, on the full prior box, with the grid's design described and drawn to scale (2026-11-25) |
+| `milky_way_rotation_curves_and_resonances.png` | five Milky Way potentials (McMillan17, Sormani+22, Hunter+24, Cautun+20, gala MWP2022): v_c, the fitted-region zoom, Ω − κ/2 against the OSARG Ω_b band (2026-11-25) |
+| `rotation_curves_nbody_mocks_vs_milky_way.png` | the 12 N-body snapshots' azimuthally averaged rotation curves against the Milky Way models: v_c, shape normalised at 5 kpc, (Ω − κ/2)/Ω_b with each ILR (2026-11-25) |
+| `resonances_vs_pattern_speed_constraint_simulations_and_milky_way.png` | ILR/CR and ILR radius against the Ω_b posterior width for the 12 N-body, 13 Auriga and the Milky Way runs (2026-11-25) |
 | `bimodality_spatial_origin_h24mock.png` | steady-state mock in Hunter+24: Δχ² per (R, \|z\|) block and per field between the false low-Ω_b mode, the main mode and the truth, three grids (2026-11-25) |
 | `posterior_degeneracies_mocks_vs_osarg.png` | posterior correlations (φ_b–bar_frac, φ_b–S, Ω_b–S, Ω_b–bar_frac) and what a ±2° φ_b prior buys, for the 25 mocks, the t7 variants and the Milky Way-family runs (2026-11-24) |
 | `osarg_zhang2024_sormani22_bar_strength_profile_phib25pm2.png` | the Milky Way bar's A2/A0(R) from the OSARGs (Sormani+22, T = σ₂, φ_b 25 ± 2°) against the published Sormani+22 and Hunter+24 bars (2026-11-24) |

@@ -43,6 +43,12 @@ def _nbody_entry(t):
 
 
 GALAXIES["nbody"] = _nbody_entry(NBODY_DEFAULT_TIME)
+# The cluster-built t = 7 family (2026-10-29, the one test2_t7_sf_12p5pct was run with) with ONLY its axisymmetric
+# baryon files rebuilt correctly. On the cluster, the "_axi" expansions came out non-axisymmetric (identical to the
+# barred ones), so bar_frac rescaled only ~38% of the bar (PROGRESS 2026-11-25). Same stars, truth and halo as that run.
+GALAXIES["nbody_clusteraxifix"] = dict(_nbody_entry(NBODY_DEFAULT_TIME),
+                                       label="N-body (t = 7), cluster family with axisymmetric baryons rebuilt",
+                                       pot_dir=MOCK_DIR / "nbody_clusteraxifix_potential")
 
 # The real Milky Way: no star file and no truth, only the trial-potential family (build_mw_potential.py).
 GALAXIES["mw"] = dict(label="Milky Way (Hunter+24)", prefix="mw", pot_dir=MOCK_DIR / "mw_potential",
