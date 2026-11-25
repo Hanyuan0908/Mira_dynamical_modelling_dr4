@@ -54,7 +54,8 @@ FAMILY.update({k: 32.5 for k in SNAP_HYB})
 # Sormani+22 with a compact central mass (Hernquist, a = 0.3 kpc) added to its axisymmetric part, mass chosen so that
 # v_c(1 kpc) / <v_c>(2-6 kpc) reaches the target (S22: 0.91; the rescaled N-body snapshots: ~1.11), then everything
 # axisymmetric rescaled by k^2 to keep <v_c>(2-6 kpc) at Sormani+22's; the bar is Sormani+22's, unchanged.
-CORE_HYB = {"s22_core_r1.00": 1.00, "s22_core_r1.11": 1.11}
+CORE_HYB = {"s22_core_r1.00": (0.3, 1.0, 1.00), "s22_core_r1.11": (0.3, 1.0, 1.11),   # (scale radius, R_match, target)
+            "s22_core_a1_R2_r1.09": (1.0, 2.0, 1.09)}   # extended: v_c(2 kpc)/<v_c>(2-6) as the rescaled t = 2 (1.092)
 FAMILY.update({k: 32.5 for k in CORE_HYB})
 
 
@@ -110,21 +111,21 @@ def core_hybrid(family):
     Fs = family_files("sormani22")
     fixed, baxi = str(galaxy_info("sormani22")["pot_dir"] / "fixed.ini"), str(Fs["baryon_axi"])
     s22_axi = agama.Potential(agama.Potential(fixed), agama.Potential(file=baxi))
-    target = CORE_HYB[family]
+    a_core, r_match, target = CORE_HYB[family]
     def ratio(M, k2=1.0):
         p = agama.Potential(agama.Potential(file=fixed, scale=[k2, 1.0]), agama.Potential(file=baxi, scale=[k2, 1.0]),
-                            agama.Potential(type="Dehnen", gamma=1.0, scaleRadius=0.3, mass=M * k2))
-        return float(np.sqrt(-1.0 * p.force([[1.0, 0, 0]])[0][0])) / _vc_mean(p), p
-    M = brentq(lambda m: ratio(m)[0] - target, 0.0, 1e11, xtol=1e6)
+                            agama.Potential(type="Dehnen", gamma=1.0, scaleRadius=a_core, mass=M * k2))
+        return float(np.sqrt(-r_match * p.force([[r_match, 0, 0]])[0][0])) / _vc_mean(p), p
+    M = brentq(lambda m: ratio(m)[0] - target, 0.0, 1e12, xtol=1e6)
     k2 = (_vc_mean(s22_axi) / _vc_mean(ratio(M)[1])) ** 2
     r, axi = ratio(M, k2)
     bar = agama.Potential(agama.Potential(file=str(Fs["baryon_full"])), agama.Potential(file=baxi, scale=[-1.0, 1.0]))
     pot = agama.Potential(agama.Potential(file=fixed, scale=[k2, 1.0]),
-                          agama.Potential(type="Dehnen", gamma=1.0, scaleRadius=0.3, mass=M * k2),
+                          agama.Potential(type="Dehnen", gamma=1.0, scaleRadius=a_core, mass=M * k2),
                           agama.Potential(type="CylSpline", mmax=8, symmetry="none", **ssl.NBODY_GRID,
                                           potential=agama.Potential(agama.Potential(file=baxi, scale=[k2, 1.0]), bar)))
     vc = lambda p, R: float(np.sqrt(-R * p.force([[R, 0, 0]])[0][0]))
-    print(f"   {family}: central mass {M:.3g} Msun (x k^2 {k2:.4f} = {M * k2:.3g}); v_c(1)/<v_c>(2-6) {r:.3f}; "
+    print(f"   {family}: central mass {M:.3g} Msun, scale {a_core} kpc (x k^2 {k2:.4f} = {M * k2:.3g}); v_c({r_match:g})/<v_c>(2-6) {r:.3f}; "
           f"v_c at 1/2/5 kpc {vc(axi, 1):.0f} {vc(axi, 2):.0f} {vc(axi, 5):.0f} (S22 {vc(s22_axi, 1):.0f} {vc(s22_axi, 2):.0f} "
           f"{vc(s22_axi, 5):.0f}); <v_c>(2-6) {_vc_mean(pot):.1f} (S22 {_vc_mean(s22_axi):.1f})", flush=True)
     return pot

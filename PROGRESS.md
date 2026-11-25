@@ -5977,6 +5977,40 @@ whether the rotation curve is the real cause. Auriga's potentials are on the clu
 - **The OSARG data fit these hybrids worse** (χ²/N 2.23–2.37 against 1.76). The data rows show the data reacting
   strongly to slower bars in the hybrids, but that reaction is not a constraint the Milky Way potential would give.
 
+
+## 2026-11-25 — Which part of the rotation curve: the mass inside ~2 kpc explains most of the stronger Ω_b response
+
+**Variants** of the previous test (`cross_response_stars_vs_potential.py`, families `s22_core_*`):
+- **Construction:** Sormani+22's axisymmetric part plus a central Dehnen γ = 1 (Hernquist) mass. Its mass is chosen
+  so that v_c(R_match)/⟨v_c⟩(2–6 kpc) reaches a target. Then the whole axisymmetric part is rescaled by k² to keep
+  ⟨v_c⟩(2–6) = 209.4 km/s. The Sormani+22 bar is unchanged.
+- **Logs:** `…/osarg_zhang2024_sormani22_widebar/logs/cross_response_s22_core{,_extended}.log`.
+
+| OSARG stars in (midplane v_c at 1 / 2 / 5 kpc) | added mass (after k²) | above floor: −30 / −20 / +20 / +40% | χ²/N at Ω_ref |
+|---|---|---|---|
+| Sormani+22 (192 / 195 / 220) | — | 5.63 / 2.56 / 2.62 / 4.74 | 1.758 |
+| + compact, a = 0.3 kpc, v_c(1)/⟨v_c⟩ 1.00 (209 / 203 / 217) | 4.2e9 | 6.50 / 3.00 / 2.78 / 5.41 | 1.739 |
+| + compact, a = 0.3 kpc, 1.11 (232 / 213 / 212) | 1.0e10 | 6.84 / 3.36 / 4.13 / 8.37 | 2.040 |
+| + extended, a = 1.0 kpc, v_c(2)/⟨v_c⟩ 1.09 (238 / 228 / 202) | 4.1e10 (k² 0.34) | **10.96 / 4.66** / 2.76 / **6.56** | 2.321 |
+| t = 2 curve, rescaled (233 / 229 / 203) | — | 12.86 / 7.36 / 3.16 / 7.09 | 2.231 |
+| t = 7 curve, rescaled (245 / 237 / 199) | — | 12.98 / 7.07 / 3.30 / 7.02 | 2.292 |
+
+- **A compact central mass explains the fast side only:** +40% goes from 4.7 to 8.4, matching the N-body curves'
+  7.0–7.1. The slow side barely moves (−20%: 2.6 → 3.4, against 7.1–7.4).
+- **An extended central mass that reproduces the N-body midplane curve recovers most of the gap:** 74% at −30%,
+  44% at −20%, 77% at +40%.
+- **Reading.** The stronger Ω_b response of the N-body families comes mostly from their mass distribution inside
+  ~2 kpc: a rotation curve peaked at ~1–1.5 kpc and falling, against the Milky Way models' rising curve. It does not
+  come from the ILR radius.
+  - Hypothesis, untested: the remainder lies in parts of the axisymmetric potential the midplane curve does not fix
+    (vertical structure, the shape of the inner mass).
+- **Caveats:**
+  - These variants are not Milky Way models: the extended one scales Sormani+22's halo and disc by 0.34.
+  - The real Galaxy's inner mass is constrained by the bulge kinematics that Portail+17 / Sormani+22 were fitted to;
+    nothing here says it differs from theirs.
+  - The 13 Auriga rotation curves have not been checked (their potentials are on the cluster). Au18's is flat:
+    v_c(2)/v_c(5) = 0.99.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
