@@ -37,6 +37,8 @@ B = "fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024"
 CASES = {
     "osarg_h24": dict(label="OSARG data, Hunter+24 family", run="osarg_zhang2024_mw_hunter24", galaxy="mw",
                       mock="osarg_zhang2024_observed_R8.hdf5", omegas=np.arange(15.0, 45.01, 2.5)),
+    "osarg_h24w": dict(label="OSARG data, Hunter+24 family, wide bar box (S 0.4-1.7, bar_frac 0.1-2)", run="osarg_zhang2024_mw_hunter24_widebar", galaxy="mw",
+                      mock="osarg_zhang2024_observed_R8.hdf5", omegas=np.arange(15.0, 45.01, 2.5)),
     "t7_h24": dict(label="t = 7 mock, Hunter+24 family", run="test2_t7_sf_12p5pct_mwH24_osargdesign", galaxy="mw",
                    mock="nbody_mock_selection_sigmaDM0.271_N50k.hdf5", omegas=np.arange(15.0, 45.01, 2.5)),
     "osarg_s22": dict(label="OSARG data, Sormani+22 family", run="osarg_zhang2024_sormani22", galaxy="sormani22",

@@ -16,7 +16,7 @@ set -u
 cd "$(dirname "$0")"
 PY=${PYTHON:-$HOME/miniforge3/envs/astro312/bin/python}
 export MIRA_DR4_RUNS=${MIRA_DR4_RUNS:-$HOME/mira_dr4_runs}
-RUN=osarg_zhang2024_mw_hunter24
+RUN=${RUN:-osarg_zhang2024_mw_hunter24}   # RUN=osarg_zhang2024_mw_hunter24_widebar for the wider bar box (2026-11-25)
 MOCK=osarg_zhang2024_observed_R8.hdf5
 DESIGN=results/$RUN/design.csv
 THREADS=${THREADS:-7}; WORKERS=${WORKERS:-2}; RS_WORKERS=${RS_WORKERS:-6}

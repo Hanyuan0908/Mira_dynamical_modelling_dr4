@@ -17,6 +17,7 @@ Output: results/chi2_jitter_per_grid_<case>.csv (one row per run and grid) and a
 """
 import argparse
 import json
+import os
 import time
 from pathlib import Path
 
@@ -35,7 +36,8 @@ from chi2_jitter_small_perturbations import RANDOM_WIDTH
 
 B = "fourier_stars_R0to6_vR_sigR_sigphi_m24_vphi_m024"
 GRIDS = [(0.3, 3.0, 1.0, None), (0.5, 2.0, 1.0, None), (0.5, 2.0, 2.0, None), (1.0, 2.0, 2.0, None), (0.5, 3.0, 3.0, None),
-         (0.3, 2.0, 2.0, None), (0.3, 2.0, 2.0, "geo20"), (0.3, 2.0, 2.0, "geo32"), (0.3, 2.0, 2.0, "ilr01")]
+         (0.3, 2.0, 2.0, None), (0.3, 2.0, 2.0, "geo20"), (0.3, 2.0, 2.0, "geo32"), (0.3, 2.0, 2.0, "ilr01"),
+         (0.3, 2.0, 1.0, "geo20")]
 
 
 def main():
@@ -55,7 +57,7 @@ def main():
     dat = data_lbdR(mock)
     with h5py.File(mock, "r") as f:
         w = np.column_stack([f[k][:].astype(np.float64) for k in ("x", "y", "z", "vx", "vy", "vz")])
-    tdir = Path.home() / "mira_dr4_runs" / f"jitter_traj_{args.case}"
+    tdir = Path(os.environ.get("MIRA_DR4_RUNS", Path.home() / "mira_dr4_runs")) / f"jitter_traj_{args.case}"
     tdir.mkdir(parents=True, exist_ok=True)
     rng = np.random.default_rng(2123)
     runs = []

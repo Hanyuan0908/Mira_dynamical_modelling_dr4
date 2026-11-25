@@ -11,6 +11,11 @@ Usage: python make_sobol_design.py --run osarg_zhang2024_mw_hunter24 --n 256 --s
 --append extends an existing design into an adjacent slab: the new points get the next idx and batch, the points
 already evaluated are kept, and the recorded box becomes the union. Give the slab as many points per unit volume
 as the existing design has, so the combined design stays evenly filled.
+--from-run OLD starts a NEW run's design from OLD's (same idx, so OLD's per-point files can be copied in and are not
+recomputed) and adds the scrambled Sobol points of the given (wider) box that fall OUTSIDE OLD's box: a shell. Draw
+--n = n_old x V_new / V_old points to keep the point density (the script prints that number).
+       python make_sobol_design.py --run osarg_zhang2024_mw_hunter24_widebar --from-run osarg_zhang2024_mw_hunter24 \
+           --n 1379 --seed 2043 --omega 15 45 --phi 20 30 --S 0.4 1.7 --bar-frac 0.1 2.0
 Output: results/<run>/design.csv and results/<run>/design_box.json (the box in the emulator's coordinates)
 """
 import argparse
@@ -33,6 +38,8 @@ def main():
     ap.add_argument("--S", type=float, nargs=2, required=True, metavar=("LO", "HI"))
     ap.add_argument("--bar-frac", type=float, nargs=2, required=True, metavar=("LO", "HI"))
     ap.add_argument("--append", action="store_true", help="add the points to the run's existing design")
+    ap.add_argument("--from-run", default=None, help="start a new run's design from this run's, adding only the "
+                    "points outside its box (see the docstring)")
     args = ap.parse_args()
     box = dict(Omega_abs=tuple(args.omega), phi_b_deg=tuple(args.phi), lnS=tuple(np.log(args.S)),
                lnf=tuple(np.log(args.bar_frac)))
@@ -42,6 +49,34 @@ def main():
     out = ROOT / "results" / args.run
     out.mkdir(parents=True, exist_ok=True)
     old, meta = None, dict(n=args.n, seed=args.seed, slabs=[])
+    if args.from_run:
+        src = ROOT / "results" / args.from_run
+        old = pd.read_csv(src / "design.csv")
+        meta = json.load(open(src / "design_box.json"))
+        ob = meta["box"]
+        olo, ohi = np.array([v[0] for v in ob.values()]), np.array([v[1] for v in ob.values()])
+        assert np.all(lo <= olo + 1e-12) and np.all(hi >= ohi - 1e-12), "the new box must contain the old one"
+        ratio = float(np.prod(hi - lo) / np.prod(ohi - olo))
+        print(f"volume ratio new/old {ratio:.4f}: same density needs --n {len(old) * ratio:.0f} drawn in the new box")
+        outside = np.any((p < olo) | (p > ohi), axis=1)
+        p, u = p[outside], u[outside]
+        meta.setdefault("slabs", [])
+        meta["from_run"] = args.from_run
+        first, batch = int(old.idx.max()) + 1, int(old.batch.max()) + 1
+        df = pd.DataFrame(dict(idx=first + np.arange(len(p)), kind="qmc", batch=batch, Omega_abs=p[:, 0],
+                               phi_b_deg=p[:, 1], S=np.exp(p[:, 2]), bar_frac=np.exp(p[:, 3])))
+        meta["slabs"].append(dict(box={k: [float(a), float(b)] for k, (a, b) in zip(box, zip(lo, hi))}, n_drawn=args.n,
+                                  n_kept_outside_old_box=int(len(p)), seed=args.seed, first_idx=first))
+        df = pd.concat([old, df], ignore_index=True)
+        df.to_csv(out / "design.csv", index=False)
+        meta.update(box={k: list(map(float, v)) for k, v in box.items()}, n=len(df),
+                    sampling="scrambled Sobol; Omega, phi uniform; S, bar_frac log-uniform; shell outside "
+                             f"{args.from_run}'s box")
+        json.dump(meta, open(out / "design_box.json", "w"), indent=2)
+        print(f"wrote {rel(out / 'design.csv')}: {len(df)} points ({len(old)} from {args.from_run}, {len(p)} new "
+              f"outside its box, from idx {first}, seed {args.seed})")
+        print(df.describe().loc[["min", "max"], ["Omega_abs", "phi_b_deg", "S", "bar_frac"]].round(3).to_string())
+        return
     if args.append:
         old = pd.read_csv(out / "design.csv")
         meta = json.load(open(out / "design_box.json"))

@@ -31,7 +31,8 @@ SLUG = {"default": "01_current_default_0.3kpc_rings_3_layers", "_r0.5_z2": "02_0
         "_r0.5_z2_dz2": "03_0.5kpc_rings_one_layer_z2", "_r1_z2_dz2": "04_1kpc_rings_one_layer_z2",
         "_r0.5_z3_dz3": "05_0.5kpc_rings_one_layer_z3", "_r0.3_z2_dz2": "06_0.3kpc_rings_one_layer_z2",
         "_geo20_z2_dz2": "07_geometric_20_rings_one_layer_z2", "_geo32_z2_dz2": "08_geometric_32_rings_one_layer_z2",
-        "_ilr01_z2_dz2": "09_0.1kpc_rings_at_ILR_one_layer_z2"}
+        "_ilr01_z2_dz2": "09_0.1kpc_rings_at_ILR_one_layer_z2",
+        "_geo20_z2": "10_geometric_20_rings_two_layers_z0to1_z1to2"}
 
 
 def main():

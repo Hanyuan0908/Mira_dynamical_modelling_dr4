@@ -47,6 +47,9 @@ GRIDS = [
     ("_ilr01_z2_dz2", (0.3, 2.0, 2.0, "ilr01"), "9. Refined at the Milky Way ILR, one layer |z| < 2",
      "28 rings: 0.3 kpc wide over 0-1.2 kpc (4),\n0.1 kpc over 1.2-2.4 kpc (12),\n"
      "0.3 kpc over 2.4-6 kpc (12)\n1 |z| layer: 0-2 kpc"),
+    ("_geo20_z2", (0.3, 2.0, 1.0, "geo20"), "10. Geometric, 20 rings, 2 layers |z| 0-1, 1-2",
+     "ring 0-0.2 kpc, then 19 rings to 6 kpc,\neach 1.196x wider than the one inside.\n"
+     "Width 0.05 kpc at R 0.25, 0.28 at 1.6,\n0.58 at 3, 0.82 at 5 (last: 5.02-6.0)\n2 |z| layers: 0-1, 1-2 kpc"),
 ]
 PARAMS = [(r"$|\Omega_b|$ [km s$^{-1}$ kpc$^{-1}$]", (15, 45), 1.0, "{:.1f}"),
           (r"$\phi_b$ [deg]", (20, 30), 0.4, "{:.1f}"),

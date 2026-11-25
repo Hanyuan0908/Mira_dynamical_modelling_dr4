@@ -5560,6 +5560,73 @@ are fine if labelled clearly. Record these as the project's rules, and redo the 
 - `plot_bar_strength_profile_osarg.py` (the OSARG A2/A0 profile) still uses σ₂ and the default grid. It is already
   listed under next steps to redo at T1.
 
+
+## 2026-11-25 — Decision (user): back to Hunter+24; a wider bar box; the low-Ω_b / weak-bar tail examined (RUNNING)
+
+**Decisions (user).**
+- **The Milky Way family is Hunter+24 again** (galaxy `mw`); Sormani+22 is kept for comparison.
+  - The user's reason: its posteriors look better apart from a small tail at low bar strength and low pattern speed.
+  - Note for the record: the corner plots showing that shape are the steady-state mock in Hunter+24
+    (`figures/corner_plots_by_grid/mw_hunter24_mock_from_osarg_ics/`). For the OSARG data on the default grid,
+    Hunter+24 has been the wider of the two: at √(2N) 43% against 38% for Sormani+22; at σ₁ 41% against 38%.
+- **Wider prior box for bar_frac and S,** because the posterior is cut by the box edges:
+  - **bar_frac 0.1–2.0, S 0.4–1.7;** Ω_b (15–45) and φ_b (20–30) unchanged;
+  - OSARG in Hunter+24 only;
+  - all bulky output on the portable drive.
+- **New grid:** geometric 20 rings with two 1 kpc layers (|z| 0–1, 1–2): `set_grid(0.3, 2, 1, "geo20")`, tag
+  `_geo20_z2`.
+- **Open questions (user), not yet worked on:**
+  1. why the ILR/CR ratio, i.e. the rotation curve, sets the constraining power;
+  2. why the bar strength cannot be constrained here as it is in the simulations.
+
+**Evidence for the box change** (posterior at T1, default grid):
+- **bar_frac:** for OSARG (both families), the density at the 1.5 edge equals the peak density; 16–17% of the chain
+  lies in the top tenth of the box, against 10% for a flat prior.
+- **φ_b:** for OSARG, 20% of the chain lies within 1° of the 20° edge (the mock: 12%, i.e. flat).
+- **The mock:** density at the 0.5 edge is 0.84 of the peak for bar_frac and 0.53 for S.
+
+**Physical check** of the wider box (fraction of the midplane with negative density, and peak A2/A0, Hunter+24
+family; `bar_aligned_potential(f, S, "mw").density`):
+- None at S ≥ 1 up to bar_frac 2.5. At S = 1, bar_frac 2.0, the peak A2/A0 is 0.83.
+- Negative density appears only for short bars: S 0.4 with bar_frac ≥ 1.25 (0.2–3.9% of the grid at bar_frac
+  1.25–2.0), and S 0.7 with bar_frac ≥ 2.0 (0.6%).
+- Such draws are to be screened out after the fact, as for the A2/A0 profile.
+
+**The wide-box design** (`make_sobol_design.py --from-run`, new mode):
+- `results/osarg_zhang2024_mw_hunter24_widebar/design.csv`, 1,374 points: the old 384 (idx 0–383, unchanged) plus
+  990 new ones from 1,379 scrambled Sobol draws (seed 2043) that fall outside the old box.
+- Point density is kept: 318 against 317 per unit ln S × ln bar_frac. With the prior log-uniform, 741 of the new
+  points have bar_frac < 0.5, 132 have bar_frac > 1.5, 212 have S < 0.5 and 119 have S > 1.5.
+- **Outputs on the drive:**
+  `/Volumes/USB/hanyuan/projects/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/runs/osarg_zhang2024_mw_hunter24_widebar/`.
+  The 384 finished points (trajectories, fourier and sfratio files) were copied in and checked (1,152 files,
+  5.43 GB, 0 md5 mismatches), so they are not recomputed.
+- **Chain** (unattended, launched 13:21; log `logs/widebar_chain.log` in that folder):
+  1. the OSARG bimodality test;
+  2. `RUN=osarg_zhang2024_mw_hunter24_widebar run_osarg_mw_local.sh` (search, sfratio re-score, emulator);
+  3. the geo20 grids (one and two layers);
+  4. T1 per grid at the new best point (`chi2_jitter_per_grid.py --case osarg_h24w`);
+  5. `compare_grid_strategies.py`.
+- Expected about 3 h after the current jobs.
+
+**Is the low-Ω_b / weak-bar part real?** (`bimodality_spatial_origin.py`; RUNNING)
+- **What it does.** Finds the emulator maximum in a low-Ω_b window and in the rest, at T1, and says whether each is
+  interior (a separate mode) or on the window edge (a tail). Then integrates 12 replicate runs at each point (the
+  point plus 11 tiny perturbations), plus the truth for the mock. Each run is scored as the pipeline on three grids
+  (default, geo20 one layer, geo20 two layers). Every block's χ² is split exactly into fields
+  (χ²_block = Σ_t h d_t (C⁻¹d)_t), which gives Δχ² per (R band, |z| layer) and per field, with errors.
+- **First output, the steady-state mock (truth 32.5, 25, 1, 1), default grid, T1 = 25.2.** 36% of the chain lies
+  below Ω_b = 28, where S is 0.71 and bar_frac 0.69 (rest: 0.94 and 0.88). The emulator has two separate maxima:
+  - low: Ω_b 23.95, φ_b 20.00, S 1.129, bar_frac 0.500 (logL −0.14);
+  - main: Ω_b 33.71, φ_b 30.00, S 1.151, bar_frac 0.798 (logL −0.33).
+  The low maximum sits ON the bar_frac = 0.5 box edge (and φ_b on an edge), so the false mode leans out of the old
+  box. Widening the box may strengthen it rather than remove it.
+- **OSARG in Hunter+24, default grid, T1 = σ₁ = 29.3** (no new runs): Ω_b 30.00 (24.56–36.92), φ_b 22.92, S 0.99
+  (0.80–1.19), bar_frac 1.06 (0.73–1.35).
+  - 29% of the chain lies below Ω_b = 27, with S 0.89 and bar_frac 0.81 (rest: 1.02 and 1.15); a shoulder at 36–39.
+  - Best evaluated χ² per 2.5 km/s/kpc bin (15 → 45), in T1 above the best: 10.8 7.4 5.0 2.7 0.7 3.4 0.0 1.0 3.8 2.8
+    4.2 7.8. Each bin minimum carries about ±1 T1 of jitter, so this alone does not settle it.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
@@ -5638,7 +5705,8 @@ below is still found by `find figures -name <name>`; most of the Test 1b set is 
 ### Current status and next steps (2026-11-25)
 
 **Adopted set-up.**
-- **Family:** Sormani+22 (`sormani22`, spherical halo; user decision 2026-11-24).
+- **Family:** Hunter+24 (`mw`, spherical halo; user decision 2026-11-25, reverting the Sormani+22 choice of
+  2026-11-24). Wider bar box being run: bar_frac 0.1–2.0, S 0.4–1.7 (entry of 2026-11-25).
 - **Temperature:** T1 = σ₁ of each grid (user decision 2026-11-25).
 - **Likelihood:** scheme B, rings < 6 kpc, sfratio selection, K = 10 distance draws.
 - **Grid:** the 0.3 kpc rings with one |z| < 2 layer are not yet adopted; the radial test below decides.
