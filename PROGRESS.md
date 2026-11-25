@@ -5940,6 +5940,43 @@ produces it?
   - the ILR position and the linear frequency gap (t = 2, Au28, Au18 counterexamples).
   - Established: the axisymmetric potential matters (the 2026-11-24 hybrids).
 
+
+## 2026-11-25 — Rotation-curve swap, rescaled to the Milky Way's magnitude: the curve's SHAPE doubles the Ω_b response, independent of the ILR
+
+**User:** redo the rotation-curve swap with the simulations' curves rescaled to the Milky Way's magnitude, to see
+whether the rotation curve is the real cause. Auriga's potentials are on the cluster, so the N-body snapshots were used.
+
+**Hybrids** (`cross_response_stars_vs_potential.py`, families `hyb_<snapshot>axi_s22bar`):
+- **Axisymmetric part:** the snapshot's spherical halo plus its baryons re-expanded here with
+  `symmetry="axisymmetric"` (the cluster-built axi files of t = 2 and 5.5 are defective). Both are multiplied by k²
+  so that the mean v_c over 2–6 kpc equals Sormani+22's, 209.4 km/s (k² = 0.817, 0.819, 0.808 for t = 2, 5.5, 7).
+- **Bar:** Sormani+22's baryon_full − baryon_axi, unchanged (m = 2 force ratio to the Sormani+22 family 1.000 at
+  2–5 kpc).
+- **Run:** OSARG stars, φ_b 25°, Ω_ref 32.5, the pipeline's scoring.
+- **Log:** `…/runs/osarg_zhang2024_sormani22_widebar/logs/cross_response_rescaled_hybrids.log`. Tables:
+  `results/cross_response_osarg_hyb_{t2,t5.5,t7}axi_s22bar.npz`.
+
+| OSARG stars in | D at −30 / −20 / +20 / +40% | floor (±0.8%) | above floor, −20% / +40% | data at −30 / −20 / +20 / +40% | χ²/N at Ω_ref |
+|---|---|---|---|---|---|
+| Sormani+22 itself (control, 2026-11-24) | 8.14 / 5.07 / 5.13 / 7.25 | 2.51 | 2.56 / 4.74 | 3.04 / 0.26 / 0.06 / 2.24 | 1.758 |
+| Hunter+24 itself | 8.23 / 5.77 / 5.68 / 6.85 | 2.68 | 3.08 / 4.16 | 2.74 / 0.05 / 0.95 / 2.20 | 1.741 |
+| t = 2 curve (ILR 1.95 kpc), rescaled + S22 bar | 15.77 / 10.27 / 6.07 / 10.00 | 2.91 | **7.36 / 7.09** | 14.43 / 7.70 / −0.46 / 2.95 | 2.231 |
+| t = 5.5 curve, rescaled + S22 bar | 15.33 / 9.59 / 6.74 / 10.73 | 2.95 | **6.64 / 7.77** | 15.63 / 7.71 / −0.44 / 1.68 | 2.373 |
+| t = 7 curve (ILR 3.48 kpc), rescaled + S22 bar | 15.56 / 9.65 / 5.88 / 9.60 | 2.58 | **7.07 / 7.02** | 15.88 / 11.08 / 0.62 / 2.37 | 2.292 |
+
+(D = change of the predicted kinematics, tempered by 2√(2N) as on 2026-11-24.)
+
+- **The rotation curve's shape is a real cause.** With the same stars, the same Sormani+22 bar and the same mean v_c
+  over 2–6 kpc, the N-body curves make the predictions respond 2.6–2.9× more to a slower bar and ~1.5× more to a
+  faster one (above the noise floor).
+- **It does not act through the ILR position.** t = 2 (ILR 1.95 kpc, like Sormani+22's 2.01) responds as strongly
+  as t = 7 (3.48 kpc).
+- **What still differs after rescaling:** the N-body curves keep much more central mass (v_c(1 kpc) ≈ 233–245
+  against 191) and fall over 2–5 kpc, where the Milky Way's rise. Being tested next: Sormani+22 with a compact
+  central mass.
+- **The OSARG data fit these hybrids worse** (χ²/N 2.23–2.37 against 1.76). The data rows show the data reacting
+  strongly to slower bars in the hybrids, but that reaction is not a constraint the Milky Way potential would give.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name

@@ -44,12 +44,100 @@ STARS = {
     "h24mock": dict(mock="mw_hunter24_mock_from_osarg_ics_sigmaDM0.208.hdf5", keep=None, phi=25.0),
 }
 FAMILY = {"nbody": 26.0, "mw": 32.5, "sormani22": 32.5, "hyb_mwaxi_t7bar": 32.5, "hyb_t7axi_mwbar": 26.0}
+# Rotation-curve swaps under the Sormani+22 bar, with the simulation's rotation curve RESCALED to the Milky Way's
+# magnitude (user, 2026-11-25): axisymmetric part = the snapshot's spherical halo + its baryons re-expanded here with
+# symmetry axisymmetric (the cluster-built *_axi files of t = 2, 3, 4, 5.5 are not axisymmetric), both multiplied by
+# k^2 so that the mean v_c over 2-6 kpc equals Sormani+22's; bar = Sormani+22's baryon_full - baryon_axi.
+# Omega_ref 32.5 as for the sormani22 cell.
+SNAP_HYB = {"hyb_t2axi_s22bar": "nbody_t2", "hyb_t5.5axi_s22bar": "nbody_t5.5", "hyb_t7axi_s22bar": "nbody"}
+FAMILY.update({k: 32.5 for k in SNAP_HYB})
+# Sormani+22 with a compact central mass (Hernquist, a = 0.3 kpc) added to its axisymmetric part, mass chosen so that
+# v_c(1 kpc) / <v_c>(2-6 kpc) reaches the target (S22: 0.91; the rescaled N-body snapshots: ~1.11), then everything
+# axisymmetric rescaled by k^2 to keep <v_c>(2-6 kpc) at Sormani+22's; the bar is Sormani+22's, unchanged.
+CORE_HYB = {"s22_core_r1.00": 1.00, "s22_core_r1.11": 1.11}
+FAMILY.update({k: 32.5 for k in CORE_HYB})
+
+
+def _vc_mean(pot, R=np.linspace(2, 6, 41), nphi=36):
+    ph = np.linspace(0, 2 * np.pi, nphi, endpoint=False)
+    X = np.column_stack([(R[:, None] * np.cos(ph)).ravel(), (R[:, None] * np.sin(ph)).ravel(), np.zeros(R.size * nphi)])
+    F = pot.force(X)
+    FR = (F[:, 0] * np.cos(np.tile(ph, R.size)) + F[:, 1] * np.sin(np.tile(ph, R.size))).reshape(R.size, -1).mean(1)
+    return float(np.mean(np.sqrt(-R * FR)))
+
+
+def snapshot_hybrid(family):
+    """Snapshot rotation curve (rescaled to Sormani+22's mean v_c over 2-6 kpc) + the Sormani+22 bar."""
+    import agama
+    import os
+    import tempfile
+    from potential_family import files as family_files
+    from galaxies import galaxy as galaxy_info
+    pd = galaxy_info(SNAP_HYB[family])["pot_dir"]
+    Ff, Fs = family_files(SNAP_HYB[family]), family_files("sormani22")
+    tmp = tempfile.mkdtemp(prefix="hyb_")
+    axi_file = os.path.join(tmp, "baryon_axi_rebuilt.ini")
+    agama.Potential(type="CylSpline", potential=agama.Potential(file=str(Ff["baryon_full"])), symmetry="axisymmetric",
+                    mmax=0, **ssl.NBODY_GRID).export(axi_file)
+    s22_axi = agama.Potential(agama.Potential(str(galaxy_info("sormani22")["pot_dir"] / "fixed.ini")),
+                              agama.Potential(file=str(Fs["baryon_axi"])))
+    raw = agama.Potential(agama.Potential(str(pd / "dm_spherical.ini")), agama.Potential(file=axi_file))
+    k2 = (_vc_mean(s22_axi) / _vc_mean(raw)) ** 2
+    axi = agama.Potential(agama.Potential(file=str(pd / "dm_spherical.ini"), scale=[k2, 1.0]),
+                          agama.Potential(file=axi_file, scale=[k2, 1.0]))
+    bar = agama.Potential(agama.Potential(file=str(Fs["baryon_full"])), agama.Potential(file=str(Fs["baryon_axi"]), scale=[-1.0, 1.0]))
+    pot = agama.Potential(agama.Potential(file=str(pd / "dm_spherical.ini"), scale=[k2, 1.0]),
+                          agama.Potential(type="CylSpline", mmax=8, symmetry="none", **ssl.NBODY_GRID,
+                                          potential=agama.Potential(agama.Potential(file=axi_file, scale=[k2, 1.0]), bar)))
+    ph = np.linspace(0, 2 * np.pi, 72, endpoint=False)
+    def m2(p, R):
+        X = np.column_stack([R * np.cos(ph), R * np.sin(ph), np.zeros_like(ph)])
+        F = p.force(X); FR = F[:, 0] * np.cos(ph) + F[:, 1] * np.sin(ph)
+        return 2 * abs(np.mean(FR * np.exp(-2j * ph)))
+    s22 = ssl.bar_aligned_potential(1.0, 1.0, "sormani22")
+    print(f"   hybrid {family}: k^2 = {k2:.4f}; mean v_c 2-6 kpc: raw {_vc_mean(raw):.1f}, rescaled {_vc_mean(axi):.1f}, "
+          f"hybrid {_vc_mean(pot):.1f}, Sormani+22 {_vc_mean(s22_axi):.1f}; bar m=2 force hybrid / Sormani+22 at R 2,3,4,5: "
+          + " ".join(f"{m2(pot, R) / m2(s22, R):.3f}" for R in (2, 3, 4, 5)), flush=True)
+    return pot
+
+
+def core_hybrid(family):
+    """Sormani+22 + a compact central mass, rescaled to Sormani+22's <v_c>(2-6 kpc); bar unchanged."""
+    import agama
+    from scipy.optimize import brentq
+    from potential_family import files as family_files
+    from galaxies import galaxy as galaxy_info
+    Fs = family_files("sormani22")
+    fixed, baxi = str(galaxy_info("sormani22")["pot_dir"] / "fixed.ini"), str(Fs["baryon_axi"])
+    s22_axi = agama.Potential(agama.Potential(fixed), agama.Potential(file=baxi))
+    target = CORE_HYB[family]
+    def ratio(M, k2=1.0):
+        p = agama.Potential(agama.Potential(file=fixed, scale=[k2, 1.0]), agama.Potential(file=baxi, scale=[k2, 1.0]),
+                            agama.Potential(type="Dehnen", gamma=1.0, scaleRadius=0.3, mass=M * k2))
+        return float(np.sqrt(-1.0 * p.force([[1.0, 0, 0]])[0][0])) / _vc_mean(p), p
+    M = brentq(lambda m: ratio(m)[0] - target, 0.0, 1e11, xtol=1e6)
+    k2 = (_vc_mean(s22_axi) / _vc_mean(ratio(M)[1])) ** 2
+    r, axi = ratio(M, k2)
+    bar = agama.Potential(agama.Potential(file=str(Fs["baryon_full"])), agama.Potential(file=baxi, scale=[-1.0, 1.0]))
+    pot = agama.Potential(agama.Potential(file=fixed, scale=[k2, 1.0]),
+                          agama.Potential(type="Dehnen", gamma=1.0, scaleRadius=0.3, mass=M * k2),
+                          agama.Potential(type="CylSpline", mmax=8, symmetry="none", **ssl.NBODY_GRID,
+                                          potential=agama.Potential(agama.Potential(file=baxi, scale=[k2, 1.0]), bar)))
+    vc = lambda p, R: float(np.sqrt(-R * p.force([[R, 0, 0]])[0][0]))
+    print(f"   {family}: central mass {M:.3g} Msun (x k^2 {k2:.4f} = {M * k2:.3g}); v_c(1)/<v_c>(2-6) {r:.3f}; "
+          f"v_c at 1/2/5 kpc {vc(axi, 1):.0f} {vc(axi, 2):.0f} {vc(axi, 5):.0f} (S22 {vc(s22_axi, 1):.0f} {vc(s22_axi, 2):.0f} "
+          f"{vc(s22_axi, 5):.0f}); <v_c>(2-6) {_vc_mean(pot):.1f} (S22 {_vc_mean(s22_axi):.1f})", flush=True)
+    return pot
 
 
 def family_potential(family):
     """The family at S = bar_frac = 1, bar along x; the hybrids swap the axisymmetric part and the bar."""
+    if family in CORE_HYB:
+        return core_hybrid(family)
     if family in ("nbody", "mw", "sormani22"):
         return ssl.bar_aligned_potential(1.0, 1.0, family)
+    if family in SNAP_HYB:
+        return snapshot_hybrid(family)
     import agama
     from potential_family import files as family_files
     from galaxies import galaxy as galaxy_info
