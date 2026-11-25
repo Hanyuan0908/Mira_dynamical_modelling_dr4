@@ -6161,6 +6161,49 @@ portable drive).
   - `figures/osarg_zhang2024_sormani22_widebar_pattern_speed_posterior_by_grid.png`.
   - `plot_corner_by_grid.py` now reads the run's own prior box from `design_box.json`.
 
+
+## 2026-11-26 — Extreme bar-strength test: no bug; at fixed Ω_b the bar strength is constrained and the mock's truth is recovered
+
+**User:** the bar strength cannot be unconstrained if bar_frac → 0 removes the bar; run extreme tests for a bug.
+
+**Free check first** (wide-box design, no emulator): best evaluated χ² per bar_frac bin above the overall best, in T1.
+- Default grid: 0.1–0.2: 6.1; 0.2–0.3: 4.8; 0.3–0.5: 3.0; 0.9–1.1: 1.3; 1.3–1.5: 0.0; 1.7–2.0: 1.1.
+- geo20: 10.8, 10.6, 6.8, …, 0.0 at 0.9–1.1, …, 2.8 at 1.7–2.0.
+- Each weak-bar bin's best point pairs with a slow bar (Ω_b 19.8–26) and each strong-bar bin's with a fast one (38–42):
+  compensation along the Ω_b ridge.
+
+**The extreme test** (`extreme_bar_strength_test.py`): (Ω_b, φ_b, S) fixed, bar_frac = 0 … 4, integrated and scored as
+the pipeline on both grids. `results/extreme_bar_strength_{osarg_s22,h24mock}.csv`; figure
+`figures/extreme_bar_strength_test_osarg_and_mock.png` (`plot_extreme_bar_strength.py`).
+
+| bar_frac | bar force m2/m0 (3 kpc), OSARG | OSARG: library ⟨v_R⟩ m=2 (data 21.05) | OSARG Δχ² default / geo20 | mock: ⟨v_R⟩ m=2 (data 16.58) | mock Δχ² default / geo20 |
+|---|---|---|---|---|---|
+| 0 | 0.0000 | 6.48 | +590 / +496 | 6.98 | +254 / +237 |
+| 0.25 | 0.0236 | 8.97 | +366 / +314 | 8.39 | +197 / +129 |
+| 0.5 | 0.0472 | 13.51 | +196 / +163 | 10.29 | +32 / +67 |
+| 1.0 | 0.0944 | 17.88 | +59 / +2 | 14.73 | **0 / 0** |
+| 1.5 | 0.1416 | 19.39 | **0 / 0** | 17.10 | +80 / +47 |
+| 2.0 | 0.1888 | 18.49 | +108 / +41 | 16.20 | +263 / +192 |
+| 3.0 | 0.2831 | 15.22 | +534 / +360 | 14.45 | +848 / +666 |
+| 4.0 | 0.3775 | 8.59 | +2054 / +1427 | 8.20 | +2293 / +1683 |
+
+- **OSARG** was run at its best point: Ω_b 32.06, φ_b 20.46, S 0.949. **The mock** was run at its truth: Ω_b 32.5,
+  φ_b 25, S 1.
+- **No bug.**
+  - The bar force scales exactly with bar_frac.
+  - No bar is rejected strongly: OSARG 18 T1 (default) and 43 T1 (geo20) worse than the minimum.
+  - At fixed (Ω_b, φ_b, S) the **steady-state mock's χ² minimum is exactly at its true bar_frac = 1** on both grids
+    (±0.5 costs 1–6 T1 on geo20).
+  - For OSARG, bar_frac is constrained to ~1.0–1.8 at fixed Ω_b (within ~2–4 T1 of the minimum at 1.5).
+- **Why the marginal is loose anyway:**
+  1. **The Ω_b ridge.** Moving Ω_b with bar_frac restores most of the fit; the free check shows weak bars only
+     3–11 T1 worse once paired with slow pattern speeds.
+  2. **The quadrupole saturates.** The library's ⟨v_R⟩ m = 2 rises with bar_frac only up to ~1.5 (OSARG 19.4, mock
+     17.1 km/s), then FALLS (15.2 at 3, 8.6 at 4). Between ~1 and ~2 the quadrupole barely changes. OSARG's data
+     quadrupole (21.05) exceeds every library at this (Ω_b, φ_b, S); the mock's (16.58) is matched near the truth.
+- **A quadrupole remains with no bar** (6.5–7.0 km/s in both). Hypothesis, untested: the signature of observing an
+  axisymmetric disc with distance errors and the sfratio weighting.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
@@ -6229,6 +6272,7 @@ below is still found by `find figures -name <name>`; most of the Test 1b set is 
 | `milky_way_rotation_curves_and_resonances.png` | five Milky Way potentials (McMillan17, Sormani+22, Hunter+24, Cautun+20, gala MWP2022): v_c, the fitted-region zoom, Ω − κ/2 against the OSARG Ω_b band (2026-11-25) |
 | `rotation_curves_nbody_mocks_vs_milky_way.png` | the 12 N-body snapshots' azimuthally averaged rotation curves against the Milky Way models: v_c, shape normalised at 5 kpc, (Ω − κ/2)/Ω_b with each ILR (2026-11-25) |
 | `resonances_vs_pattern_speed_constraint_simulations_and_milky_way.png` | ILR/CR and ILR radius against the Ω_b posterior width for the 12 N-body, 13 Auriga and the Milky Way runs (2026-11-25) |
+| `extreme_bar_strength_test_osarg_and_mock.png` | χ²/T1 and the library ⟨v_R⟩ quadrupole against bar_frac 0–4 with everything else fixed, OSARG (Sormani+22) and the steady-state mock (2026-11-26) |
 | `bimodality_spatial_origin_osarg_s22.png` | OSARG in Sormani+22: Δχ² per (R, \|z\|) block and per field, second peak (Ω_b 37.6) and strong-bar ridge (34.5) against the posterior main peak (30.0), three grids (2026-11-25) |
 | `bimodality_spatial_origin_h24mock.png` | steady-state mock in Hunter+24: Δχ² per (R, \|z\|) block and per field between the false low-Ω_b mode, the main mode and the truth, three grids (2026-11-25) |
 | `posterior_degeneracies_mocks_vs_osarg.png` | posterior correlations (φ_b–bar_frac, φ_b–S, Ω_b–S, Ω_b–bar_frac) and what a ±2° φ_b prior buys, for the 25 mocks, the t7 variants and the Milky Way-family runs (2026-11-24) |
