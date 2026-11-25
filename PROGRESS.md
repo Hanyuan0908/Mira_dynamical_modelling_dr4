@@ -5509,6 +5509,25 @@ What the four columns show:
 - **S:** about ±0.2 everywhere: OSARG 1.03–1.06; mock 0.87–1.01.
 - **|Ω_b|:** as in the table above, including the OSARG shoulder at 35–39 and the mock's secondary bump at 23–26.
 
+**Corner plots, one per grid** (user request; `plot_corner_by_grid.py`, from the same T1 samples).
+- **Folders:** `figures/corner_plots_by_grid/osarg_zhang2024_sormani22/` and
+  `figures/corner_plots_by_grid/mw_hunter24_mock_from_osarg_ics/`.
+- **Files:** `01_current_default_0.3kpc_rings_3_layers.png` … `09_0.1kpc_rings_at_ILR_one_layer_z2.png`.
+- **Layout:** every corner is drawn on the full prior box, so all grids share axes. The empty corner carries the grid's
+  name, its design, N_data, T1, χ²/N, the |Ω_b| width and a to-scale drawing of the grid. Truths are in orange for the
+  mock.
+
+**The secondary Ω_b modes are bar-strength degeneracies, on every grid** (median S and bar_frac inside and outside
+each mode, from the same samples):
+- **Mock, mode Ω_b < 28:** 15–36% of the posterior (36% on the current grid, 15% on geo20). In it the bar is short and
+  weak: S 0.71–0.81, bar_frac 0.64–0.69. The main mode has S 0.94–1.05, bar_frac 0.86–0.94 (truth 1, 1).
+- **OSARG, mode Ω_b > 34.5:** 22–38% of the posterior. In it the bar is long and strong: S 1.12–1.20, bar_frac
+  1.17–1.32. The main mode has S 0.96–1.03, bar_frac 0.96–1.03.
+- **So the shoulder and the bump are where a different bar (length and amplitude together) trades against the pattern
+  speed.** In the Milky Way family a faster pattern pairs with a bigger, stronger bar. Constraining the bar's length
+  and amplitude should remove these modes. This is consistent with the ±10% bar prior test, which halved the mock's
+  Ω_b width.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
@@ -5573,6 +5592,7 @@ below is still found by `find figures -name <name>`; most of the Test 1b set is 
 | `mw_hunter24_mock_from_osarg_ics_pattern_speed_posterior_by_grid.png` | the same for the steady-state mock, truth 32.5 marked (2026-11-25, T1) |
 | `osarg_zhang2024_sormani22_all_posteriors_by_grid_design.png` | OSARG in Sormani+22: one row per Fourier grid — the grid drawn to scale in (R, \|z\|) with N_data, T1, χ²/N, then the marginal posteriors of \|Ω_b\|, φ_b, S, bar_frac with median and 16–84% (2026-11-25, T1) |
 | `mw_hunter24_mock_from_osarg_ics_all_posteriors_by_grid_design.png` | the same for the steady-state mock, truths marked (2026-11-25, T1) |
+| `corner_plots_by_grid/<run>/NN_<grid>.png` | one corner plot per Fourier grid (nine) for OSARG in Sormani+22 and for the steady-state mock, each grid at its own T1, on the full prior box, with the grid's design described and drawn to scale (2026-11-25) |
 | `posterior_degeneracies_mocks_vs_osarg.png` | posterior correlations (φ_b–bar_frac, φ_b–S, Ω_b–S, Ω_b–bar_frac) and what a ±2° φ_b prior buys, for the 25 mocks, the t7 variants and the Milky Way-family runs (2026-11-24) |
 | `osarg_zhang2024_sormani22_bar_strength_profile_phib25pm2.png` | the Milky Way bar's A2/A0(R) from the OSARGs (Sormani+22, T = σ₂, φ_b 25 ± 2°) against the published Sormani+22 and Hunter+24 bars (2026-11-24) |
 | `presentation/osarg_zhang2024_face_on_number_density_and_mean_vR_black.{png,pdf}` | talk version: face-on number density (log, own scale 2.6–822 stars/kpc²) and ⟨v_R⟩ (±40 km/s; ≥ 15 stars in the kernel) of the 32,977 OSARGs at \|z\| < 3 kpc (paper's final sample), σ = 0.3 kpc smoothing on 0.2 kpc pixels over ±15 kpc; Sun, Galactic centre, and a 27° bar guide line (not fitted). `scripts/plot_presentation_osarg_mira_maps.py` (2026-11-12) |
