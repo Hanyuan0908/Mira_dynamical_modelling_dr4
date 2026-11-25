@@ -108,8 +108,31 @@ def _concat_ini(paths, out):
             f.write(f"[Potential{i if i else ''}]" + body.rstrip("\n") + "\n\n")
 
 
+def check_axisymmetric(axi_file, full_file=None, radii=(1.0, 2.0, 3.0, 4.0, 5.0), tol=1e-4):
+    """Raise if an "axisymmetrised" potential file still carries non-axisymmetric structure.
+
+    Measures the m = 2 Fourier amplitude of the midplane radial force on rings at `radii` relative to its m = 0 part;
+    a true axisymmetric expansion gives 0 to round-off. Added 2026-11-25: the trial-family files built on the cluster
+    on 2026-10-29/30 had `symmetry=None` despite the request below (identical m = 2 to the barred files), so bar_frac
+    rescaled AND rotated the trial bar (PROGRESS 2026-11-25). Returns the largest ratio found."""
+    pot = agama.Potential(str(axi_file))
+    ph = np.linspace(0, 2 * np.pi, 72, endpoint=False)
+    worst = 0.0
+    for R in radii:
+        X = np.column_stack([R * np.cos(ph), R * np.sin(ph), np.zeros_like(ph)])
+        F = pot.force(X)
+        FR = F[:, 0] * np.cos(ph) + F[:, 1] * np.sin(ph)
+        worst = max(worst, 2 * abs(np.mean(FR * np.exp(-2j * ph))) / abs(np.mean(FR)))
+    if worst > tol:
+        raise RuntimeError(f"{axi_file} is NOT axisymmetric: m=2/m=0 of the midplane radial force reaches {worst:.3g} "
+                           f"(tolerance {tol}). This AGAMA build ({getattr(agama, '__version__', '?')}) did not honour "
+                           f"symmetry='axisymmetric'; do not use these family files.")
+    return worst
+
+
 def build_files(galaxy="au18"):
-    """Create the four family files from the component files of the galaxy's build script."""
+    """Create the four family files from the component files of the galaxy's build script.
+    Every axisymmetrised file is verified with check_axisymmetric() (2026-11-25)."""
     if not _is_auriga(galaxy):
         F, pd, fam = files(galaxy), _galaxy(galaxy)["pot_dir"], _family(galaxy)
         axi_paths = []
@@ -118,6 +141,7 @@ def build_files(galaxy="au18"):
             prm.pop("mmax", None)
             agama.Potential(type=typ, potential=agama.Potential(str(pd / f"{c}.ini")), symmetry="axisymmetric",
                             **prm).export(str(pd / f"{c}_axi.ini"))
+            check_axisymmetric(pd / f"{c}_axi.ini")
             axi_paths.append(pd / f"{c}_axi.ini")
         _concat_ini([pd / f"{c}.ini" for c in fam["bar"]], F["baryon_full"])
         _concat_ini(axi_paths, F["baryon_axi"])
@@ -132,6 +156,7 @@ def build_files(galaxy="au18"):
     grid = {k: v for k, v in CYL_PARAMS.items() if k not in ("type", "symmetry", "mmax")}
     agama.Potential(type="CylSpline", potential=bary, symmetry="axisymmetric", **grid).export(
         str(F["baryon_axi"]))
+    check_axisymmetric(F["baryon_axi"])
     _concat_ini([pd / "dm.ini", pd / "bh.ini", F["baryon_axi"]], F["axi"])
     _concat_ini([pd / "dm.ini", pd / "bh.ini", pd / "stars.ini", pd / "gas.ini"], F["full"])
 

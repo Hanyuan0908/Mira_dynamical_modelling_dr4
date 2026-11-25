@@ -6164,7 +6164,8 @@ below is still found by `find figures -name <name>`; most of the Test 1b set is 
   and restored on the afternoon of 2026-11-25). Wider bar box being run: bar_frac 0.1–2.0, S 0.4–1.7.
 - **Temperature:** T1 = σ₁ of each grid (user decision 2026-11-25).
 - **Likelihood:** scheme B, rings < 6 kpc, sfratio selection, K = 10 distance draws.
-- **Grid:** the 0.3 kpc rings with one |z| < 2 layer are not yet adopted; the radial test below decides.
+- **Grid:** recommended geo20 with ONE |z| < 2 layer (narrowest that keeps the fit: OSARG 26%, mock 22% at T1); two 1 kpc
+  layers are worse (32%). Not yet adopted (user).
 
 **Where OSARG stands (T1; `results/bar_strength_prior_effect.csv`).**
 
@@ -6177,18 +6178,37 @@ The steady-state mock (truth 32.5, 25°, 1, 1) is just as loose:
 - current grid: Ω_b 40.1% wide, −3.3%; S 0.87 (0.62–1.14); bar_frac 0.81 (0.59–1.16);
 - 0.3 kpc |z| < 2: Ω_b 30.2%, +1.3%; S 0.97 (0.70–1.20); bar_frac 0.83 (0.61–1.12).
 
-**What we know.**
-- **The weak constraint is the Milky Way rotation curve, not the OSARG data.** The steady-state mock built from the
-  OSARG stars in Hunter+24 is as loose as the data (46% vs OSARG's 43%, at σ₂ then). The hybrids show the response
-  follows the axisymmetric part.
-- **The mechanism is the resonance position.** The ILR falls at 1.5–1.8 kpc, inside the hot centre, so the fitted
-  2–6 kpc disc is non-resonant: the median linear sensitivity to Ω_b is 1.0–1.1, against 2.6 in t7's family with
-  its ILR at 3.4 kpc.
-- **Ruled out as the cause:** integration time (4 Gyr libraries leave the signal unchanged), ⟨v_φ⟩ m = 0, library
-  noise alone, and the bar angle.
-- **The bar is unconstrained, and that loosens Ω_b.** In the Milky Way family, bar_frac and S couple to Ω_b
-  (r +0.2 to +0.4), not to φ_b. A ±10% prior on the bar's length and strength halves the mock's Ω_b width
-  (40 → 20%, 30 → 15%) but tightens OSARG only to 36% / 24%. The φ_b prior adds nothing.
+**What we know: why the OSARG Ω_b constraint is weak** (status at the end of 2026-11-25; the evidence is in the dated
+entries).
+- **Not the data.**
+  - Sample size and coverage: the t = 7 mock thinned to OSARG's N and footprint gives 8.8%.
+  - Distance errors: re-scored at 12.5%, unchanged.
+  - Non-equilibrium: a steady-state mock of OSARG's stars in Hunter+24, with the truth known, is as loose (46% at
+    √(2N); 40% at T1).
+- **Not the method's settings:** integration time (4 Gyr, the same signal), ⟨v_φ⟩ m = 0, library noise alone, R < 8.
+- **Not the bar defect** of the cluster-built mock families. The OSARG families are correct, and the t = 7 mock with the
+  defect fixed still gives 8.3%.
+- **Not the ILR position or the linear frequency gap.** N-body t = 2 (ILR 1.95 kpc) and Au28 / Au18 (2.15–2.16) sit
+  where Sormani+22 (2.01) does, yet give 10% / 10.5% / 14.3% against 38%. "The ILR lies outside the fitted disc" is
+  WITHDRAWN.
+- **IS the axisymmetric potential, specifically the mass inside ~2 kpc.**
+  - The N-body rotation curves, rescaled to the Milky Way's mean v_c over 2–6 kpc and put under the identical
+    Sormani+22 bar, make OSARG's predictions respond 2.6–2.9× more to a slower bar and ~1.5× more to a faster one.
+  - t = 2's curve responds as strongly as t = 7's.
+  - An extended central mass that reproduces the N-body midplane curve (v_c peaked at ~1 kpc and falling) recovers
+    44–77% of that.
+  - The Milky Way models have little mass there (v_c 150–190 km/s at 1 kpc, rising); every N-body snapshot peaks at
+    255–274.
+- **The Ω_b width is spread further by the bar.** In the Milky Way family Ω_b trades against bar_frac and S. The
+  second peak is real: the ⟨v_R⟩ quadrupole and 3–5 kpc prefer a fast, strong bar (Ω_b ~37.6, bar_frac 1.43); ⟨v_φ⟩
+  and R 1–2 kpc prefer Ω_b ~30 with the published bar. A ±10% bar prior halves the mock's width and gives OSARG
+  30 → 24% (T1).
+- **Open:**
+  - the physical mechanism: why the inner mass matters, if not through the ILR;
+  - the remaining 23–56% of the response (vertical structure? hypothesis);
+  - whether the real Galaxy's inner mass differs from Sormani+22's (fitted to the bulge kinematics; nothing here says
+    so);
+  - the 13 Auriga rotation curves (potentials on the cluster).
 
 **Radial-grid test (done, 2026-11-25 entry).**
 - Finer rings at the ILR (`ilr01`, `geo32`) do not narrow Ω_b.
@@ -6196,6 +6216,18 @@ The steady-state mock (truth 32.5, 25°, 1, 1) is just as loose:
 - The width uncertainty is unmeasured, so geo20 vs 0.3 kpc |z| < 2 (30%) may not be a real difference.
 
 **Next steps, in order.**
+0. **REDO TEST 2 (the 25-galaxy mock suite) ON THE CLUSTER WITH THE CORRECT POTENTIAL BUILDER** (user, 2026-11-25; when
+   cluster access returns).
+   - **Why:** the trial-family files built there on 2026-10-29/30 have non-axisymmetric "axi" files, so bar_frac rescaled
+     AND rotated the trial bar. Confirmed for t = 2, 3, 4, 5.5, 7; likely for the rest (entries of 2026-11-25).
+   - **Rebuild** every family (12 N-body snapshots, 13 Auriga) with `potential_family.build_files`, which now calls
+     `check_axisymmetric()` and stops on a non-axisymmetric file. If it stops, use an AGAMA that honours
+     `symmetry="axisymmetric"` (1.0.156 on the laptop does).
+   - **Re-run** the 257-point searches (12.5%, sfratio, K = 10, 50 Myr, scheme B), re-score, emulate. Compare with
+     the old runs: Ω_b, φ_b bias, bar_frac, the φ_b–bar_frac degeneracy. Expectation from t = 7: Ω_b barely changes
+     (6.9 → 8.3%); the degeneracy and part of the φ_b bias go away.
+   - **Copy** the Auriga potential folders (`mock/au*_potential/`) and `results/au*_ground_truth.json` to the portable
+     drive (missing there), for the Auriga rotation curves and rotation-curve swaps.
 1. **Choose the grid** (user): geo20 or 0.3 kpc |z| < 2, both one |z| < 2 layer. Optionally measure the width scatter
    first, e.g. refit the emulator and sampler with different seeds or a subsample of the design.
 2. **Measure the bar's strength and length from the data — a project goal in its own right (user, 2026-11-25).**
