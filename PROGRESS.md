@@ -5326,6 +5326,47 @@ bar_frac ±0.25; 4 Gyr, 75-phase libraries; whitened with each star set's data c
 - Its bar shape is only ~30% less constrained than the mocks'.
 - What really differs is the pattern speed, through the rotation curve.
 
+
+## 2026-11-25 — Is the weak Milky Way pattern-speed signal an integration-time effect? No
+
+User: the libraries use 0.25–1 Gyr in every potential; if Milky Way stars complete fewer orbits or bar passages in that
+window, the library might not yet show the pattern-speed differences.
+
+**1. Orbit counts in the window** (`count_orbits_in_library_window.py`; 3,000 random stars per case, 1 Gyr at 1 Myr,
+reference bar; `results/orbit_counts_in_library_window.csv`). Median revolutions relative to the bar in 0.25–1 Gyr (each
+is two bar passages), and radial oscillations:
+
+| mean R | Milky Way family (OSARG in Sormani+22 / steady-state mock in Hunter+24) | t7 family (t7 stars / OSARG stars) |
+|---|---|---|
+| 0–2 kpc | 8.1 / 8.3 revolutions; 26–27 oscillations | 14.1 / 15.3; 38–41 |
+| 2–4 kpc | 4.0 / 4.1; 12–13 | 6.6 / 6.4; 15 |
+| 4–6 kpc | 1.3 / 1.4; 8 | 2.4 / 2.3; 7 |
+| 6–8 kpc (not fitted) | 0.2 (87–91% not circulating: near corotation at ~7 kpc) | 0.8 (16–20%) |
+
+- **The premise holds.** In the Milky Way potential stars pass the bar about half as often in the window (at
+  4–6 kpc: ~3 passages against ~5). It is set by the potential: OSARG's stars in t7's family circulate as fast as
+  t7's own.
+
+**2. But a 4× longer window does not raise the signal, in either family** (`library_noise_floor_test.py --cells
+t7cov:nbody`, the same variants as 2026-11-24; `results/library_noise_floor_t7cov_nbody.npz`). Change of the
+prediction D (tempered) at −30 / −20 / +20 / +40%, and what lies above the noise floor at −20 / +40%:
+
+| cell | 1 Gyr, 15 phases (pipeline) | above floor | 4 Gyr, 75 phases | above floor | χ²/N at ref, 1 → 4 Gyr |
+|---|---|---|---|---|---|
+| t7 stars, t7 family | 26.1 / 12.7 / 6.5 / 10.8 (floor 2.18) | 10.5 / 8.6 | 22.0 / 9.6 / 3.9 / 8.1 (floor 0.68) | 8.9 / 7.4 | 1.825 → 1.616 |
+| steady-state mock, Milky Way | 5.7 / 4.5 / 4.9 / 6.5 (floor 2.47) | 2.1 / 4.1 | 3.7 / 2.3 / 1.6 / 3.3 (floor 0.65) | 1.6 / 2.6 | 1.388 → 1.233 |
+| OSARG, Milky Way | 8.2 / 5.8 / 5.7 / 6.9 (floor 2.68) | 3.1 / 4.2 | 5.5 / 2.8 / 1.8 / 3.7 (floor 0.67) | 2.1 / 3.1 | 1.740 → 1.574 |
+
+- **Five times the phases and four times the bar passages leave each family's pattern-speed signal the same.** The
+  1 Gyr library already represents the time-averaged response, in both families.
+- **The gap between the families persists and sharpens once the noise is removed:** above the floor at −20%,
+  t7 8.9 against 1.6–2.1 (×4–5); at +40%, 7.4 against 2.6–3.1 (×2.4–2.8).
+- **What the longer window does improve is the fit** (χ²/N −0.15 to −0.21 in all three), so 1 Gyr libraries are not
+  fully phase mixed. More phases within 1 Gyr (25 Myr cadence) do not do this.
+- **Conclusion:** fewer bar passages per Gyr is a property of the Milky Way potential, but it is not why its
+  kinematics respond weakly to Ω_b. The time-averaged response itself is weaker, as the rotation-curve hybrids
+  showed.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
