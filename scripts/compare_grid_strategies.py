@@ -11,7 +11,8 @@ With --truth (a mock), bias and whether the truth lies inside 16-84% are reporte
 
 Usage: python compare_grid_strategies.py --run osarg_zhang2024_sormani22 --case osarg_s22
        python compare_grid_strategies.py --run mw_hunter24_mock_from_osarg_ics --case h24mock --truth 32.5 25 1 1
-Output: results/<run>/grid_strategies.csv, figures/<run>_pattern_speed_posterior_by_grid.png
+Output: results/<run>/grid_strategies.csv, results/<run>/grid_strategies_chains.npz (posterior samples per grid),
+        figures/<run>_pattern_speed_posterior_by_grid.png
 """
 import argparse
 import json
@@ -98,6 +99,7 @@ def main():
         print(f"{'':30s} best chi2 per 2.5 bin above the best, in T1, Omega 15 -> 45: "
               + " ".join(f"{v:4.1f}" for v in prof), flush=True)
     pd.DataFrame(rows).to_csv(RESULTS_DIR / args.run / "grid_strategies.csv", index=False)
+    np.savez(RESULTS_DIR / args.run / "grid_strategies_chains.npz", **chains)   # (n, 4): |Omega_b|, phi_b, S, bar_frac
 
     fig, ax = plt.subplots(figsize=(8.5, 5))
     cols = [INK, BLUE_RAMP[2], BLUE_RAMP[4], BLUE_RAMP[6], ACCENT, INK_MUTED, "#E8A33D", "#8E44AD", "#2E8B57"]
