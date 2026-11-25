@@ -5900,6 +5900,46 @@ produces it?
 - **Next, already running:** the wide bar box (bar_frac to 2.0) will show whether the strong-bar ridge continues
   beyond 1.5.
 
+
+## 2026-11-25 — The decisive re-run: fixing the bar defect does NOT loosen the mock's Ω_b; it removes the φ_b–bar_frac degeneracy
+
+`test2_t7_sf_12p5pct_clusteraxifix`:
+- **Configuration:** the original run's exactly (12.5% mock, focused 257-point design, 50 Myr, sfratio, K = 10,
+  scheme B); only the trial family's axisymmetric baryons were rebuilt (galaxy `nbody_clusteraxifix`, previous entry).
+- **Run:** chain `chain_C_then_B.sh`, 14:39–18:53. Integration dominated (110–141 s per point per worker, 2 workers ×
+  7 threads, 50k stars).
+- **Memory:** free + inactive never below 6.4 GB; Python RSS at most 5.6 GB, during the 3-worker re-score
+  (`…/runs/test2_t7_sf_12p5pct_clusteraxifix/logs/memory.log`).
+- **Comparison:** posteriors from the same emulator and sampler on the same √(2N) column. Figures
+  `figures/test2_t7_sf_12p5pct_clusteraxifix_emulator_{corner,slices,loo}_logLs_…_sfratio.png`.
+
+| t = 7 mock | original (cluster family, 62% of the bar fixed) | corrected (whole bar free) |
+|---|---|---|
+| Ω_b (truth 25.20) | 24.78 (23.99–25.69), 6.9%, −1.7% | 25.40 (24.39–26.50), 8.3%, +0.8% |
+| φ_b (truth 27°) | 23.2 (17.5–29.8) | 25.9 (21.9–30.0) |
+| S (truth 1) | 1.10 (0.91–1.35) | 0.90 (0.80–1.14) |
+| bar_frac (truth 1) | 0.76 (0.53–1.29) | 1.32 (0.91–1.68) |
+| corr. Ω–S / Ω–f / φ–f / S–f | −0.15 / +0.16 / **+0.70** / −0.69 | +0.18 / +0.19 / **+0.09** / −0.72 |
+| best χ² per Ω_b octile above the best | 760 199 117 0 173 314 645 637 | 843 357 177 0 128 195 384 596 |
+| best χ² per bar_frac sextile above the best | 70 107 14 83 0 173 | 316 207 92 195 0 128 |
+| emulator LOO rms | 1.06 | 0.96 |
+
+- **The defect does not explain the mock-vs-OSARG Ω_b gap:** 6.9% → 8.3%, against OSARG's 38%. The Ω_b profile stays
+  steep on both sides. The hypothesis of the 2026-11-25 lockout entry is WITHDRAWN for Ω_b.
+- **It did shape the bar-angle results.** With the whole bar free, the φ_b–bar_frac correlation vanishes
+  (+0.70 → +0.09) and the φ_b bias shrinks (−3.8° → −1.1°).
+  - The mock suite's φ_b–bar_frac degeneracy (median +0.60 N-body, +0.47 Auriga) and its φ_b bias (−5 to −7°),
+    treated since 2026-11-05 as properties of the method, were at least partly the defect for t = 7.
+  - Hypothesis, untested: the same holds for the other cluster-built families. The Auriga files are built by the same
+    code with the same `symmetry="axisymmetric"` request on the same machine; that needs checking on the cluster.
+- **The bar strength is not better constrained with the whole bar free:** bar_frac width 0.77 against 0.76. The
+  evaluated χ² now discriminates low bar_frac more (316 against 70 in the lowest sextile).
+- **Still unexplained:** why the Milky Way family is loose for Ω_b. Ruled out so far:
+  - the data (the steady-state mock in Hunter+24 is as loose);
+  - the bar defect (above);
+  - the ILR position and the linear frequency gap (t = 2, Au28, Au18 counterexamples).
+  - Established: the axisymmetric potential matters (the 2026-11-24 hybrids).
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
