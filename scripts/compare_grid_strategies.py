@@ -1,11 +1,12 @@
-"""Which Fourier grid gives the best pattern-speed constraint, judged at each grid's OWN temperature?
+"""Which Fourier grid gives the best pattern-speed constraint, judged at each grid's OWN temperature T1?
 
 For every grid of run_grid_tests.sh (and the default):
-  - T = sigma_2 of that grid (chi2_jitter_per_grid.py): the chi2 jitter between two near-identical models;
+  - T = T1 = sigma_1 of that grid (chi2_jitter_per_grid.py): the std of chi2 - chi2(best run) over tiny perturbations
+    (the adopted temperature, user 2026-11-25; before that day this script used sigma_2, the between-run jitter);
   - the posterior at T (emulator refitted on -dchi2 / (2 T), sampled as the pipeline), and the pipeline's own
     sqrt(2N)-tempered posterior for reference (emulator_results_<column>.json);
   - an emulator-free check: the best evaluated chi2 per 2.5 km/s/kpc bin of |Omega_b|, above the overall best, in units of
-    that grid's sigma_2. This is how many "jitter units" the data separate pattern speeds by on that grid.
+    that grid's T1. This is how many "jitter units" the data separate pattern speeds by on that grid.
 With --truth (a mock), bias and whether the truth lies inside 16-84% are reported.
 
 Usage: python compare_grid_strategies.py --run osarg_zhang2024_sormani22 --case osarg_s22
@@ -70,14 +71,14 @@ def main():
         nd = int(tr[f"ndata_{B}_sfratio{tag}"].mode().iloc[0])
         j = jit[jit.grid == label]
         x0, x = j.chi2.iloc[0], j.chi2.values[1:]
-        s2 = float(np.std((x[:, None] - x[None, :])[np.triu_indices(len(x), 1)], ddof=1))
+        s2 = float(np.std(x - x0, ddof=1))                 # T1 (the variable keeps its old name)
         post = posterior(u, -(chi2 - chi2.min()) / (2 * s2))
         chains[label] = post
         q = np.percentile(post, [16, 50, 84], axis=0)
         pj = RESULTS_DIR / args.run / f"emulator_results_logLs_{B}_sfratio{tag}.json"
         pipe = json.load(open(pj)) if pj.exists() else None
         prof = [(chi2[(om >= a) & (om < b)].min() - chi2.min()) / s2 for a, b in zip(edges[:-1], edges[1:])]
-        r = dict(grid=desc, tag=label, N_data=nd, best_chi2_per_N=chi2.min() / nd, sigma_2=s2, sqrt_2N=np.sqrt(2 * nd),
+        r = dict(grid=desc, tag=label, N_data=nd, best_chi2_per_N=chi2.min() / nd, T1=s2, sqrt_2N=np.sqrt(2 * nd),
                  chi2_span_over_sigma2=(np.percentile(chi2, 90) - chi2.min()) / s2,
                  Om_p16=q[0, 0], Om_p50=q[1, 0], Om_p84=q[2, 0], Om_width_pct=100 * (q[2, 0] - q[0, 0]) / q[1, 0],
                  phi_p50=q[1, 1], S_p50=q[1, 2], S_p16=q[0, 2], S_p84=q[2, 2], f_p50=q[1, 3], f_p16=q[0, 3], f_p84=q[2, 3],
@@ -88,13 +89,13 @@ def main():
         if args.truth:
             r.update(Om_bias_pct=100 * (q[1, 0] / args.truth[0] - 1), Om_inside=bool(q[0, 0] <= args.truth[0] <= q[2, 0]))
         rows.append(r)
-        print(f"{desc:30s} N {nd:4d}  chi2/N {chi2.min() / nd:.3f}  sigma_2 {s2:5.1f} (sqrt(2N) {np.sqrt(2 * nd):5.1f})  "
-              f"|Omega_b| at T=sigma_2: {q[1, 0]:.2f} ({q[0, 0]:.2f}-{q[2, 0]:.2f}) width {r['Om_width_pct']:.1f}%"
+        print(f"{desc:30s} N {nd:4d}  chi2/N {chi2.min() / nd:.3f}  T1 {s2:5.1f} (sqrt(2N) {np.sqrt(2 * nd):5.1f})  "
+              f"|Omega_b| at T1: {q[1, 0]:.2f} ({q[0, 0]:.2f}-{q[2, 0]:.2f}) width {r['Om_width_pct']:.1f}%"
               + (f" bias {r['Om_bias_pct']:+.1f}% inside {r['Om_inside']}" if args.truth else "")
               + (f"; sqrt(2N): {r['pipe_Om']} {r['pipe_width_pct']:.1f}%" if pipe else "")
               + f"; S {q[1, 2]:.2f} ({q[0, 2]:.2f}-{q[2, 2]:.2f}), f {q[1, 3]:.2f} ({q[0, 3]:.2f}-{q[2, 3]:.2f}); LOO {r['loo_rms_tempered']:.2f}",
               flush=True)
-        print(f"{'':30s} best chi2 per 2.5 bin above the best, in sigma_2, Omega 15 -> 45: "
+        print(f"{'':30s} best chi2 per 2.5 bin above the best, in T1, Omega 15 -> 45: "
               + " ".join(f"{v:4.1f}" for v in prof), flush=True)
     pd.DataFrame(rows).to_csv(RESULTS_DIR / args.run / "grid_strategies.csv", index=False)
 
@@ -103,12 +104,12 @@ def main():
     for (label, tag, desc), c in zip(GRIDS, cols):
         if label in chains:
             ax.hist(chains[label][:, 0], bins=np.arange(15, 45.01, 1.0), histtype="step", density=True, lw=2 if label == "default" else 1.5,
-                    color=c, label=f"{desc} (T = {[r for r in rows if r['tag'] == label][0]['sigma_2']:.0f})")
+                    color=c, label=f"{desc} (T1 = {[r for r in rows if r['tag'] == label][0]['T1']:.0f})")
     if args.truth:
         ax.axvline(args.truth[0], color=INK, ls="--", lw=1, label=f"truth {args.truth[0]:g}")
     ax.set(xlabel=r"$|\Omega_b|$ [km s$^{-1}$ kpc$^{-1}$]", ylabel="posterior density", yticks=[])
     ax.legend(frameon=False, fontsize=8, loc="upper left")
-    ax.set_title(f"{args.run}: pattern-speed posterior per Fourier grid, each at its own T = σ₂ (jitter)", fontsize=10, color=INK)
+    ax.set_title(f"{args.run}: pattern-speed posterior per Fourier grid, each at its own T1", fontsize=10, color=INK)
     savefig(fig, f"{args.run}_pattern_speed_posterior_by_grid")
 
 

@@ -5508,6 +5508,81 @@ below is still found by `find figures -name <name>`; most of the Test 1b set is 
 
 ## Next steps
 
+### Current status and next steps (2026-11-25)
+
+**Adopted set-up.**
+- **Family:** Sormani+22 (`sormani22`, spherical halo; user decision 2026-11-24).
+- **Temperature:** T1 = σ₁ of each grid (user decision 2026-11-25).
+- **Likelihood:** scheme B, rings < 6 kpc, sfratio selection, K = 10 distance draws.
+- **Grid:** the 0.3 kpc rings with one |z| < 2 layer are not yet adopted; the radial test below decides.
+
+**Where OSARG stands (T1; `results/bar_strength_prior_effect.csv`).**
+
+| grid | T1 | Ω_b [km/s/kpc] | S | bar_frac |
+|---|---|---|---|---|
+| current (0.3 kpc, 3 layers) | 32.1 | 32.09 (26.91–39.30), 38.6% | 1.03 (0.79–1.24) | 1.05 (0.71–1.35) |
+| 0.3 kpc, \|z\| < 2 | 15.4 | 32.14 (28.15–37.81), 30.1% | 1.05 (0.86–1.26) | 1.10 (0.78–1.36) |
+
+The steady-state mock (truth 32.5, 25°, 1, 1) is just as loose:
+- current grid: Ω_b 40.1% wide, −3.3%; S 0.87 (0.62–1.14); bar_frac 0.81 (0.59–1.16);
+- 0.3 kpc |z| < 2: Ω_b 30.2%, +1.3%; S 0.97 (0.70–1.20); bar_frac 0.83 (0.61–1.12).
+
+**What we know.**
+- **The weak constraint is the Milky Way rotation curve, not the OSARG data.** The steady-state mock built from the
+  OSARG stars in Hunter+24 is as loose as the data (46% vs OSARG's 43%, at σ₂ then). The hybrids show the response
+  follows the axisymmetric part.
+- **The mechanism is the resonance position.** The ILR falls at 1.5–1.8 kpc, inside the hot centre, so the fitted
+  2–6 kpc disc is non-resonant: the median linear sensitivity to Ω_b is 1.0–1.1, against 2.6 in t7's family with
+  its ILR at 3.4 kpc.
+- **Ruled out as the cause:** integration time (4 Gyr libraries leave the signal unchanged), ⟨v_φ⟩ m = 0, library
+  noise alone, and the bar angle.
+- **The bar is unconstrained, and that loosens Ω_b.** In the Milky Way family, bar_frac and S couple to Ω_b
+  (r +0.2 to +0.4), not to φ_b. A ±10% prior on the bar's length and strength halves the mock's Ω_b width
+  (40 → 20%, 30 → 15%) but tightens OSARG only to 36% / 24%. The φ_b prior adds nothing.
+
+**Running at the time of writing: radial-grid test** (user question: refine the rings around the Milky Way ILR).
+- **Schemes,** each with one |z| < 2 layer, from `set_grid(ring_scheme=...)` in `test1_nbody_qmc_focused_fourier_stars.py`:
+  `geo20` (20 geometric rings 0.2–6 kpc), `geo32` (32 rings, 0.17 kpc wide at 1.6 kpc), `ilr01` (0.1 kpc rings over
+  1.2–2.4 kpc, 0.3 kpc elsewhere).
+- **Chain** (`run_grid_tests_radial.sh <run>`, started 09:10): OSARG done 09:28; the steady-state mock was on `ilr01` at
+  09:44. Then each scheme's T1 (`chi2_jitter_per_grid.py --case osarg_s22|h24mock --only-schemes`).
+- **When done:** the flag `~/mira_dr4_runs/radial_chain.done` appears; logs are in
+  `~/mira_dr4_runs/grid_tests_radial_<run>.log` and `chi2_jitter_radial_{s22,h24mock}.log`.
+- **To evaluate** (now at T1):
+  - `python compare_grid_strategies.py --run osarg_zhang2024_sormani22 --case osarg_s22`
+  - `python compare_grid_strategies.py --run mw_hunter24_mock_from_osarg_ics --case h24mock --truth 32.5 25 1 1`
+- **Expectation, to be tested:** a modest gain at most. OSARG's ~9.6% distance error (~0.8 kpc at the Galactic centre)
+  smears radii near the ILR.
+
+**Next steps, in order.**
+1. **Finish the radial test** and choose the grid at T1, on OSARG and the steady-state mock together.
+2. **Measure the bar's strength and length from the data — a project goal in its own right (user, 2026-11-25).**
+   Priors are acceptable as a fallback, not as the answer.
+   - **a. Find where the bar-strength information is (cheap, no new integrations).** Whiten per-term gradients
+     ∂prediction/∂S and ∂/∂bar_frac at the OSARG best fit in Sormani+22, using the 4 Gyr libraries, as in
+     `fisher_gradients_by_family.py`. Cover every field (incl. ⟨v_z⟩, σ_z²), every Fourier m (incl. m = 0 of the
+     dispersions) and every ring (incl. R < 2 and 6–8 kpc, where the bar end and corotation sit). Rank by information
+     on S and bar_frac, and by how little they share with Ω_b.
+   - **b. Score the promising terms** as new schemes on the saved trajectories (re-scoring only), each at its own T1.
+     Check recovery of S = bar_frac = 1 on the steady-state mock before applying them to OSARG.
+   - **c. Use the tracers' density.** The empirical sfratio selection absorbs the bar's m = 2 density signature. A
+     selection model that does not know the bar (footprint, magnitude limit, extinction) would let the library's
+     predicted density constrain the bar. This is a larger change: test it on the mocks first.
+   - **d. Fallback:** literature priors on the bar's length and mass. The Sormani+22 / Portail+17 bar is a fit to star
+     counts; with ±10% on both, OSARG gives Ω_b 30.6 (28.3–35.6) on the 0.3 kpc |z| < 2 grid.
+3. **Redo at T1 what was made at σ₂:**
+   - the OSARG A2/A0(R) profile with the φ_b prior (`plot_bar_strength_profile_osarg.py` still reads σ₂);
+   - the OSARG corner plots and the degeneracy tables.
+   - The 25-mock suite has no per-mock T1 yet; each needs its own jitter run.
+4. **Open user decisions:**
+   - adopt the 0.3 kpc |z| < 2 grid, or a radial scheme;
+   - 4 Gyr libraries for fit quality (χ²/N improves by 0.15–0.21, but there is no Ω_b gain);
+   - fast-forward `main`;
+   - the two `* copy.mp4` files;
+   - the uncommitted `figures/setup_checks/*_bar_fourier.png` and `figures/test2_bar_strength_profile_recovery.png`.
+
+### Original plan (2026-10-27)
+
 Agreed approach (2026-10-27): start from the simplest data and add realism one step at a time.
 
 **Likelihood.** Fit 3D mean and dispersion maps of v_R, v_φ, v_z (later also cross terms).
