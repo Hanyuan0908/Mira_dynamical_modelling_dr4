@@ -5854,6 +5854,52 @@ All five Milky Way models rise in the inner 5 kpc, and their ILR lies at 1.1–2
   `test2_t7_sf_12p5pct`.
   - Chain `chain_C_then_B.sh`: memory-capped, sequential, log on the drive. After it, the Sormani+22 wide-box run (B).
 
+
+## 2026-11-25 — OSARG in Sormani+22: the second Ω_b peak is real, and it is a tension inside the data
+
+**User:** is the second peak an emulator bug or a genuine bimodality, and if genuine, which part of the OSARG sample
+produces it?
+- **Script:** `bimodality_spatial_origin.py --case osarg_s22 --split 34.5 --second high --peak-window 28 32`.
+  - New option `--peak-window`: adds the posterior's main peak, the T1 chain median in 28 < Ω_b < 32.
+- **Method:** 12 replicate runs per point (the point + 11 tiny perturbations), scored as the pipeline on three grids.
+  Per-block χ² is split exactly into fields.
+- **Outputs:** `results/bimodality_origin_osarg_s22.{json,npz}`; figure `figures/bimodality_spatial_origin_osarg_s22.png`.
+
+**The points:**
+- posterior main peak: Ω_b 30.02, φ_b 23.49, S 0.938, bar_frac 1.032 (27% of the chain);
+- the emulator's best point below 34.5, which sits ON the window edge: Ω_b 34.50, φ_b 20.0, S 1.081, bar_frac 1.500,
+  i.e. the main peak is not an emulator maximum (as on 2026-11-24);
+- the second peak, the emulator's global maximum: Ω_b 37.64, φ_b 20.0, S 1.158, bar_frac 1.432.
+
+| χ² (mean ± s.e., 12 runs) | default (T1 32.1) | geo20, \|z\| < 2 (T1 11.6) | geo20, \|z\| 0–1, 1–2 (T1 24.8) |
+|---|---|---|---|
+| main peak (Ω_b 30.0) | 1183.8 ± 7.7 | 551.5 ± 2.9 | 933.9 ± 5.9 |
+| ridge (Ω_b 34.5, bar_frac 1.50) | 1144.0 ± 6.9 | 529.2 ± 3.8 | 944.5 ± 5.7 |
+| second peak (Ω_b 37.6) | 1147.0 ± 7.1 | 530.6 ± 4.0 | 934.7 ± 10.2 |
+| second − main peak | **−36.8 ± 10.4 (−1.15 T1)** | **−20.9 ± 4.9 (−1.80 T1)** | +0.7 ± 11.8 (+0.03 T1) |
+
+- **Not an emulator artefact.** In true χ² the fast, strong-bar solution is as good as the main peak (two-layer
+  grid) or better (−1.2 and −1.8 T1). χ² is flat along the strong-bar ridge from Ω_b 34.5 to 37.6.
+- **The main peak at ~30 holds more posterior mass by volume,** not by a better fit.
+- **Which data prefer which** (second − main peak; negative = the second; the same signs on all three grids):
+  - **⟨v_R⟩ m = 2, 4:** −22.4 / −36.2 / −26.7. The quadrupole wants the fast, strong, long bar.
+  - **⟨v_φ⟩ m = 0, 2, 4:** +16.3 / +32.2 / +28.1. The rotation field wants the main peak.
+  - **σ_R², σ_φ² m = 2, 4:** −16 / −11 / −7 and −15 / −6 / +6. Mostly with the quadrupole.
+  - **By radius:** the outer disc favours the second peak. Default grid: R 3–4 kpc, |z| < 1 −18.0 ± 1.9; R 4–6 kpc,
+    |z| 1–2 −49.1 ± 6.0. geo20, |z| < 2: 3–4 kpc −14.9, 4.2–5.0 kpc −16.2.
+  - **The inner rings R 1–2 kpc favour the main peak:** +8.5 and +11.5; +16.5; +14.4 and +9.9. So does the outermost
+    geometric ring (5.0–6.0 kpc, |z| < 1: +17 and +19).
+- **Reading.** The two Ω_b peaks are the two ends of a tension between data components.
+  - The ⟨v_R⟩ quadrupole and the dispersions, mostly from 3–5 kpc, prefer a fast (Ω_b ~35–38), strong (bar_frac
+    ~1.4–1.5, against the box edge) and long (S ~1.1–1.2) bar at the φ_b = 20° edge.
+  - The mean rotation and the inner 1–2 kpc prefer Ω_b ~30 with the published bar (S, bar_frac ≈ 1).
+  - This is also why the bar strength is not pinned.
+- **Hypothesis, untested:** the sparse |z| 1–2 blocks at 4–6 kpc contribute strongly to the default-grid number
+  (−49), as sparse blocks did for the Hunter+24 mock's false mode. But the merged-layer grid keeps the sign
+  (−16 at 4.2–5.0 kpc), so they are not the whole effect.
+- **Next, already running:** the wide bar box (bar_frac to 2.0) will show whether the strong-bar ridge continues
+  beyond 1.5.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
@@ -5922,6 +5968,7 @@ below is still found by `find figures -name <name>`; most of the Test 1b set is 
 | `milky_way_rotation_curves_and_resonances.png` | five Milky Way potentials (McMillan17, Sormani+22, Hunter+24, Cautun+20, gala MWP2022): v_c, the fitted-region zoom, Ω − κ/2 against the OSARG Ω_b band (2026-11-25) |
 | `rotation_curves_nbody_mocks_vs_milky_way.png` | the 12 N-body snapshots' azimuthally averaged rotation curves against the Milky Way models: v_c, shape normalised at 5 kpc, (Ω − κ/2)/Ω_b with each ILR (2026-11-25) |
 | `resonances_vs_pattern_speed_constraint_simulations_and_milky_way.png` | ILR/CR and ILR radius against the Ω_b posterior width for the 12 N-body, 13 Auriga and the Milky Way runs (2026-11-25) |
+| `bimodality_spatial_origin_osarg_s22.png` | OSARG in Sormani+22: Δχ² per (R, \|z\|) block and per field, second peak (Ω_b 37.6) and strong-bar ridge (34.5) against the posterior main peak (30.0), three grids (2026-11-25) |
 | `bimodality_spatial_origin_h24mock.png` | steady-state mock in Hunter+24: Δχ² per (R, \|z\|) block and per field between the false low-Ω_b mode, the main mode and the truth, three grids (2026-11-25) |
 | `posterior_degeneracies_mocks_vs_osarg.png` | posterior correlations (φ_b–bar_frac, φ_b–S, Ω_b–S, Ω_b–bar_frac) and what a ±2° φ_b prior buys, for the 25 mocks, the t7 variants and the Milky Way-family runs (2026-11-24) |
 | `osarg_zhang2024_sormani22_bar_strength_profile_phib25pm2.png` | the Milky Way bar's A2/A0(R) from the OSARGs (Sormani+22, T = σ₂, φ_b 25 ± 2°) against the published Sormani+22 and Hunter+24 bars (2026-11-24) |

@@ -24,6 +24,8 @@ CMAP = LinearSegmentedColormap.from_list("div", ["#1f5fbf", "#9ec5f4", "#f2f1ee"
 TITLES = {"h24mock": "Steady-state mock in Hunter+24 (truth 32.5, 25, 1, 1)", "osarg_h24": "OSARG data in Hunter+24",
           "osarg_s22": "OSARG data in Sormani+22"}
 PAIR_LABEL = {"low-main": "low mode − main mode", "second-main": "second mode − main mode",
+              "second-peak": "second peak (Ω_b 37.6) − main peak (Ω_b 30.0)",
+              "main-peak": "strong-bar ridge (Ω_b 34.5) − main peak (Ω_b 30.0)",
               "main-truth": "main mode − truth", "low-truth": "low mode − truth"}
 
 
@@ -54,7 +56,8 @@ def main():
     J = json.load(open(RESULTS_DIR / f"bimodality_origin_{args.case}.json"))
     grids = list(J["grids"])
     sec = "low" if "low" in J["points"] else "second"
-    pairs = [f"{sec}-main"] + (["main-truth"] if "truth" in J["points"] else [])
+    pairs = ([f"{sec}-peak", "main-peak"] if "peak" in J["points"] else [f"{sec}-main"]) \
+        + (["main-truth"] if "truth" in J["points"] else [])
     fields = ["<v_R> m2,4", "<v_phi> m0,2,4", "sigma_R^2 m2,4", "sigma_phi^2 m2,4"]
     vmax = 0
     for g in grids:
@@ -87,7 +90,7 @@ def main():
         y = np.arange(len(fields))
         for j, p in enumerate(pairs):
             v = [G["pairs"][p]["by_field"][f] for f in fields]
-            ax.barh(y + (j - (len(pairs) - 1) / 2) * 0.36, v, height=0.34, color=["#4a7fd4", INK_MUTED][j],
+            ax.barh(y + (j - (len(pairs) - 1) / 2) * 0.36, v, height=0.34, color=["#4a7fd4", INK_MUTED, "#e07b28"][j],
                     label=PAIR_LABEL[p])
         ax.axvline(0, color=INK_2, lw=0.8)
         ax.set_yticks(y, ["⟨v_R⟩ m2,4", "⟨v_φ⟩ m0,2,4", "σ_R² m2,4", "σ_φ² m2,4"], fontsize=8)
@@ -100,6 +103,7 @@ def main():
     cb.set_label("Δχ² per block (blue: the data prefer the first point)", fontsize=8)
     fig.suptitle(f"{TITLES.get(args.case, args.case)}: which blocks prefer which mode (12 replicate runs per point)\n"
                  f"{sec} mode: {pt(sec)};  main mode: {pt('main')}"
+                 + (f";  posterior main peak: {pt('peak')}" if "peak" in P else "")
                  + (f";  truth: {pt('truth')}" if "truth" in P else ""), fontsize=10, color=INK, x=0.01, ha="left")
     savefig(fig, f"bimodality_spatial_origin_{args.case}")
 

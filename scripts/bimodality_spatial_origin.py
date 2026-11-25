@@ -124,6 +124,10 @@ def main():
     ap.add_argument("--split", type=float, required=True, help="|Omega_b| separating the low window from the rest")
     ap.add_argument("--n-rep", type=int, default=12)
     ap.add_argument("--second", choices=["low", "high"], default="low", help="side of --split the second mode lies on")
+    ap.add_argument("--peak-window", type=float, nargs=2, default=None, metavar=("LO", "HI"),
+                    help="add a point 'peak' = the median parameters of the T1 posterior chain (compare_grid_strategies "
+                         "default-grid chain) with LO < |Omega_b| < HI: the posterior's main peak when it is not an "
+                         "emulator maximum. Pairs second-peak and main-peak are then reported too.")
     args = ap.parse_args()
     c = CASES[args.case]
     run = c["run"]
@@ -140,6 +144,15 @@ def main():
     if args.case in TRUTH:
         o, ph, s, f = TRUTH[args.case]
         points["truth"] = dict(Omega=o, phi=ph, S=s, f=f)
+    if args.peak_window:
+        ch = np.load(RESULTS_DIR / run / "grid_strategies_chains.npz")["default"]
+        lo, hi = args.peak_window
+        m = (ch[:, 0] > lo) & (ch[:, 0] < hi)
+        med = np.median(ch[m], axis=0)
+        points["peak"] = dict(Omega=float(med[0]), phi=float(med[1]), S=float(med[2]), f=float(med[3]),
+                              chain_fraction=float(m.mean()))
+        print(f"   peak point (chain median, {lo} < Omega_b < {hi}, {m.mean():.2f} of the chain): Omega {med[0]:.2f} "
+              f"phi {med[1]:.2f} S {med[2]:.3f} f {med[3]:.3f}", flush=True)
 
     meta = json.load(open(RESULTS_DIR / run / "run_meta.json"))
     sigma_dm = float(meta["sigma_DM"])
@@ -152,7 +165,7 @@ def main():
     ssl.ACCURACY = old.ACCURACY
     runs = {}
     for lab, p in points.items():
-        rng = np.random.default_rng({"main": 101, "second": 202, "low": 202, "truth": 303}[lab])
+        rng = np.random.default_rng({"main": 101, "second": 202, "low": 202, "truth": 303, "peak": 404}[lab])
         runs[lab] = []
         for r in range(args.n_rep):
             q = dict(Omega_abs=p["Omega"], phi_b_deg=p["phi"], S=p["S"], bar_frac=p["f"])
@@ -209,7 +222,8 @@ def main():
             if len(jj) > 2:
                 T1g = float(np.std(jj.chi2.values[1:] - jj.chi2.iloc[0], ddof=1))
         g["T1"] = T1g
-        pairs = [("second", "main")] + ([("main", "truth"), ("second", "truth")] if "truth" in per else [])
+        pairs = [("second", "main")] + ([("main", "truth"), ("second", "truth")] if "truth" in per else []) \
+            + ([("second", "peak"), ("main", "peak")] if "peak" in per else [])
         g["pairs"] = {}
         for b_, a_ in pairs:
             D = per[b_][:, common] .mean(0) - per[a_][:, common].mean(0)          # (n_common, 4)
