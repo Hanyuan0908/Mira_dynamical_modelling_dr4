@@ -5436,6 +5436,60 @@ importance-weighted with priors on bar_frac and S (1 ± 0.1, the published bar; 
      scheme at its own T1.
   3. Use the tracers' m = 2 density structure, which the empirical selection function (sfratio) now absorbs.
 
+
+## 2026-11-25 — Radial rings refined around the Milky Way ILR: no gain from resolving the ILR; all grids at T1
+
+**Question (user).** Would finer rings near the Milky Way's ILR (1.5–1.8 kpc), e.g. a geometric grid in R, constrain
+Ω_b better?
+
+**Schemes.** All have one |z| < 2 layer and were scored on the saved trajectories (no new integrations;
+`run_grid_tests_radial.sh`, `RING_SCHEMES` in `test1_nbody_qmc_focused_fourier_stars.py`):
+- `geo20`: 20 geometric rings 0.2–6 kpc, ratio 1.20. Ten rings inside 1 kpc, ~0.3 kpc at 1.6 kpc, only two rings over
+  4.2–6 kpc.
+- `geo32`: 32 rings, ratio 1.115; 0.17 kpc wide at 1.6 kpc.
+- `ilr01`: 0.1 kpc rings over 1.2–2.4 kpc, 0.3 kpc elsewhere.
+
+T1 per scheme from `chi2_jitter_per_grid.py --only-schemes`. All nine grids were compared at their own T1 with
+`compare_grid_strategies.py`, now at T1 (`results/<run>/grid_strategies.csv`).
+
+| grid | OSARG (Sormani+22): T1, χ²/N | OSARG Ω_b, width | mock (truth 32.5): T1, χ²/N | mock Ω_b, width, bias |
+|---|---|---|---|---|
+| current: 0.3 kpc, 3 layers | 32.1, 1.567 | 32.09 (26.91–39.30), 38.6% | 25.2, 1.363 | 31.43 (23.53–36.14), 40.1%, −3.3% |
+| 0.5 kpc, 2 layers | 22.6, 1.790 | 30.96 (27.47–36.87), 30.4% | 14.8, 1.353 | 32.55 (24.73–35.73), 33.8%, +0.2% |
+| 0.5 kpc, \|z\| < 2 | 13.8, 1.851 | 31.31 (28.20–37.30), 29.0% | 10.5, 1.393 | 33.11 (27.15–36.01), 26.8%, +1.9% |
+| 1 kpc, \|z\| < 2 | 9.7, 2.602 | 30.76 (28.23–36.02), 25.3% | 9.0, 1.654 | 33.34 (27.10–35.91), 26.4%, +2.6% |
+| 0.5 kpc, \|z\| < 3 | 14.9, 1.919 | 31.20 (27.86–36.84), 28.8% | 9.8, 1.366 | 33.14 (26.51–36.09), 28.9%, +2.0% |
+| 0.3 kpc, \|z\| < 2 | 15.4, 1.579 | 32.15 (28.15–37.81), 30.1% | 10.7, 1.291 | 32.92 (26.08–36.01), 30.2%, +1.3% |
+| **geo20, \|z\| < 2** | 11.6, 1.624 | **30.53 (28.10–36.07), 26.1%** | 10.6, 1.282 | **33.37 (28.68–36.03), 22.0%, +2.7%** |
+| geo32, \|z\| < 2 | 13.4, 1.413 | 31.37 (28.15–36.70), 27.3% | 14.0, 1.305 | 32.79 (25.95–36.33), 31.6%, +0.9% |
+| ilr01, \|z\| < 2 | 17.7, 1.475 | 31.35 (27.88–37.04), 29.2% | 12.2, 1.237 | 32.93 (26.75–36.33), 29.1%, +1.3% |
+
+The truth is inside the 16–84% interval for every grid. S and bar_frac barely change across grids:
+- OSARG: S 1.03–1.06, ±~0.19; bar_frac 1.05–1.12, ±~0.29;
+- mock: S 0.87–1.01, bar_frac 0.81–0.89.
+
+**Findings.**
+- **Resolving the ILR does not help.** At 1.6 kpc, `ilr01` (0.1 kpc rings) and `geo32` (0.17 kpc) give 29.2% /
+  27.3% for OSARG and 29.1% / 31.6% for the mock. The 0.3 kpc rings give 30.1% / 30.2%.
+  - So finer rings there add terms (476 vs 340) and jitter without adding pattern-speed signal.
+  - This is consistent with the ~0.8 kpc distance smearing at the Galactic centre (9.6% errors), though that is not
+    tested separately.
+- **geo20 is the narrowest of the grids that keep the fit:** OSARG 26.1%, mock 22.0% (truth inside, +2.7%).
+  - It has the same ring width as linear 0.3 kpc at 1.6 kpc but differs at both ends: finer inside 1 kpc, coarser at
+    4–6 kpc. This test cannot say which end gives the gain.
+  - The gain over 0.3 kpc |z| < 2 is 4 points on OSARG and 8 on the mock. The run-to-run uncertainty of a posterior
+    width has not been measured, so a 4-point difference may not be significant.
+- **The 1 kpc grid** is as narrow on OSARG (25.3%) but fits much worse: χ²/N 2.60 for OSARG, 1.65 for the mock
+  against 1.24–1.39 for the other single-layer grids.
+- **The posteriors keep their shape.**
+  - OSARG keeps a shoulder at 35–39 on every grid; it is most visible for geo32, ilr01 and 0.3 kpc |z| < 2.
+  - The steady-state mock has a secondary bump at 23–26 on every grid, strongest on the current grid. So in the
+    Milky Way family a secondary mode also appears in a mock with a known single truth.
+
+Figures (each grid at its own T1):
+- `figures/osarg_zhang2024_sormani22_pattern_speed_posterior_by_grid.png`
+- `figures/mw_hunter24_mock_from_osarg_ics_pattern_speed_posterior_by_grid.png`
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
@@ -5496,8 +5550,8 @@ below is still found by `find figures -name <name>`; most of the Test 1b set is 
 | `test2_pattern_speed_and_bar_recovery_without_vphi_m0.png` | 18 mocks: Ω_b bias, S and bar_frac with scheme B and without ⟨v_φ⟩ m = 0 (2026-11-24) |
 | `osarg_zhang2024_sormani22_emulator_corner_…_sfratio.png` | OSARG posterior in the Sormani+22 family (2026-11-24) |
 | `osarg_zhang2024_sormani22_posterior_vs_chi2_scale.png` | OSARG in Sormani+22: marginals at √(2N) = 37.3, σ₁ = 31.7 and σ₂ = 44.8 (the adopted T) (2026-11-24) |
-| `osarg_zhang2024_sormani22_pattern_speed_posterior_by_grid.png` | OSARG in Sormani+22: |Ω_b| posterior for six Fourier grids, each at its own T = σ₂ (2026-11-24) |
-| `mw_hunter24_mock_from_osarg_ics_pattern_speed_posterior_by_grid.png` | the same for the steady-state mock, truth 32.5 marked (2026-11-24) |
+| `osarg_zhang2024_sormani22_pattern_speed_posterior_by_grid.png` | OSARG in Sormani+22: |Ω_b| posterior for nine Fourier grids (incl. the radial schemes geo20, geo32, ilr01), each at its own T1 (2026-11-25; was six grids at σ₂ on 2026-11-24) |
+| `mw_hunter24_mock_from_osarg_ics_pattern_speed_posterior_by_grid.png` | the same for the steady-state mock, truth 32.5 marked (2026-11-25, T1) |
 | `posterior_degeneracies_mocks_vs_osarg.png` | posterior correlations (φ_b–bar_frac, φ_b–S, Ω_b–S, Ω_b–bar_frac) and what a ±2° φ_b prior buys, for the 25 mocks, the t7 variants and the Milky Way-family runs (2026-11-24) |
 | `osarg_zhang2024_sormani22_bar_strength_profile_phib25pm2.png` | the Milky Way bar's A2/A0(R) from the OSARGs (Sormani+22, T = σ₂, φ_b 25 ± 2°) against the published Sormani+22 and Hunter+24 bars (2026-11-24) |
 | `presentation/osarg_zhang2024_face_on_number_density_and_mean_vR_black.{png,pdf}` | talk version: face-on number density (log, own scale 2.6–822 stars/kpc²) and ⟨v_R⟩ (±40 km/s; ≥ 15 stars in the kernel) of the 32,977 OSARGs at \|z\| < 3 kpc (paper's final sample), σ = 0.3 kpc smoothing on 0.2 kpc pixels over ±15 kpc; Sun, Galactic centre, and a 27° bar guide line (not fitted). `scripts/plot_presentation_osarg_mira_maps.py` (2026-11-12) |
@@ -5540,22 +5594,14 @@ The steady-state mock (truth 32.5, 25°, 1, 1) is just as loose:
   (r +0.2 to +0.4), not to φ_b. A ±10% prior on the bar's length and strength halves the mock's Ω_b width
   (40 → 20%, 30 → 15%) but tightens OSARG only to 36% / 24%. The φ_b prior adds nothing.
 
-**Running at the time of writing: radial-grid test** (user question: refine the rings around the Milky Way ILR).
-- **Schemes,** each with one |z| < 2 layer, from `set_grid(ring_scheme=...)` in `test1_nbody_qmc_focused_fourier_stars.py`:
-  `geo20` (20 geometric rings 0.2–6 kpc), `geo32` (32 rings, 0.17 kpc wide at 1.6 kpc), `ilr01` (0.1 kpc rings over
-  1.2–2.4 kpc, 0.3 kpc elsewhere).
-- **Chain** (`run_grid_tests_radial.sh <run>`, started 09:10): OSARG done 09:28; the steady-state mock was on `ilr01` at
-  09:44. Then each scheme's T1 (`chi2_jitter_per_grid.py --case osarg_s22|h24mock --only-schemes`).
-- **When done:** the flag `~/mira_dr4_runs/radial_chain.done` appears; logs are in
-  `~/mira_dr4_runs/grid_tests_radial_<run>.log` and `chi2_jitter_radial_{s22,h24mock}.log`.
-- **To evaluate** (now at T1):
-  - `python compare_grid_strategies.py --run osarg_zhang2024_sormani22 --case osarg_s22`
-  - `python compare_grid_strategies.py --run mw_hunter24_mock_from_osarg_ics --case h24mock --truth 32.5 25 1 1`
-- **Expectation, to be tested:** a modest gain at most. OSARG's ~9.6% distance error (~0.8 kpc at the Galactic centre)
-  smears radii near the ILR.
+**Radial-grid test (done, 2026-11-25 entry).**
+- Finer rings at the ILR (`ilr01`, `geo32`) do not narrow Ω_b.
+- `geo20` is the narrowest of the grids that keep the fit: OSARG 30.53 (28.10–36.07), 26.1%; mock 22.0%, +2.7%.
+- The width uncertainty is unmeasured, so geo20 vs 0.3 kpc |z| < 2 (30%) may not be a real difference.
 
 **Next steps, in order.**
-1. **Finish the radial test** and choose the grid at T1, on OSARG and the steady-state mock together.
+1. **Choose the grid** (user): geo20 or 0.3 kpc |z| < 2, both one |z| < 2 layer. Optionally measure the width scatter
+   first, e.g. refit the emulator and sampler with different seeds or a subsample of the design.
 2. **Measure the bar's strength and length from the data — a project goal in its own right (user, 2026-11-25).**
    Priors are acceptable as a fallback, not as the answer.
    - **a. Find where the bar-strength information is (cheap, no new integrations).** Whiten per-term gradients
@@ -5575,7 +5621,7 @@ The steady-state mock (truth 32.5, 25°, 1, 1) is just as loose:
    - the OSARG corner plots and the degeneracy tables.
    - The 25-mock suite has no per-mock T1 yet; each needs its own jitter run.
 4. **Open user decisions:**
-   - adopt the 0.3 kpc |z| < 2 grid, or a radial scheme;
+   - adopt the 0.3 kpc |z| < 2 grid or geo20;
    - 4 Gyr libraries for fit quality (χ²/N improves by 0.15–0.21, but there is no Ω_b gain);
    - fast-forward `main`;
    - the two `* copy.mp4` files;
