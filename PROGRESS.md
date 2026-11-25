@@ -6313,22 +6313,38 @@ below is still found by `find figures -name <name>`; most of the Test 1b set is 
 
 ## Next steps
 
-### Current status and next steps (2026-11-25)
+### Current status and next steps (2026-11-26)
 
 **Adopted set-up.**
 - **Family:** Sormani+22 (`sormani22`, spherical halo; user decision 2026-11-24, briefly reverted to Hunter+24
-  and restored on the afternoon of 2026-11-25). Wider bar box being run: bar_frac 0.1–2.0, S 0.4–1.7.
+  and restored on the afternoon of 2026-11-25). Wide bar box DONE (run `osarg_zhang2024_sormani22_widebar`, 1,374 points):
+  bar_frac 0.1–2.0, S 0.4–1.7.
 - **Temperature:** T1 = σ₁ of each grid (user decision 2026-11-25).
 - **Likelihood:** scheme B, rings < 6 kpc, sfratio selection, K = 10 distance draws.
 - **Grid:** recommended geo20 with ONE |z| < 2 layer (narrowest that keeps the fit: OSARG 26%, mock 22% at T1); two 1 kpc
   layers are worse (32%). Not yet adopted (user).
 
-**Where OSARG stands (T1; `results/bar_strength_prior_effect.csv`).**
+**Where OSARG stands (T1).** Old box: `results/bar_strength_prior_effect.csv`. Wide box: 2026-11-25 (night) entry.
 
-| grid | T1 | Ω_b [km/s/kpc] | S | bar_frac |
+| grid, box | T1 | Ω_b [km/s/kpc] | S | bar_frac |
 |---|---|---|---|---|
-| current (0.3 kpc, 3 layers) | 32.1 | 32.09 (26.91–39.30), 38.6% | 1.03 (0.79–1.24) | 1.05 (0.71–1.35) |
-| 0.3 kpc, \|z\| < 2 | 15.4 | 32.14 (28.15–37.81), 30.1% | 1.05 (0.86–1.26) | 1.10 (0.78–1.36) |
+| current (0.3 kpc, 3 layers), old box | 32.1 | 32.09 (26.91–39.30), 38.6% | 1.03 (0.79–1.24) | 1.05 (0.71–1.35) |
+| 0.3 kpc, \|z\| < 2, old box | 15.4 | 32.14 (28.15–37.81), 30.1% | 1.05 (0.86–1.26) | 1.10 (0.78–1.36) |
+| current, WIDE box | 32.1 | 32.63 (26.04–39.85), 42.3% | 1.02 (0.78–1.30) | 1.13 (0.54–1.61) |
+| geo20 \|z\| < 2, WIDE box | 11.6 | 32.03 (28.46–37.81), 29.2% | 1.02 (0.86–1.21) | 1.22 (0.84–1.65); 25% above 1.5 |
+
+- **bar_frac is bounded from below and open above:** only 2% of the geo20 chain lies below 0.5. Above that it runs
+  along the Ω_b ridge, (26, 0.6) → (40, 2.0).
+- **No bug** (extreme test, 2026-11-26). At fixed (Ω_b, φ_b, S):
+  - no bar is rejected by 18 T1 (default) and 43 T1 (geo20);
+  - OSARG's bar_frac is pinned to ~1.0–1.8;
+  - the steady-state mock's χ² minimum is exactly at its true bar_frac = 1.
+  - The library ⟨v_R⟩ quadrupole saturates at bar_frac ≈ 1.5 and then falls; OSARG's data quadrupole (21.05 km/s)
+    exceeds every library at its best (Ω_b, φ_b, S).
+- **Distance error is not the cause** (2026-11-25/26). The t = 4 mock at OSARG's N, in its corrected family, still
+  rejects a 30% slower bar 3–20× more strongly than OSARG does:
+  - 12.5% error: 17.4; 20%: 13.6; 20% modelled as 10%: 9.0; OSARG: 3.0.
+  - Mis-modelling the error shows as χ²/N 2.22 → 3.29; OSARG fits at 1.76.
 
 The steady-state mock (truth 32.5, 25°, 1, 1) is just as loose:
 - current grid: Ω_b 40.1% wide, −3.3%; S 0.87 (0.62–1.14); bar_frac 0.81 (0.59–1.16);
@@ -6372,6 +6388,8 @@ entries).
 - The width uncertainty is unmeasured, so geo20 vs 0.3 kpc |z| < 2 (30%) may not be a real difference.
 
 **Next steps, in order.**
+- **Offered, awaiting the user:** full posteriors of the t = 4 mock at 12.5% and 20% (~1.5–2 h each at OSARG N),
+  to turn the response test into widths.
 0. **REDO TEST 2 (the 25-galaxy mock suite) ON THE CLUSTER WITH THE CORRECT POTENTIAL BUILDER** (user, 2026-11-25; when
    cluster access returns).
    - **Why:** the trial-family files built there on 2026-10-29/30 have non-axisymmetric "axi" files, so bar_frac rescaled
