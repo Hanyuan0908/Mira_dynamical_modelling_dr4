@@ -6401,7 +6401,10 @@ entries).
      the old runs: Ω_b, φ_b bias, bar_frac, the φ_b–bar_frac degeneracy. Expectation from t = 7: Ω_b barely changes
      (6.9 → 8.3%); the degeneracy and part of the φ_b bias go away.
    - **Copy** the Auriga potential folders (`mock/au*_potential/`) and `results/au*_ground_truth.json` to the portable
-     drive (missing there), for the Auriga rotation curves and rotation-curve swaps.
+     drive (missing there), for the Auriga rotation curves and rotation-curve swaps. On the cluster they are in the shared tree
+     `/data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/` (per `run_auriga_posteriors_cluster.sh`, lines
+     19–20): `mock/au<N>_potential/` and `results/au<N>_ground_truth.json`, for N = 5, 9, 10, 12, 14, 17, 18, 20, 22,
+     24, 26, 27, 28.
 1. **Choose the grid** (user): geo20 or 0.3 kpc |z| < 2, both one |z| < 2 layer. Optionally measure the width scatter
    first, e.g. refit the emulator and sampler with different seeds or a subsample of the design.
 2. **Measure the bar's strength and length from the data — a project goal in its own right (user, 2026-11-25).**
