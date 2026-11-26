@@ -130,6 +130,19 @@ def check_axisymmetric(axi_file, full_file=None, radii=(1.0, 2.0, 3.0, 4.0, 5.0)
     return worst
 
 
+def check_family(galaxy="au18"):
+    """Raise if any axisymmetrised file of the galaxy's trial family carries non-axisymmetric structure: the merged
+    baryon_axi file and, for the N-body snapshots, each component's _axi file. The campaign scripts call this before
+    reusing existing family files (2026-11-26: they used to reuse them unchecked, and every cluster-built family -- 12
+    N-body snapshots and 13 Auriga -- was defective)."""
+    F = files(galaxy)
+    paths = [F["baryon_axi"]]
+    if not _is_auriga(galaxy):
+        pd, fam = _galaxy(galaxy)["pot_dir"], _family(galaxy)
+        paths += [pd / f"{c}_axi.ini" for c in fam["bar"]]
+    return max(check_axisymmetric(q) for q in paths)
+
+
 def build_files(galaxy="au18"):
     """Create the four family files from the component files of the galaxy's build script.
     Every axisymmetrised file is verified with check_axisymmetric() (2026-11-25)."""
@@ -139,8 +152,10 @@ def build_files(galaxy="au18"):
         for c in fam["bar"]:
             typ, prm = _expansion(galaxy, c)
             prm.pop("mmax", None)
+            # mmax=0 as well as symmetry="axisymmetric": the cluster's AGAMA ignored the keyword (2026-10-29/30 and
+            # 11-04/05 builds); mmax=0 forces m = 0 with any version, and is identical to round-off here (2026-11-26)
             agama.Potential(type=typ, potential=agama.Potential(str(pd / f"{c}.ini")), symmetry="axisymmetric",
-                            **prm).export(str(pd / f"{c}_axi.ini"))
+                            mmax=0, **prm).export(str(pd / f"{c}_axi.ini"))
             check_axisymmetric(pd / f"{c}_axi.ini")
             axi_paths.append(pd / f"{c}_axi.ini")
         _concat_ini([pd / f"{c}.ini" for c in fam["bar"]], F["baryon_full"])
@@ -154,8 +169,8 @@ def build_files(galaxy="au18"):
     _concat_ini([pd / "stars.ini", pd / "gas.ini"], F["baryon_full"])
     bary = agama.Potential(file=str(F["baryon_full"]))
     grid = {k: v for k, v in CYL_PARAMS.items() if k not in ("type", "symmetry", "mmax")}
-    agama.Potential(type="CylSpline", potential=bary, symmetry="axisymmetric", **grid).export(
-        str(F["baryon_axi"]))
+    agama.Potential(type="CylSpline", potential=bary, symmetry="axisymmetric", mmax=0, **grid).export(
+        str(F["baryon_axi"]))       # mmax=0: see the N-body branch above
     check_axisymmetric(F["baryon_axi"])
     _concat_ini([pd / "dm.ini", pd / "bh.ini", F["baryon_axi"]], F["axi"])
     _concat_ini([pd / "dm.ini", pd / "bh.ini", pd / "stars.ini", pd / "gas.ini"], F["full"])

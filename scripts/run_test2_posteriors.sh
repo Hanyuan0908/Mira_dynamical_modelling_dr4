@@ -81,13 +81,13 @@ queue | while IFS='|' read -r RUN MOCK GAL COLS; do
   # them before launching any worker - otherwise every worker dies instantly on a missing .ini.
   # Idempotent: skips in seconds when the files are already there.
   if ! OMP_NUM_THREADS=$CORES $PY -c "
-import sys, steady_state_likelihood as ssl
-ssl.bar_aligned_potential(1.0, 1.0, '$GAL')" >/dev/null 2>&1; then
+import sys, steady_state_likelihood as ssl, potential_family as pf
+ssl.bar_aligned_potential(1.0, 1.0, '$GAL'); pf.check_family('$GAL')" >/dev/null 2>&1; then
     echo "    building the potential for $GAL (one-off, a few minutes) ..."
     OMP_NUM_THREADS=$CORES $PY -W ignore build_nbody_potential.py --galaxy "$GAL" > "/tmp/${RUN}_pot.log" 2>&1       && OMP_NUM_THREADS=$CORES $PY -W ignore potential_family.py --galaxy "$GAL" >> "/tmp/${RUN}_pot.log" 2>&1       || { echo "    ERROR: could not build the potential for $GAL (see /tmp/${RUN}_pot.log); skipping $RUN"; continue; }
     OMP_NUM_THREADS=$CORES $PY -c "
-import steady_state_likelihood as ssl
-ssl.bar_aligned_potential(1.0, 1.0, '$GAL')" >/dev/null 2>&1       || { echo "    ERROR: potential for $GAL still unusable; skipping $RUN"; continue; }
+import steady_state_likelihood as ssl, potential_family as pf
+ssl.bar_aligned_potential(1.0, 1.0, '$GAL'); pf.check_family('$GAL')" >/dev/null 2>&1       || { echo "    ERROR: potential for $GAL still unusable; skipping $RUN"; continue; }
     echo "    potential for $GAL ready"
   fi
 

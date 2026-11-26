@@ -196,15 +196,15 @@ for H in $(queue); do
 
     # trial-potential family for this halo (idempotent; seconds once built)
     if ! OMP_NUM_THREADS=$CORES "$PY" -c "
-import steady_state_likelihood as ssl
-ssl.bar_aligned_potential(1.0, 1.0, '$GAL')" >/dev/null 2>&1; then
+import steady_state_likelihood as ssl, potential_family as pf
+ssl.bar_aligned_potential(1.0, 1.0, '$GAL'); pf.check_family('$GAL')" >/dev/null 2>&1; then
       echo "    building the trial-potential family for $GAL ..."
       OMP_NUM_THREADS=$CORES "$PY" -W ignore potential_family.py --galaxy "$GAL" \
         > "/tmp/${RUN}_potfam.log" 2>&1 \
         || { echo "    ERROR: potential_family.py failed (see /tmp/${RUN}_potfam.log); skipping $RUN"; continue; }
       OMP_NUM_THREADS=$CORES "$PY" -c "
-import steady_state_likelihood as ssl
-ssl.bar_aligned_potential(1.0, 1.0, '$GAL')" >/dev/null 2>&1 \
+import steady_state_likelihood as ssl, potential_family as pf
+ssl.bar_aligned_potential(1.0, 1.0, '$GAL'); pf.check_family('$GAL')" >/dev/null 2>&1 \
         || { echo "    ERROR: trial potential for $GAL still unusable; skipping $RUN"; continue; }
       echo "    trial-potential family ready"
     fi

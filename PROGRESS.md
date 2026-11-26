@@ -6231,6 +6231,117 @@ the pipeline on both grids. `results/extreme_bar_strength_{osarg_s22,h24mock}.cs
 - **So** an underestimated distance error is not a plausible explanation for OSARG's weak constraint: it would show as
   a much worse fit.
 
+
+## 2026-11-26 — The 13 Auriga potentials copied from the cluster: every Auriga trial family has the bar defect, and every Auriga run used it
+
+**User:** where are the Auriga potentials on the cluster? Copy them to the portable drive, then check them.
+- **Copied** (user, rsync from `hz420@calx207.ast.cam.ac.uk`):
+  - `/data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/mock/au<N>_potential/` →
+    `<drive>/mock/au<N>_potential/`: 13 folders × 9 files, 69.8 MB;
+  - `results/au<N>_ground_truth.json` → `<drive>/results/`: 13 files.
+  - N = 5, 9, 10, 12, 14, 17, 18, 20, 22, 24, 26, 27, 28. au2 and au13 have mocks on the cluster but no potential.
+- **The "axisymmetric" baryon files carry the whole bar** (`check_auriga_family_axisymmetry.py` →
+  `results/auriga_family_axisymmetry_check.csv`).
+  - In all 13: m=2(Au<N>_baryon_axi)/m=2(Au<N>_baryon_full) = 0.996–1.005 at R = 3–5 kpc, phase difference ≤ 0.04°,
+    and m=2/m=0 of the axi file 0.11–0.26 (laptop-built Au18: 1.4e-16).
+  - File sizes give it away too: cluster `Au<N>_baryon_axi.ini` 1.16 MB; laptop `Au18_baryon_axi.ini` 46 KB.
+  - Headers say `symmetry=None`, as in the cluster-built N-body files.
+- **Effect on the trial potential**, built exactly as the pipeline does (`ssl.bar_aligned_potential`: barred file
+  turned 27° onto x, axi file not turned). The bar force at R = 4 kpc is identical in all 13 galaxies, and identical
+  to the N-body t = 7 defect:
+
+  | bar_frac | 0 | 0.5 | 1 | 1.5 | 2 |
+  |---|---|---|---|---|---|
+  | bar force / truth, cluster files | 1.000 | 0.891 | 1 | 1.272 | 1.628 |
+  | bar turned [deg], cluster files | +27.0 | +13.5 | 0 | −9.3 | −14.9 |
+  | bar force / truth, laptop-built Au18 | 0.000 | 0.500 | 1 | 1.500 | 2.000 (never turned) |
+
+  So bar_frac rescales AND rotates the bar, and "no bar" is not in the family.
+  - **WITHDRAWN:** my first statement in the reply, that the bar force "doesn't change with bar_frac at all". That
+    check omitted the pipeline's 27° turn of the barred file.
+- **Every Auriga Test 2 run used these files** (`which_files_did_the_auriga_runs_use.py` →
+  `results/which_files_auriga_runs_used_au<N>.csv`).
+  - Saved orbits (`<drive>/runs/test2_au<N>_sf_12p5pct/traj_NNN.npy`) were restarted from their own t = 0 snapshot,
+    400 stars, at design points 65 and 120 (bar_frac 1.95/1.96; S 1.55/0.74) for all 13, also 98 and 132 for Au9.
+  - Median position offset from the saved orbits after 1–4 saved steps (batch 1 saves every 25 Myr, batch 2 every
+    50 Myr):
+    - **cluster files: ≤ 4e-4 kpc (batch 1: Au9, 10, 17, 18, 24, 26, 27) and ≤ 2e-3 kpc (batch 2: Au5, 12, 14, 20,
+      22, 28)**, i.e. integration accuracy;
+    - correctly axisymmetrised family: 0.12–5.2 kpc.
+  - Control at bar_frac = 1, S = 1 (design point 0), where both families are the same potential: identical offsets.
+- **Consequences** (to be measured by the cluster re-run; next step 0):
+  - The Auriga Ω_b widths (8–22% at √(2N)) and the φ_b / bar_frac results were obtained with the defective family,
+    like the N-body ones.
+  - The one corrected re-run so far (N-body t = 7) changed Ω_b little (6.9 → 8.3%) and removed the φ_b–bar_frac
+    degeneracy (+0.70 → +0.09). Hypothesis, untested: the Auriga widths change similarly little.
+  - The Auriga comparisons with OSARG (e.g. the resonance figure of 2026-11-25) rest on these runs.
+- **Safeguards for the cluster re-run** (code only, nothing re-run):
+  - The campaign scripts (`run_auriga_posteriors.sh`, `run_test2_posteriors.sh`) reused existing family files after
+    only checking that they load, so a re-run on the cluster would have silently kept the defective files. Both now
+    call `potential_family.check_family(galaxy)` before reusing files (rebuilding if it fails) and again after
+    rebuilding (skipping the galaxy if it still fails).
+    - Tested: passes laptop-built Au18 and N-body t = 2.375 (1.4e-16); stops on cluster-built Au9 and N-body t = 4.
+  - `potential_family.build_files` now also passes `mmax=0` to both axisymmetric re-expansions. This forces m = 0
+    whatever the AGAMA version honours, and is identical to round-off on the laptop: max |ΔΦ/Φ| 0, 1.2e-15 and 0 for
+    Au18 stars+gas, t = 2.375 bulge and t = 2.375 disc.
+- **User decision:** the re-runs go to the cluster; not run on the laptop.
+
+
+## 2026-11-26 — Every test affected by the defective trial families, and the correct approach (DRAFT for the user to check)
+
+**User:** list all the problematic simulation tests and give the correct approach; show the instructions and the
+whole pipeline for checking.
+
+**How each run was classified.**
+- Integration date of `traj_000.npy` (drive or `~/mira_dr4_runs`) for every `results/test*` run.
+- File checks: cluster-built N-body t = 2, 3, 4, 5.5, 7 (2026-11-25); 13 Auriga (2026-11-26).
+- Orbit replays: t = 7 at 12.5% (2026-11-25); all 13 Auriga (2026-11-26); Test 1 clean (2026-11-25).
+- Every Test 2 integration is dated 2026-10-29 … 11-07, i.e. on the cluster and before any correct rebuild (laptop
+  rebuilds of the seven intermediate snapshots: 2026-11-21).
+
+**A. Runs integrated in a defective family**
+
+| group | runs | integrated | status |
+|---|---|---|---|
+| Test 2, 12.5%, Auriga | `test2_au{5,9,10,12,14,17,18,20,22,24,26,27,28}_sf_12p5pct` | 11-04 … 11-06 | CONFIRMED (files + replay) |
+| Test 2, 12.5%, N-body | `test2_t{2,3,4,5.5,7}_sf_12p5pct` | 11-02 | CONFIRMED (files; t = 7 also replay) |
+| Test 2, 12.5%, N-body | `test2_t{2.375,2.625,3.375,3.625,4.5,5,6.25}_sf_12p5pct` | 11-03 / 11-04 | LIKELY: cluster-built in the same campaign; those cluster files are not on this machine |
+| no selection, t = 7 | `test2_t7_nosf_12p5pct`, `test2_t7_nosf_10pct` | 11-02, 10-29 | CONFIRMED family (t = 7) |
+| 10% error | `test2_t{2,3,4,5.5,7}_sf_10pct` | 10-29 / 10-30 | CONFIRMED families |
+| magnitude scatter 0.054 | `test2_au{5,10,12,17,18,20,24,26}_sf_12p5pct_scat`, `test2_t{2,3,4.5,5.5,7}_sf_12p5pct_scat` | 11-06 / 11-07 | same families as their parents (t = 4.5: likely) |
+| re-scores of t = 7 orbits | `test2_t7_sf_12p5pct_{all,freq,g14,g15,g16,grvs14,osarg_cover,random_osargN}` | no new orbits | inherit the t = 7 defect |
+
+**B. Results that rest on A** (to be redone from the re-run, not separately):
+- the 25-galaxy pattern-speed recovery figures and tables (2026-11-05, 11-21 T = 1 vs tempered);
+- the φ_b bias and bar-angle calibration (`plot_bar_angle_auriga_*`);
+- the A2/A0 profile recovery (`test2_bar_strength_profile_recovery`, and the 11-21 profiles of t = 2, 3, 4, 5.5);
+- the 10% vs 12.5% comparison;
+- the magnitude-cut sample-size tests (G < 14 / 15 / 16, G_RVS < 14);
+- "not the data": the t = 7 mock thinned to OSARG's N (`random_osargN`) and footprint (`osarg_cover`), 8.8%;
+- the mock-suite widths in the resonance / frequency-gap comparisons with the Milky Way (2026-11-25).
+
+**C. Not affected** (evidence):
+- Test 1, perfect N-body mock (laptop family; replay 2026-11-25).
+- The Au18 Test 1 work (laptop `au18`, axi m2/m0 1.4e-16).
+- Laptop `test2b` distance-error runs of 10-28. These are by date and machine only (laptop `nbody` family, before
+  the cluster builds); not replay-checked.
+- Every OSARG run and the steady-state mock (`sormani22`, `mw`: exact rescaling, 2026-11-25), and t = 7 stars in the
+  Hunter+24 family (`test2_t7_sf_12p5pct_mwH24_osargdesign`).
+- The laptop tests of 2026-11-24 … 26:
+  - the corrected t = 7 re-run and the t = 4 distance-error tests (`*_clusteraxifix`);
+  - the cross-response with the laptop `nbody` family;
+  - the rotation-curve hybrids (axi rebuilt with mmax = 0);
+  - the extreme bar-strength test.
+
+**A second, older laptop/cluster difference (open; not part of the fix).** For t = 7 the laptop's `dm_spherical.ini`
+pulls 24% harder at 1 kpc than the cluster's (4.7% at 3 kpc, 2% at 5 kpc), while the baryon files are identical
+(2026-11-25 entry, section 7).
+- The re-run must keep each galaxy's existing component files (halo, bulge, disc / dm, bh, stars, gas) and rebuild
+  ONLY the axisymmetrised files. Otherwise two things change at once.
+- Which halo is right is a separate question for the user.
+
+**Instructions:** next step 0 (rewritten 2026-11-26, DRAFT until the user has checked them).
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
@@ -6380,7 +6491,7 @@ entries).
   - the remaining 23–56% of the response (vertical structure? hypothesis);
   - whether the real Galaxy's inner mass differs from Sormani+22's (fitted to the bulge kinematics; nothing here says
     so);
-  - the 13 Auriga rotation curves (potentials on the cluster).
+  - the 13 Auriga rotation curves (potentials now on the portable drive, 2026-11-26).
 
 **Radial-grid test (done, 2026-11-25 entry).**
 - Finer rings at the ILR (`ilr01`, `geo32`) do not narrow Ω_b.
@@ -6390,21 +6501,54 @@ entries).
 **Next steps, in order.**
 - **Offered, awaiting the user:** full posteriors of the t = 4 mock at 12.5% and 20% (~1.5–2 h each at OSARG N),
   to turn the response test into widths.
-0. **REDO TEST 2 (the 25-galaxy mock suite) ON THE CLUSTER WITH THE CORRECT POTENTIAL BUILDER** (user, 2026-11-25; when
-   cluster access returns).
-   - **Why:** the trial-family files built there on 2026-10-29/30 have non-axisymmetric "axi" files, so bar_frac rescaled
-     AND rotated the trial bar. Confirmed for t = 2, 3, 4, 5.5, 7; likely for the rest (entries of 2026-11-25).
-   - **Rebuild** every family (12 N-body snapshots, 13 Auriga) with `potential_family.build_files`, which now calls
-     `check_axisymmetric()` and stops on a non-axisymmetric file. If it stops, use an AGAMA that honours
-     `symmetry="axisymmetric"` (1.0.156 on the laptop does).
-   - **Re-run** the 257-point searches (12.5%, sfratio, K = 10, 50 Myr, scheme B), re-score, emulate. Compare with
-     the old runs: Ω_b, φ_b bias, bar_frac, the φ_b–bar_frac degeneracy. Expectation from t = 7: Ω_b barely changes
-     (6.9 → 8.3%); the degeneracy and part of the φ_b bias go away.
-   - **Copy** the Auriga potential folders (`mock/au*_potential/`) and `results/au*_ground_truth.json` to the portable
-     drive (missing there), for the Auriga rotation curves and rotation-curve swaps. On the cluster they are in the shared tree
-     `/data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4/` (per `run_auriga_posteriors_cluster.sh`, lines
-     19–20): `mock/au<N>_potential/` and `results/au<N>_ground_truth.json`, for N = 5, 9, 10, 12, 14, 17, 18, 20, 22,
-     24, 26, 27, 28.
+0. **CLUSTER TASK — REDO TEST 2 WITH CORRECT TRIAL FAMILIES** (user, 2026-11-25/26; to be handed to the cluster).
+   **DRAFT, awaiting the user's check (2026-11-26).** Affected runs: entry "Every test affected by the defective
+   trial families" (2026-11-26).
+   - **Where:** calx207 (`ssh hz420@calx207.ast.cam.ac.uk`), shared tree
+     `/data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4`, python `/data/hz420-2/astro312/bin/python` ($PY).
+   - **Step 1. Code:** `git pull` branch `test2-10pct-selection-and-bar-angle`. Needed: `potential_family.check_family`,
+     `mmax=0` in `build_files`, and the `check_family` guards in `run_auriga_posteriors.sh` / `run_test2_posteriors.sh`.
+   - **Step 2. Rebuild ONLY the axisymmetrised files, then verify** (seconds per galaxy; no orbits):
+     `cd scripts; for g in au5 au9 au10 au12 au14 au17 au18 au20 au22 au24 au26 au27 au28 nbody nbody_t2 nbody_t2.375
+     nbody_t2.625 nbody_t3 nbody_t3.375 nbody_t3.625 nbody_t4 nbody_t4.5 nbody_t5 nbody_t5.5 nbody_t6.25; do
+     $PY potential_family.py --galaxy $g && $PY -c "import potential_family as pf; print('$g', pf.check_family('$g'))";
+     done`
+     - Each line must print ≲ 1e-12. `potential_family.py` re-expands the axi files from the EXISTING component files
+       and keeps the halo / bulge / disc / dm / bh / stars / gas files as they are.
+     - Do NOT run `build_nbody_potential.py` / `build_auriga_potential.py`: they would rebuild the truth components
+       too (see the halo difference).
+     - Step 2 must pass first: otherwise the guard in `run_test2_posteriors.sh` rebuilds the truth components itself.
+     - If `check_family` raises even with `mmax=0`, stop and report. Do not run with failing files.
+     - Before step 2, save a copy of each `*_potential/` folder (e.g. `*_potential_defective_2026-11/`) for the
+       record.
+   - **Step 3. Searches, with a NEW tag** so the old runs stay for comparison. Same configuration as before
+     (2026-11-05 pipeline): 257-point focused design, Ω axis scaled by Ω_true/26.02, 12.5% error (σ_DM 0.271), 50 Myr
+     cadence.
+     - Auriga: `TAG=12p5pct_axifix HALOS="9 10 17 18 24 26 27" sh run_auriga_posteriors_cluster.sh --check`, then
+       without `--check`; then the same with `HALOS="5 12 14 20 22 28"`.
+     - N-body: `SIGMA=0.271 TAG=12p5pct_axifix ONLY="test2_t2_sf_12p5pct_axifix … test2_t7_sf_12p5pct_axifix"
+       sh run_test2_posteriors_cluster.sh` with the 12 snapshot runs.
+     - Disk: ~44 GB per 7 galaxies on /data/hz420. Archive to the portable drive with `archive_auriga_runs.sh` on the
+       workstation.
+   - **Step 4. Re-score** each run's saved orbits (no integration):
+     `rescore_empirical_selection.py --run <run> --estimator ratio --n-draw 10 --cadence-step 2`, on the default grid
+     and with `--ring-scheme geo20 --z-max 2 --layer-width 2`; then `--merge` for each.
+   - **Step 5. Temperature T1 per run and grid** (decision 2026-11-25; not √(2N)):
+     - add a `CASES` entry per run (`run`, `galaxy`, `mock`) to `scan_omega_at_fixed_bar.py`;
+     - run `chi2_jitter_per_grid.py --case <case> --n 40`: 40 tiny perturbations at the best point, ~40 integrations
+       per galaxy.
+   - **Step 6. Posteriors at T1** per grid: `compare_grid_strategies.py --run <run> --case <case> --truth Ω φ S f`
+     (truth: Ω_true, 27°, 1, 1).
+   - **Step 7. Compare with the old runs, per galaxy:** Ω_b median, bias and 16–84% width; φ_b bias; S and bar_frac;
+     the φ_b–bar_frac correlation. Then redo the results in list B of the 2026-11-26 entry.
+     - Expectation, from the only corrected run so far (t = 7, √(2N)): Ω_b 6.9 → 8.3%, φ_b–bar_frac correlation
+       +0.70 → +0.09.
+   - **Lower priority, same defect:** the 10% runs, the scatter runs and the t = 7 re-scores (list A) only if those
+     results are still needed.
+   - **Also wanted, separate (user 2026-11-25; code not written): the Auriga rotation-curve swap** with OSARG's
+     stars. Use the galaxy's axisymmetric part (dm + bh + stars + gas re-expanded with mmax = 0), rescaled by k² to
+     Sormani+22's mean v_c over 2–6 kpc, plus the Sormani+22 bar. Needs an Auriga branch in `snapshot_hybrid()`
+     (~15 lines). ~7 min per galaxy at 10 threads.
 1. **Choose the grid** (user): geo20 or 0.3 kpc |z| < 2, both one |z| < 2 layer. Optionally measure the width scatter
    first, e.g. refit the emulator and sampler with different seeds or a subsample of the design.
 2. **Measure the bar's strength and length from the data — a project goal in its own right (user, 2026-11-25).**
