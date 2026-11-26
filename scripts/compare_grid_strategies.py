@@ -63,7 +63,11 @@ def main():
     om = tr.Omega_abs.values
     jit = pd.read_csv(RESULTS_DIR / f"chi2_jitter_per_grid_{args.case}.csv")
     rows, chains = [], {}
-    edges = np.arange(15, 45.01, 2.5)
+    # Omega bins for the chi2 profile and the histograms: OSARG's fixed 15-45 grid when the run lies inside it,
+    # else the run's own range (mock-suite runs, e.g. Au26 at 65; 2026-11-26). Posterior numbers do not use them.
+    inside = om.min() >= 15 and om.max() <= 45
+    edges = np.arange(15, 45.01, 2.5) if inside else np.linspace(om.min(), om.max(), 13)
+    hbins = np.arange(15, 45.01, 1.0) if inside else np.linspace(om.min(), om.max(), 31)
     for label, tag, desc in GRIDS:
         col = f"chi2_{B}_sfratio{tag}"
         if col not in tr:
@@ -106,7 +110,7 @@ def main():
     cols = [INK, BLUE_RAMP[2], BLUE_RAMP[4], BLUE_RAMP[6], ACCENT, INK_MUTED, "#E8A33D", "#8E44AD", "#2E8B57", "#C0392B"]
     for (label, tag, desc), c in zip(GRIDS, cols):
         if label in chains:
-            ax.hist(chains[label][:, 0], bins=np.arange(15, 45.01, 1.0), histtype="step", density=True, lw=2 if label == "default" else 1.5,
+            ax.hist(chains[label][:, 0], bins=hbins, histtype="step", density=True, lw=2 if label == "default" else 1.5,
                     color=c, label=f"{desc} (T1 = {[r for r in rows if r['tag'] == label][0]['T1']:.0f})")
     if args.truth:
         ax.axvline(args.truth[0], color=INK, ls="--", lw=1, label=f"truth {args.truth[0]:g}")

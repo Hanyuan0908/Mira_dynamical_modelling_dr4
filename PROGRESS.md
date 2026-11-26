@@ -6340,7 +6340,10 @@ pulls 24% harder at 1 kpc than the cluster's (4.7% at 3 kpc, 2% at 5 kpc), while
   ONLY the axisymmetrised files. Otherwise two things change at once.
 - Which halo is right is a separate question for the user.
 
-**Instructions:** next step 0 (rewritten 2026-11-26, DRAFT until the user has checked them).
+**Decision (user, 2026-11-26):** re-run ONLY the main Test 2 suite at 12.5%: all 25 galaxies, full searches. The
+10% runs, the scatter runs and the t = 7 re-scores (rest of list A) are not re-run.
+
+**Instructions:** next step 0 (rewritten 2026-11-26 for this scope).
 
 ## Figure index (Test 1b, N-body, perfect mock)
 
@@ -6501,54 +6504,57 @@ entries).
 **Next steps, in order.**
 - **Offered, awaiting the user:** full posteriors of the t = 4 mock at 12.5% and 20% (~1.5–2 h each at OSARG N),
   to turn the response test into widths.
-0. **CLUSTER TASK — REDO TEST 2 WITH CORRECT TRIAL FAMILIES** (user, 2026-11-25/26; to be handed to the cluster).
-   **DRAFT, awaiting the user's check (2026-11-26).** Affected runs: entry "Every test affected by the defective
+0. **CLUSTER TASK — RE-RUN THE 25-GALAXY TEST 2 SUITE AT 12.5% WITH CORRECT TRIAL FAMILIES** (decision (user)
+   2026-11-26: only this suite; all 25 galaxies). Why, and which old runs: entry "Every test affected by the defective
    trial families" (2026-11-26).
    - **Where:** calx207 (`ssh hz420@calx207.ast.cam.ac.uk`), shared tree
-     `/data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4`, python `/data/hz420-2/astro312/bin/python` ($PY).
-   - **Step 1. Code:** `git pull` branch `test2-10pct-selection-and-bar-angle`. Needed: `potential_family.check_family`,
-     `mmax=0` in `build_files`, and the `check_family` guards in `run_auriga_posteriors.sh` / `run_test2_posteriors.sh`.
-   - **Step 2. Rebuild ONLY the axisymmetrised files, then verify** (seconds per galaxy; no orbits):
-     `cd scripts; for g in au5 au9 au10 au12 au14 au17 au18 au20 au22 au24 au26 au27 au28 nbody nbody_t2 nbody_t2.375
-     nbody_t2.625 nbody_t3 nbody_t3.375 nbody_t3.625 nbody_t4 nbody_t4.5 nbody_t5 nbody_t5.5 nbody_t6.25; do
-     $PY potential_family.py --galaxy $g && $PY -c "import potential_family as pf; print('$g', pf.check_family('$g'))";
-     done`
-     - Each line must print ≲ 1e-12. `potential_family.py` re-expands the axi files from the EXISTING component files
-       and keeps the halo / bulge / disc / dm / bh / stars / gas files as they are.
-     - Do NOT run `build_nbody_potential.py` / `build_auriga_potential.py`: they would rebuild the truth components
-       too (see the halo difference).
-     - Step 2 must pass first: otherwise the guard in `run_test2_posteriors.sh` rebuilds the truth components itself.
-     - If `check_family` raises even with `mmax=0`, stop and report. Do not run with failing files.
-     - Before step 2, save a copy of each `*_potential/` folder (e.g. `*_potential_defective_2026-11/`) for the
-       record.
-   - **Step 3. Searches, with a NEW tag** so the old runs stay for comparison. Same configuration as before
-     (2026-11-05 pipeline): 257-point focused design, Ω axis scaled by Ω_true/26.02, 12.5% error (σ_DM 0.271), 50 Myr
-     cadence.
+     `/data/hz420/mira_dynamics_dr4/Mira_dynamical_modelling_dr4`, python `PY=/data/hz420-2/astro312/bin/python`.
+   - **Step 1. Code:** `git pull` branch `test2-10pct-selection-and-bar-angle`. Needed:
+     - `potential_family.check_family` and `mmax=0` in `build_files`;
+     - the `check_family` guards in `run_auriga_posteriors.sh` / `run_test2_posteriors.sh`;
+     - the 25 `<galaxy>_axifix` cases in `scan_omega_at_fixed_bar.py`;
+     - the Ω binning fix in `compare_grid_strategies.py`.
+   - **Step 2. Rebuild ONLY the axisymmetrised files, then verify** (seconds per galaxy; no orbits).
+     - First copy each `mock/*_potential/` to `mock/*_potential_defective_2026-11/`.
+     - Then: `cd scripts; for g in au5 au9 au10 au12 au14 au17 au18 au20 au22 au24 au26 au27 au28 nbody nbody_t2
+       nbody_t2.375 nbody_t2.625 nbody_t3 nbody_t3.375 nbody_t3.625 nbody_t4 nbody_t4.5 nbody_t5 nbody_t5.5
+       nbody_t6.25; do $PY potential_family.py --galaxy $g && $PY -c "import potential_family as pf;
+       print('$g', pf.check_family('$g'))"; done`. Each line must print ≲ 1e-12.
+     - `potential_family.py` re-expands the axi files from the EXISTING component files and leaves halo / bulge /
+       disc / dm / bh / stars / gas untouched.
+     - Do NOT run `build_nbody_potential.py` or `build_auriga_potential.py`: the cluster and laptop t = 7 halos
+       already differ, and changing the halo too would mix two effects. Step 2 must pass first, or the guard in
+       `run_test2_posteriors.sh` would rebuild the components itself.
+     - If `check_family` raises even with `mmax=0`, stop and report.
+   - **Step 3. Searches, new tag `12p5pct_axifix`** (old runs untouched). Configuration as the 2026-11-05 pipeline:
+     257-point focused design, Ω axis × Ω_true/26.02, σ_DM 0.271, 50 Myr cadence.
+     - N-body (wrapper defaults are the 10% set, so set both): `SIGMA=0.271 TAG=12p5pct_axifix ONLY="test2_t7_sf_12p5pct_axifix test2_t2_sf_12p5pct_axifix test2_t2.375_sf_12p5pct_axifix test2_t2.625_sf_12p5pct_axifix test2_t3_sf_12p5pct_axifix test2_t3.375_sf_12p5pct_axifix test2_t3.625_sf_12p5pct_axifix test2_t4_sf_12p5pct_axifix test2_t4.5_sf_12p5pct_axifix test2_t5_sf_12p5pct_axifix test2_t5.5_sf_12p5pct_axifix test2_t6.25_sf_12p5pct_axifix"
+       sh run_test2_posteriors_cluster.sh`;
      - Auriga: `TAG=12p5pct_axifix HALOS="9 10 17 18 24 26 27" sh run_auriga_posteriors_cluster.sh --check`, then
        without `--check`; then the same with `HALOS="5 12 14 20 22 28"`.
-     - N-body: `SIGMA=0.271 TAG=12p5pct_axifix ONLY="test2_t2_sf_12p5pct_axifix … test2_t7_sf_12p5pct_axifix"
-       sh run_test2_posteriors_cluster.sh` with the 12 snapshot runs.
      - Disk: ~44 GB per 7 galaxies on /data/hz420. Archive to the portable drive with `archive_auriga_runs.sh` on the
        workstation.
-   - **Step 4. Re-score** each run's saved orbits (no integration):
-     `rescore_empirical_selection.py --run <run> --estimator ratio --n-draw 10 --cadence-step 2`, on the default grid
-     and with `--ring-scheme geo20 --z-max 2 --layer-width 2`; then `--merge` for each.
-   - **Step 5. Temperature T1 per run and grid** (decision 2026-11-25; not √(2N)):
-     - add a `CASES` entry per run (`run`, `galaxy`, `mock`) to `scan_omega_at_fixed_bar.py`;
-     - run `chi2_jitter_per_grid.py --case <case> --n 40`: 40 tiny perturbations at the best point, ~40 integrations
-       per galaxy.
-   - **Step 6. Posteriors at T1** per grid: `compare_grid_strategies.py --run <run> --case <case> --truth Ω φ S f`
-     (truth: Ω_true, 27°, 1, 1).
-   - **Step 7. Compare with the old runs, per galaxy:** Ω_b median, bias and 16–84% width; φ_b bias; S and bar_frac;
-     the φ_b–bar_frac correlation. Then redo the results in list B of the 2026-11-26 entry.
+   - **Step 4. Re-score** each run's saved orbits (no integration), then merge:
+     - default grid: `$PY rescore_empirical_selection.py --run <run> --estimator ratio --n-draw 10 --cadence-step 2`;
+     - geo20: add `--ring-scheme geo20 --z-max 2 --layer-width 2`;
+     - then the same commands with `--merge`.
+   - **Step 5. T1 per run and grid:** `$PY chi2_jitter_per_grid.py --case <galaxy>_axifix --n 40` (41 integrations at
+     the best point; trajectories in `$MIRA_DR4_RUNS/jitter_traj_<case>`).
+   - **Step 6. Posteriors at T1:** `$PY compare_grid_strategies.py --run <run> --case <galaxy>_axifix --truth <Ω_true>
+     27 1 1`, with Ω_true = `omega_truth` in `results/<run>/run_meta.json`.
+   - **PILOT FIRST.** Steps 5–6 have only ever run on OSARG and the steady-state mock, never on a mock-suite run
+     (code reviewed 2026-11-26; prior box and truth come from each run's metadata). Do steps 3–6 for `nbody` (t = 7)
+     alone, check the outputs against the laptop's corrected t = 7 run `test2_t7_sf_12p5pct_clusteraxifix`, then the
+     other 24.
+   - **Step 7. Compare with the old runs, per galaxy:** Ω_b median, bias and 16–84% width (at T1, and at √(2N) for a
+     like-for-like comparison with the old numbers); φ_b bias; S and bar_frac; the φ_b–bar_frac correlation.
+     - Then redo list B of the 2026-11-26 entry where it concerns this suite: recovery figures, φ_b calibration, A2/A0
+       recovery, the mock widths in the Milky Way comparisons.
      - Expectation, from the only corrected run so far (t = 7, √(2N)): Ω_b 6.9 → 8.3%, φ_b–bar_frac correlation
        +0.70 → +0.09.
-   - **Lower priority, same defect:** the 10% runs, the scatter runs and the t = 7 re-scores (list A) only if those
-     results are still needed.
-   - **Also wanted, separate (user 2026-11-25; code not written): the Auriga rotation-curve swap** with OSARG's
-     stars. Use the galaxy's axisymmetric part (dm + bh + stars + gas re-expanded with mmax = 0), rescaled by k² to
-     Sormani+22's mean v_c over 2–6 kpc, plus the Sormani+22 bar. Needs an Auriga branch in `snapshot_hybrid()`
-     (~15 lines). ~7 min per galaxy at 10 threads.
+   - **Separate, also wanted (user 2026-11-25; code not written): the Auriga rotation-curve swap** with OSARG's stars.
+     Use the galaxy's axisymmetric part (dm + bh + stars + gas re-expanded with mmax = 0), rescaled by k² to
+     Sormani+22's mean v_c over 2–6 kpc, plus the Sormani+22 bar. Needs an Auriga branch in `snapshot_hybrid()`.
 1. **Choose the grid** (user): geo20 or 0.3 kpc |z| < 2, both one |z| < 2 layer. Optionally measure the width scatter
    first, e.g. refit the emulator and sampler with different seeds or a subsample of the design.
 2. **Measure the bar's strength and length from the data — a project goal in its own right (user, 2026-11-25).**

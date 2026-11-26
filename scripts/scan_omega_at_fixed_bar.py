@@ -50,6 +50,21 @@ CASES = {
     "t7_own": dict(label="t = 7 mock, own family (truth 25.20)", run="test2_t7_sf_12p5pct", galaxy="nbody",
                    mock="nbody_mock_selection_sigmaDM0.271_N50k.hdf5", omegas=np.arange(15.0, 40.01, 2.5)),
 }
+# The Test 2 re-run with correct trial families (cluster, PROGRESS next step 0; user 2026-11-26): one case per galaxy,
+# named "<galaxy>_axifix", for chi2_jitter_per_grid.py (T1) and compare_grid_strategies.py (posteriors at T1).
+# omegas=None: these cases are not meant for this script's own Omega scan (it would fail on them).
+_AXIFIX_NBODY = ["2", "2.375", "2.625", "3", "3.375", "3.625", "4", "4.5", "5", "5.5", "6.25", "7"]
+_AXIFIX_AURIGA = [5, 9, 10, 12, 14, 17, 18, 20, 22, 24, 26, 27, 28]
+for _t in _AXIFIX_NBODY:
+    _g, _m = ("nbody", "nbody") if _t == "7" else (f"nbody_t{_t}", f"nbody_t{_t}")
+    CASES[f"{_g}_axifix"] = dict(label=f"N-body t = {_t} mock, own family (axi files rebuilt)",
+                                 run=f"test2_t{_t}_sf_12p5pct_axifix", galaxy=_g,
+                                 mock=f"{_m}_mock_selection_sigmaDM0.271_N50k.hdf5", omegas=None)
+for _h in _AXIFIX_AURIGA:
+    CASES[f"au{_h}_axifix"] = dict(label=f"Auriga Au{_h} mock, own family (axi files rebuilt)",
+                                   run=f"test2_au{_h}_sf_12p5pct_axifix", galaxy=f"au{_h}",
+                                   mock=f"au{_h}_mock_selection_sigmaDM0.271_N50k.hdf5", omegas=None)
+
 RINGS = [r for r in range(fs.N_RING_DEFAULT) if 0.5 * (fs.RING_EDGES[r] + fs.RING_EDGES[r + 1]) <= 5.0]
 
 
