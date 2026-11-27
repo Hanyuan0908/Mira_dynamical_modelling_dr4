@@ -6345,6 +6345,31 @@ pulls 24% harder at 1 kpc than the cluster's (4.7% at 3 kpc, 2% at 5 kpc), while
 
 **Instructions:** next step 0 (rewritten 2026-11-26 for this scope).
 
+
+## 2026-11-27 — Auriga stars and potentials now on the laptop (`mock/`), with correct trial families for all 13
+
+**User:** copy the Auriga potential and star files from the cluster to the laptop; check they are in place.
+- **Copied by the user** (rsync from calx207 into the repo's git-ignored `mock/`):
+  - `--exclude '*_axi.ini'`, so the cluster's defective axi files were not copied;
+  - `--ignore-existing`, so the laptop's own Au18 files (2026-10-26/27, correct) were kept.
+- **Star files:** `au{2,5,9,10,12,13,14,17,18,20,22,24,26,27,28}_stars_mwframe.hdf5`, 1.3 GB.
+  - All open, with keys ParticleIDs, Z, age, mass, x, y, z, vx, vy, vz, all finite.
+  - 1.48–3.00 M particles; 2.7–9.0e10 M☉ at R < 8 kpc, |z| < 3 kpc.
+  - Au2 and Au13 have stars but no potential (as on the cluster). The mock catalogues were not copied.
+- **Potentials:** `au<N>_potential/{dm,bh,stars,gas}.ini`, `summary.json`, `Au<N>_full.ini`, `Au<N>_baryon_full.ini`
+  for the 12 cluster galaxies.
+  - All 84 files have exactly the sizes of the cluster listing.
+  - Each loads, and `Au<N>_full` = dm + bh + stars + gas exactly.
+  - v_c at 1 / 3 / 5 / 8 kpc ranges from Au20 (181 / 206 / 196 / 205) to Au26 (382 / 385 / 327 / 310 km/s).
+  - (A first comparison against the portable drive reported all 84 as different. The drive was not mounted, so every
+    comparison failed on a missing file. WITHDRAWN.)
+- **Axi files rebuilt on the laptop** (`potential_family.py --galaxy au<N>`, with `mmax=0` and the built-in check):
+  - `check_family` gives m2/m0 = 1.2–1.8e-16 for all 13 (Au18: its existing laptop files); `Au<N>_baryon_axi.ini`
+    is 45 KB (the cluster's was 1.16 MB).
+  - Through `ssl.bar_aligned_potential`, the bar force at 4 kpc is 0.000 / 0.500 / 1.500 / 2.000 × the truth at
+    bar_frac 0 / 0.5 / 1.5 / 2, turned 0.0°, in all 13.
+  - So the laptop's 13 Auriga trial families are correct, which the cluster's are not.
+
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
