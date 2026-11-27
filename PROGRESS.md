@@ -6370,34 +6370,6 @@ pulls 24% harder at 1 kpc than the cluster's (4.7% at 3 kpc, 2% at 5 kpc), while
     bar_frac 0 / 0.5 / 1.5 / 2, turned 0.0°, in all 13.
   - So the laptop's 13 Auriga trial families are correct, which the cluster's are not.
 
-
-## 2026-11-27 — DR3 Miras: Teff against kinematic age, from the RVS template and from GSP-Phot, full Teff range
-
-**User:** extend to higher Teff and plot Teff against kinematic age, "from both methods". Read as:
-- Teff from both of the catalogue's estimates: `rv_template_teff`, the RVS template of the stars with a DR3 RV (3,284),
-  and `teff_gspphot`, from BP/RP (14,996);
-- against `age_kine`;
-- over the whole Teff range (to 8,000 K) instead of the cool end.
-
-`age_kine` and `age_both` are both functions of the period (correlation 1.000), so either gives the same ordering.
-- **Script / figure:** `plot_dr3_mira_teff_vs_kinematic_age.py` →
-  `figures/dr3_mira_teff_vs_kinematic_age_rv_template_and_gspphot.png`, `results/dr3_mira_teff_vs_kinematic_age.csv`.
-- **Teff rises with age in both methods.**
-  - Spearman ρ +0.38 for the template Teff and +0.29 for GSP-Phot (p < 1e-100).
-  - Medians per 1 Gyr bin, ages 5–6 → 10–11 Gyr:
-    - template Teff 3100 → 3100 → 3200 → 3400 → 3500 → 3700 K;
-    - GSP-Phot 3403 → 3432 → 3465 → 3490 → 3587 → 3631 K.
-  - GSP-Phot is flat below 5 Gyr: 3,345–3,372 K at 2–5 Gyr.
-- **The template Teff is selection-shaped.**
-  - Below 8 Gyr its median sits on the 3,100 K floor (DR3 removed cooler RVs).
-  - The fraction of Miras with a template Teff (a DR3 RV) climbs with age: ≤ 1.2% below 8 Gyr, 5.3% at 8–9, 32.8% at
-    9–10, 49.4% at 10–11.
-  - Hypothesis, untested: the template Teff of young / long-period Miras is the floor value rather than a measurement.
-- **High-Teff tails.**
-  - Template: a separate group of 109 stars at exactly 5,500 K, at all ages from ~3 to 10.6 Gyr. Hypothesis, untested:
-    a template mismatch rather than real 5,500 K Miras.
-  - GSP-Phot: 34 stars above 8,000 K (up to 37,000 K), off the plot.
-
 ## Figure index (Test 1b, N-body, perfect mock)
 
 Figures are now filed by purpose - see `figures/README.md`. Nothing was renamed, so every name
@@ -6466,7 +6438,6 @@ below is still found by `find figures -name <name>`; most of the Test 1b set is 
 | `milky_way_rotation_curves_and_resonances.png` | five Milky Way potentials (McMillan17, Sormani+22, Hunter+24, Cautun+20, gala MWP2022): v_c, the fitted-region zoom, Ω − κ/2 against the OSARG Ω_b band (2026-11-25) |
 | `rotation_curves_nbody_mocks_vs_milky_way.png` | the 12 N-body snapshots' azimuthally averaged rotation curves against the Milky Way models: v_c, shape normalised at 5 kpc, (Ω − κ/2)/Ω_b with each ILR (2026-11-25) |
 | `resonances_vs_pattern_speed_constraint_simulations_and_milky_way.png` | ILR/CR and ILR radius against the Ω_b posterior width for the 12 N-body, 13 Auriga and the Milky Way runs (2026-11-25) |
-| `dr3_mira_teff_vs_kinematic_age_rv_template_and_gspphot.png` | DR3 Miras: Teff (RVS template; GSP-Phot) against age_kine, full Teff range, with medians and the DR3-RV fraction by age (2026-11-27) |
 | `distance_error_response_t4_vs_osarg.png` | t = 4 mock at 12.5% / 20% / 20%-modelled-as-10% distance error vs OSARG and the steady-state mock: data Δχ² and prediction change D against the Ω_b step, and χ²/N at the truth (2026-11-26) |
 | `extreme_bar_strength_test_osarg_and_mock.png` | χ²/T1 and the library ⟨v_R⟩ quadrupole against bar_frac 0–4 with everything else fixed, OSARG (Sormani+22) and the steady-state mock (2026-11-26) |
 | `bimodality_spatial_origin_osarg_s22.png` | OSARG in Sormani+22: Δχ² per (R, \|z\|) block and per field, second peak (Ω_b 37.6) and strong-bar ridge (34.5) against the posterior main peak (30.0), three grids (2026-11-25) |
